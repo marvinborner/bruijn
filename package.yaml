@@ -27,6 +27,7 @@ dependencies:
 - mtl
 - haskeline
 - parsec
+- containers
 
 library:
   source-dirs: src

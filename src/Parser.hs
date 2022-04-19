@@ -5,10 +5,11 @@ import           Text.Parsec
 import           Text.Parsec.Language
 import qualified Text.Parsec.Token             as Token
 
-data Error = SyntaxError ParseError | UndeclaredFunction String | InvalidIndex Int | FatalError String
+data Error = SyntaxError ParseError | UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
 instance Show Error where
   show (SyntaxError        err) = show err
   show (UndeclaredFunction err) = "ERROR: undeclared function " <> show err
+  show (DuplicateFunction  err) = "ERROR: duplicate function " <> show err
   show (InvalidIndex       err) = "ERROR: invalid index " <> show err
   show (FatalError         err) = show err
 type Failable = Either Error
@@ -17,7 +18,7 @@ languageDef :: GenLanguageDef String u Identity
 languageDef = emptyDef { Token.commentLine     = "#"
                        , Token.identStart      = letter
                        , Token.identLetter     = alphaNum <|> char '?'
-                       , Token.reservedOpNames = ["[", "]"]
+                       , Token.reservedOpNames = ["[", "]", "="]
                        }
 
 type Parser = Parsec String ()
@@ -42,7 +43,7 @@ data Instruction = Define String Expression | Evaluate Expression | Comment Stri
 parseAbstraction :: Parser Expression
 parseAbstraction = do
   reservedOp "["
-  exp <- parseExpression
+  exp <- parseExpression <|> parseBruijn
   reservedOp "]"
   pure $ Abstraction exp
 
@@ -64,17 +65,27 @@ parseVariable = do
   pure $ Variable var
 
 parseSingleton :: Parser Expression
-parseSingleton =
-  parseAbstraction <|> parens parseApplication <|> parseBruijn <|> parseVariable
+parseSingleton = parseAbstraction <|> parens parseApplication <|> parseVariable
 
 parseExpression :: Parser Expression
 parseExpression = do
   expr <- parseApplication <|> parseSingleton
   pure expr
 
+parseEvaluate :: Parser Instruction
+parseEvaluate = Evaluate <$> parseExpression
+
 parseDefine :: Parser Instruction
 parseDefine = do
   var <- identifier
+  spaces
+  Define var <$> parseExpression
+
+parseReplDefine :: Parser Instruction
+parseReplDefine = do
+  var <- identifier
+  spaces
+  reservedOp "="
   spaces
   Define var <$> parseExpression
 
@@ -84,5 +95,5 @@ parseComment = string "#" >> Comment <$> many letter
 parseLine :: Parser Instruction
 parseLine = try parseDefine <|> parseComment
 
-parseReplLine :: Parser Expression
-parseReplLine = try parseExpression
+parseReplLine :: Parser Instruction
+parseReplLine = try parseReplDefine <|> parseComment <|> parseEvaluate

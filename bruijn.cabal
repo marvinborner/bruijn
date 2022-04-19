@@ -27,6 +27,7 @@ library
   exposed-modules:
       Eval
       Parser
+      Reducer
   other-modules:
       Paths_bruijn
   hs-source-dirs:
@@ -35,6 +36,7 @@ library
       LambdaCase
   build-depends:
       base >=4.7 && <5
+    , containers
     , haskeline
     , mtl
     , parsec
@@ -52,6 +54,7 @@ executable bruijn-exe
   build-depends:
       base >=4.7 && <5
     , bruijn
+    , containers
     , haskeline
     , mtl
     , parsec
@@ -70,6 +73,7 @@ test-suite bruijn-test
   build-depends:
       base >=4.7 && <5
     , bruijn
+    , containers
     , haskeline
     , mtl
     , parsec
