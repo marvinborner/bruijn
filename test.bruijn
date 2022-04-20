@@ -1,6 +1,14 @@
-#nil [[0]]
+# Church numerals
+zero [[0]]
+succ [[[1 (2 1 0)]]]
+add [[[[3 1 (2 1 0)]]]]
+mul [[[2 (1 0)]]]
+exp [[0 1]]
+
+Y [[1 (0 0)] [1 (0 0)]]
+
 true [[1]]
-#false [[0]]
+false [[0]]
 id [0]
 iota [0 [[[2 0 (1 0)]]] [[1]]]
-main id true
+main id false

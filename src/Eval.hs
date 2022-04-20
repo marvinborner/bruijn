@@ -5,6 +5,7 @@ module Eval
 import           Control.Exception
 import           Control.Monad.State
 import           Debug.Trace
+import           Helper
 import           Parser
 import           Reducer
 import           System.Console.Haskeline
@@ -14,9 +15,6 @@ import           System.IO
 import           Text.Parsec             hiding ( State
                                                 , try
                                                 )
-
-type Environment = [(String, Expression)]
-type Program = State Environment
 
 evalVar :: String -> Program (Failable Expression)
 evalVar var = state $ \e ->
@@ -51,7 +49,7 @@ evalDefine name exp =
 
 eval :: [String] -> Environment -> IO Environment
 eval []          env = pure env
-eval (line : ls) env = case parse parseLine "Evaluator" line of
+eval (line : ls) env = case parse parseLine "FILE" line of
   Left  err   -> print err >> pure env
   Right instr -> case instr of
     Define name exp ->
@@ -59,20 +57,16 @@ eval (line : ls) env = case parse parseLine "Evaluator" line of
       in  case res of
             Left  err -> print err >> eval ls env'
             Right _   -> (putStrLn $ name <> " = " <> show exp) >> eval ls env'
-    Evaluate exp ->
-      let (res, env') = evalExp exp `runState` env
-      in  putStrLn
-              (case res of
-                Left  err -> show err
-                Right exp -> show $ reduce exp
-              )
-            >> pure env
     _ -> eval ls env
 
+evalFunc :: String -> Environment -> IO Environment
+evalFunc func env = case lookup func env of
+  Nothing  -> (putStrLn $ func <> " not found") >> pure env
+  Just exp -> (print $ reduce exp) >> pure env
+
 -- TODO: Less duplicate code (liftIO?)
--- TODO: Convert back to my notation using custom show
 evalRepl :: String -> Environment -> InputT IO Environment
-evalRepl line env = case parse parseReplLine "Repl" line of
+evalRepl line env = case parse parseReplLine "REPL" line of
   Left  err   -> outputStrLn (show err) >> pure env
   Right instr -> case instr of
     Define name exp ->
@@ -88,14 +82,24 @@ evalRepl line env = case parse parseReplLine "Repl" line of
                 Right exp -> (show exp) <> "\n-> " <> (show $ reduce exp)
               )
             >> pure env
+    Load path ->
+      liftIO
+        $   (try $ readFile path :: IO (Either IOError String))
+        >>= (\case -- TODO: Make this more abstract and reusable
+              Left exception -> print (exception :: IOError) >> pure env
+              Right file -> eval (filter (not . null) $ lines file) [] >>= pure
+            )
     _ -> pure env
 
 evalFile :: String -> IO ()
 evalFile path = do
   file <- try $ readFile path :: IO (Either IOError String)
   case file of
-    Left  exception -> print (exception :: IOError)
-    Right file      -> eval (lines file) [] >> putStrLn "Done"
+    Left exception -> print (exception :: IOError)
+    Right file ->
+      eval (filter (not . null) $ lines file) []
+        >>= evalFunc "main"
+        >>  return ()
 
 repl :: Environment -> InputT IO ()
 repl env =

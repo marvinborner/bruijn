@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Eval
+      Helper
       Parser
       Reducer
   other-modules:

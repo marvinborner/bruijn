@@ -1,18 +1,10 @@
 module Parser where
 
 import           Data.Functor.Identity
+import           Helper
 import           Text.Parsec
 import           Text.Parsec.Language
 import qualified Text.Parsec.Token             as Token
-
-data Error = SyntaxError ParseError | UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
-instance Show Error where
-  show (SyntaxError        err) = show err
-  show (UndeclaredFunction err) = "ERROR: undeclared function " <> show err
-  show (DuplicateFunction  err) = "ERROR: duplicate function " <> show err
-  show (InvalidIndex       err) = "ERROR: invalid index " <> show err
-  show (FatalError         err) = show err
-type Failable = Either Error
 
 languageDef :: GenLanguageDef String u Identity
 languageDef = emptyDef { Token.commentLine     = "#"
@@ -35,15 +27,14 @@ reservedOp = Token.reservedOp lexer
 parens :: Parser a -> Parser a
 parens = Token.parens lexer
 
-data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
-  deriving (Ord, Eq, Show)
-data Instruction = Define String Expression | Evaluate Expression | Comment String
-  deriving (Show)
+almostAnything :: Parser String
+almostAnything =
+  many1 $ oneOf ".`#~@$%^&*_+-=|;',/?[]<>(){} " <|> letter <|> digit
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
   reservedOp "["
-  exp <- parseExpression <|> parseBruijn
+  exp <- parseExpression
   reservedOp "]"
   pure $ Abstraction exp
 
@@ -65,11 +56,14 @@ parseVariable = do
   pure $ Variable var
 
 parseSingleton :: Parser Expression
-parseSingleton = parseAbstraction <|> parens parseApplication <|> parseVariable
+parseSingleton =
+  parseBruijn <|> parseAbstraction <|> parens parseApplication <|> parseVariable
 
 parseExpression :: Parser Expression
 parseExpression = do
+  spaces
   expr <- parseApplication <|> parseSingleton
+  spaces
   pure expr
 
 parseEvaluate :: Parser Instruction
@@ -90,10 +84,14 @@ parseReplDefine = do
   Define var <$> parseExpression
 
 parseComment :: Parser Instruction
-parseComment = string "#" >> Comment <$> many letter
+parseComment = string "#" >> Comment <$> almostAnything
+
+parseLoad :: Parser Instruction
+parseLoad = string ":load " >> Load <$> almostAnything
 
 parseLine :: Parser Instruction
 parseLine = try parseDefine <|> parseComment
 
 parseReplLine :: Parser Instruction
-parseReplLine = try parseReplDefine <|> parseComment <|> parseEvaluate
+parseReplLine =
+  try parseReplDefine <|> parseComment <|> parseEvaluate <|> parseLoad
