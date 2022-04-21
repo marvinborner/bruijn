@@ -78,8 +78,16 @@ evalRepl line env = case parse parseReplLine "REPL" line of
       let (res, env') = evalExp exp `runState` env
       in  outputStrLn
               (case res of
-                Left  err -> show err
-                Right exp -> (show exp) <> "\n-> " <> (show $ reduce exp)
+                Left err -> show err
+                Right exp ->
+                  "<> "
+                    <> (show exp)
+                    <> "\n*> "
+                    <> (show reduced)
+                    <> "\t("
+                    <> (show $ ternaryToDecimal reduced)
+                    <> ")"
+                  where reduced = reduce exp
               )
             >> pure env
     Load path ->

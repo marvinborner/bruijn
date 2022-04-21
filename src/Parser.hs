@@ -1,5 +1,9 @@
-module Parser where
+module Parser
+  ( parseLine
+  , parseReplLine
+  ) where
 
+import           Control.Monad                  ( ap )
 import           Data.Functor.Identity
 import           Helper
 import           Text.Parsec
@@ -8,8 +12,8 @@ import qualified Text.Parsec.Token             as Token
 
 languageDef :: GenLanguageDef String u Identity
 languageDef = emptyDef { Token.commentLine     = "#"
-                       , Token.identStart      = letter
-                       , Token.identLetter     = alphaNum <|> char '?'
+                       , Token.identStart      = letter <|> char '_'
+                       , Token.identLetter     = alphaNum <|> oneOf "?!'_"
                        , Token.reservedOpNames = ["[", "]", "="]
                        }
 
@@ -49,6 +53,16 @@ parseBruijn = do
   spaces
   pure $ Bruijn $ (read . pure) idx
 
+parseNumeral :: Parser Expression
+parseNumeral = do
+  num <- number
+  spaces
+  pure $ decimalToTernary num
+ where
+  sign   = (char '-' >> return negate) <|> (char '+' >> return id)
+  nat    = read <$> many1 digit
+  number = ap sign nat
+
 parseVariable :: Parser Expression
 parseVariable = do
   var <- identifier
@@ -57,7 +71,11 @@ parseVariable = do
 
 parseSingleton :: Parser Expression
 parseSingleton =
-  parseBruijn <|> parseAbstraction <|> parens parseApplication <|> parseVariable
+  parseBruijn
+    <|> parseNumeral
+    <|> parseAbstraction
+    <|> parens parseApplication
+    <|> parseVariable
 
 parseExpression :: Parser Expression
 parseExpression = do

@@ -1,0 +1,107 @@
+# ==================
+# Common combinators
+# ==================
+
+S [[[2 0 (1 0)]]]
+K [[1]]
+I [0]
+B [[[2 (1 0)]]]
+C [[[2 0 1]]]
+T [[1]]
+F [[0]]
+ω [0 0]
+Ω ω ω
+Y [[1 (0 0)] [1 (0 0)]]
+Θ [[0 (1 1 0)]] [[0 (1 1 0)]]
+i [0 S K]
+
+# =======
+# Ternary
+# =======
+
+zero? [0 T [F] I [F]]
+upNeg [[[[[2 (4 3 2 1 0)]]]]]
+upZero [[[[[1 (4 3 2 1 0)]]]]]
+upPos [[[[[0 (4 3 2 1 0)]]]]]
+up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
+
+negate [[[[[4 3 0 1 2]]]]]
+
+tritNeg [[[2]]]
+tritZero [[[1]]]
+tritPos [[[0]]]
+
+_absNeg [[[[[2 4]]]]]
+_absZero [[[[[1 4]]]]]
+_absPos [[[[[0 4]]]]]
+abstractify [0 [[[[3]]]] _absNeg _absZero _absPos]
+
+_normalize [[0 [ +0 ] [[upNeg (1 1 0)]] [[upZero (1 1 0)]] [[upPos (1 1 0)]] 0]]
+normalize ω _normalize
+
+_eqZero? [zero? (normalize 0)]
+_eqNeg [[0 F [2 0] [F] [F]]]
+_eqZero [[0 (1 0) [F] [2 0] [F]]]
+_eqPos [[0 F [F] [F] [2 0]]]
+_eqAbs [0 _eqZero? _eqNeg _eqZero _eqPos]
+eq [[_eqAbs 1 (abstractify 0)]]
+
+proj22 [0 [[0]]]
+tuple [[[0 1 2]]]
+
+_succZ (tuple +0 +1)
+_succANeg [0 [[[tuple (upNeg 2) (upZero 2)]]]]
+_succAZero [0 [[[tuple (upZero 2) (upPos 2)]]]]
+_succAPos [0 [[[tuple (upPos 2) (upNeg 1)]]]]
+succ [proj22 (0 _succZ _succANeg _succAZero _succAPos)]
+
+_predZ (tuple +0 -1)
+_predANeg [0 [[[tuple (upNeg 2) (upPos 1)]]]]
+_predAZero [0 [[[tuple (upZero 2) (upNeg 2)]]]]
+_predAPos [0 [[[tuple (upPos 2) (upZero 2)]]]]
+pred [proj22 (0 _predZ _predANeg _predAZero _predAPos)]
+
+_addZ [[0 (pred (normalize 1)) (normalize 1) (succ (normalize 1))]]
+_addC [[1 0 tritZero]]
+_addBNeg2 [1 (upZero (3 0 tritNeg)) (upPos (3 0 tritZero)) (upNeg (3 0 tritZero))]
+_addBNeg [1 (upPos (3 0 tritNeg)) (upNeg (3 0 tritZero)) (upZero (3 0 tritZero))]
+_addBZero [up 1 (3 0 tritZero)]
+_addBPos [1 (upZero (3 0 tritZero)) (upPos (3 0 tritZero)) (upNeg (3 0 tritPos))]
+_addBPos2 [1 (upPos (3 0 tritZero)) (upNeg (3 0 tritPos)) (upZero (3 0 tritPos))]
+_addANeg [[[1 (_addBNeg 1) _addBNeg2 _addBNeg _addBZero]]]
+_addAZero [[[1 (_addBZero 1) _addBNeg _addBZero _addBPos]]]
+_addAPos [[[1 (_addBPos 1) _addBZero _addBPos _addBPos2]]]
+_addAbs [_addC (0 _addZ _addANeg _addAZero _addAPos)]
+add [[_addAbs 1 (abstractify 0)]]
+
+sub [[add 1 (negate 0)]]
+
+# =====
+# Pairs
+# =====
+
+pair [[[0 2 1]]]
+fst [0 T]
+snd [0 F]
+
+# ===============
+# Boolean algebra
+# ===============
+
+not [0 F T]
+and [[1 0 F]]
+or [[1 T 0]]
+xor [[1 (not 0) 0]]
+if [[[2 1 0]]]
+
+# ===============
+# Church numerals
+# ===============
+
+zero [[0]]
+succ [[[1 (2 1 0)]]]
+add [[[[3 1 (2 1 0)]]]]
+mul [[[2 (1 0)]]]
+exp [[0 1]]
+
+main I F

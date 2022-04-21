@@ -4,7 +4,7 @@ module Reducer
 
 import           Helper
 
--- TODO: Reduce variable -> later: only reduce main in non-repl
+-- TODO: Research interaction nets and optimal reduction
 
 (<+>) :: Expression -> Int -> Expression
 (<+>) (Bruijn x             ) n = if x > n then Bruijn (pred x) else Bruijn x
