@@ -1,0 +1,70 @@
+atom0 [[[[[4]]]]]
+atom1 [[[[[3]]]]]
+atom2 [[[[[2]]]]]
+atom3 [[[[[1]]]]]
+atom4 [[[[[0]]]]]
+
+# =========
+# Reduction
+# =========
+
+:test [0] atom0 = atom0
+:test [[0 1 0]] atom0 atom1 = atom1 atom0 atom1
+:test [[[[3 2 1 0]]]] atom0 atom1 atom2 atom3 = atom0 atom1 atom2 atom3
+
+# ===============
+# Church numerals
+# ===============
+
+chrch_n0 [[0]]
+chrch_n1 [[1 0]]
+chrch_n2 [[1 (1 0)]]
+chrch_n3 [[1 (1 (1 0))]]
+chrch_n4 [[1 (1 (1 (1 0)))]]
+chrch_n5 [[1 (1 (1 (1 (1 0))))]]
+chrch_n6 [[1 (1 (1 (1 (1 (1 0)))))]]
+chrch_n7 [[1 (1 (1 (1 (1 (1 (1 0))))))]]
+chrch_n8 [[1 (1 (1 (1 (1 (1 (1 (1 0)))))))]]
+chrch_n9 [[1 (1 (1 (1 (1 (1 (1 (1 (1 0))))))))]]
+chrch_add [[[[3 1 (2 1 0)]]]]
+chrch_mul [[[2 (1 0)]]]
+chrch_pow [[0 1]]
+
+:test chrch_add chrch_n2 chrch_n3 = chrch_n5
+:test chrch_mul chrch_n2 chrch_n3 = chrch_n6
+:test chrch_pow chrch_n2 chrch_n3 = chrch_n8
+
+# ==================
+# Lennart
+# From Lambda-n-ways
+# ==================
+
+lnnrt_true [[0]]
+lnnrt_false [[1]]
+lnnrt_if [[[2 0 1]]]
+lnnrt_zero [[1]]
+lnnrt_succ [[[0 2]]]
+lnnrt_one lnnrt_succ lnnrt_zero
+lnnrt_two lnnrt_succ lnnrt_one
+lnnrt_three lnnrt_succ lnnrt_two
+lnnrt_const [[1]]
+lnnrt_pair [[[0 2 1]]]
+lnnrt_fst [[1 0 [[1]]]]
+lnnrt_snd [[1 0 [[0]]]]
+lnnrt_fix [[1 (0 0)] [1 (0 0)]]
+lnnrt_add lnnrt_fix [[[1 0 [lnnrt_succ (3 0 1)]]]]
+lnnrt_mul lnnrt_fix [[[1 lnnrt_zero [lnnrt_add 1 (3 0 1)]]]]
+lnnrt_fac lnnrt_fix [[0 lnnrt_one [lnnrt_mul 1 (2 0)]]]
+lnnrt_eqnat lnnrt_fix [[[1 (0 lnnrt_true (lnnrt_const lnnrt_false)) [1 lnnrt_false [4 1 0]]]]]
+lnnrt_sumto lnnrt_fix [[0 lnnrt_zero [lnnrt_add 1 (2 0)]]]
+lnnrt_n5 lnnrt_add lnnrt_two lnnrt_three
+lnnrt_n6 lnnrt_add lnnrt_three lnnrt_three
+lnnrt_n17 lnnrt_add lnnrt_n6 (lnnrt_add lnnrt_n6 lnnrt_n5)
+lnnrt_n37 lnnrt_succ (lnnrt_mul lnnrt_n6 lnnrt_n6)
+lnnrt_n703 lnnrt_sumto lnnrt_n37
+lnnrt_n720 lnnrt_fac lnnrt_n6
+
+# this test can take a minute, comment it if you're in a hurry
+:test lnnrt_eqnat lnnrt_n720 (lnnrt_add lnnrt_n703 lnnrt_n17) = lnnrt_true
+
+main [[1]]

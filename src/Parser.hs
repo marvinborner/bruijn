@@ -6,7 +6,7 @@ module Parser
 import           Control.Monad                  ( ap )
 import           Data.Functor.Identity
 import           Helper
-import           Text.Parsec
+import           Text.Parsec             hiding ( parseTest )
 import           Text.Parsec.Language
 import qualified Text.Parsec.Token             as Token
 
@@ -107,9 +107,23 @@ parseComment = string "#" >> Comment <$> almostAnything
 parseLoad :: Parser Instruction
 parseLoad = string ":load " >> Load <$> almostAnything
 
+parseTest :: Parser Instruction
+parseTest = do
+  string ":test "
+  exp1 <- parseExpression
+  spaces
+  reservedOp "="
+  spaces
+  exp2 <- parseExpression
+  pure $ Test exp1 exp2
+
 parseLine :: Parser Instruction
-parseLine = try parseDefine <|> parseComment
+parseLine = try parseDefine <|> try parseComment <|> try parseTest
 
 parseReplLine :: Parser Instruction
 parseReplLine =
-  try parseReplDefine <|> parseComment <|> parseEvaluate <|> parseLoad
+  try parseReplDefine
+    <|> try parseComment
+    <|> try parseEvaluate
+    <|> try parseLoad
+    <|> try parseTest

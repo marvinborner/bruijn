@@ -47,6 +47,14 @@ evalDefine name exp =
           Right f -> modify ((name, f) :) >> pure (Right f)
         )
 
+evalTest :: Expression -> Expression -> Program (Failable Instruction)
+evalTest exp1 exp2 =
+  evalExp exp1
+    >>= (\case
+          Left  exp1 -> pure $ Left exp1
+          Right exp1 -> fmap (Test exp1) <$> evalExp exp2
+        )
+
 eval :: [String] -> Environment -> IO Environment
 eval []          env = pure env
 eval (line : ls) env = case parse parseLine "FILE" line of
@@ -56,7 +64,21 @@ eval (line : ls) env = case parse parseLine "FILE" line of
       let (res, env') = evalDefine name exp `runState` env
       in  case res of
             Left  err -> print err >> eval ls env'
-            Right _   -> (putStrLn $ name <> " = " <> show exp) >> eval ls env'
+            Right _   -> eval ls env'
+    Test exp1 exp2 ->
+      let (res, _) = evalTest exp1 exp2 `runState` env
+      in  case res of
+            Left err -> putStrLn (show err) >> pure env
+            Right (Test exp1' exp2') ->
+              when
+                  (reduce exp1' /= reduce exp2')
+                  (  putStrLn
+                  $  "ERROR: test failed: "
+                  <> (show exp1)
+                  <> " != "
+                  <> (show exp2)
+                  )
+                >> eval ls env
     _ -> eval ls env
 
 evalFunc :: String -> Environment -> IO Environment
@@ -65,6 +87,7 @@ evalFunc func env = case lookup func env of
   Just exp -> (print $ reduce exp) >> pure env
 
 -- TODO: Less duplicate code (liftIO?)
+-- TODO: Generally improve eval code
 evalRepl :: String -> Environment -> InputT IO Environment
 evalRepl line env = case parse parseReplLine "REPL" line of
   Left  err   -> outputStrLn (show err) >> pure env
@@ -97,6 +120,20 @@ evalRepl line env = case parse parseReplLine "REPL" line of
               Left exception -> print (exception :: IOError) >> pure env
               Right file -> eval (filter (not . null) $ lines file) [] >>= pure
             )
+    Test exp1 exp2 ->
+      let (res, _) = evalTest exp1 exp2 `runState` env
+      in  case res of
+            Left err -> outputStrLn (show err) >> pure env
+            Right (Test exp1' exp2') ->
+              when
+                  (reduce exp1' /= reduce exp2')
+                  (  outputStrLn
+                  $  "ERROR: test failed: "
+                  <> (show exp1)
+                  <> " != "
+                  <> (show exp2)
+                  )
+                >> pure env
     _ -> pure env
 
 evalFile :: String -> IO ()

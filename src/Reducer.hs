@@ -20,11 +20,11 @@ bind :: Expression -> Expression -> Int -> Expression
 bind exp (Bruijn x) n = if x == n then exp else Bruijn x
 bind exp (Application exp1 exp2) n =
   Application (bind exp exp1 n) (bind exp exp2 n)
-bind exp (Abstraction exp') n = Abstraction (bind (exp <-> 0) exp' (succ n))
+bind exp (Abstraction exp') n = Abstraction (bind (exp <-> (-1)) exp' (succ n))
 
 step :: Expression -> Expression
 step (Bruijn exp                        ) = Bruijn exp
-step (Application (Abstraction exp) app ) = (bind (app <-> 0) exp 0) <+> 0
+step (Application (Abstraction exp) app ) = (bind (app <-> (-1)) exp 0) <+> 0
 step (Application exp1              exp2) = Application (step exp1) (step exp2)
 step (Abstraction exp                   ) = Abstraction (step exp)
 
