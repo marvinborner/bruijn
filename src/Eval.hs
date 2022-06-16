@@ -2,6 +2,7 @@ module Eval
   ( evalMain
   ) where
 
+import           Binary
 import           Control.Exception
 import           Control.Monad.State
 import           Debug.Trace
@@ -81,10 +82,10 @@ eval (line : ls) env = case parse parseLine "FILE" line of
                 >> eval ls env
     _ -> eval ls env
 
-evalFunc :: String -> Environment -> IO Environment
-evalFunc func env = case lookup func env of
-  Nothing  -> (putStrLn $ func <> " not found") >> pure env
-  Just exp -> (print $ reduce exp) >> pure env
+evalFunc :: String -> Environment -> Maybe Expression
+evalFunc func env = do
+  exp <- lookup func env
+  pure $ reduce exp
 
 -- TODO: Less duplicate code (liftIO?)
 -- TODO: Generally improve eval code
@@ -108,7 +109,7 @@ evalRepl line env = case parse parseReplLine "REPL" line of
                     <> "\n*> "
                     <> (show reduced)
                     <> "\t("
-                    <> (show $ ternaryToDecimal reduced)
+                    <> (show $ binaryToDecimal reduced)
                     <> ")"
                   where reduced = reduce exp
               )
@@ -140,11 +141,30 @@ evalFile :: String -> IO ()
 evalFile path = do
   file <- try $ readFile path :: IO (Either IOError String)
   case file of
-    Left exception -> print (exception :: IOError)
-    Right file ->
-      eval (filter (not . null) $ lines file) []
-        >>= evalFunc "main"
-        >>  return ()
+    Left  exception -> print (exception :: IOError)
+    Right file      -> do
+      env <- eval (filter (not . null) $ lines file) []
+      case evalFunc "main" env of
+        Nothing  -> putStrLn $ "main function not found"
+        Just exp -> print exp
+
+compile :: String -> IO ()
+compile path = do
+  file <- try $ readFile path :: IO (Either IOError String)
+  case file of
+    Left  exception -> print (exception :: IOError)
+    Right file      -> do
+      env <- eval (filter (not . null) $ lines file) []
+      case lookup "main" env of
+        Nothing  -> putStrLn $ "main function not found"
+        Just exp -> putStrLn $ toBinary exp
+
+exec :: String -> IO ()
+exec path = do
+  file <- try $ readFile path :: IO (Either IOError String)
+  case file of
+    Left  exception -> print (exception :: IOError)
+    Right file      -> print $ reduce $ fromBinary file
 
 repl :: Environment -> InputT IO ()
 repl env =
@@ -163,5 +183,7 @@ evalMain = do
   case args of
     [] -> runInputT defaultSettings { historyFile = Just ".bruijn-history" }
       $ repl []
-    [path] -> evalFile path
-    _      -> usage
+    ["-c", path] -> compile path -- TODO: -C: raw binary
+    ["-e", path] -> exec path -- TODO: -E: raw binary
+    [path]       -> evalFile path
+    _            -> usage
