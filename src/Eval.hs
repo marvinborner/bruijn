@@ -5,6 +5,8 @@ module Eval
 import           Binary
 import           Control.Exception
 import           Control.Monad.State
+import qualified Data.BitString                as Bit
+import qualified Data.ByteString               as Byte
 import           Debug.Trace
 import           Helper
 import           Parser
@@ -66,6 +68,29 @@ eval (line : ls) env = case parse parseLine "FILE" line of
       in  case res of
             Left  err -> print err >> eval ls env'
             Right _   -> eval ls env'
+    Import path ->
+      liftIO
+        $   (try $ readFile path :: IO (Either IOError String))
+        >>= (\case -- TODO: Make this more abstract and reusable
+              Left exception -> print (exception :: IOError) >> pure env
+              Right file -> eval (filter (not . null) $ lines file) [] >>= pure
+            )
+    Evaluate exp ->
+      let (res, env') = evalExp exp `runState` env
+      in  putStrLn
+              (case res of
+                Left err -> show err
+                Right exp ->
+                  "<> "
+                    <> (show exp)
+                    <> "\n*> "
+                    <> (show reduced)
+                    <> "\t("
+                    <> (show $ binaryToDecimal reduced)
+                    <> ")"
+                  where reduced = reduce exp
+              )
+            >> eval ls env
     Test exp1 exp2 ->
       let (res, _) = evalTest exp1 exp2 `runState` env
       in  case res of
@@ -114,7 +139,7 @@ evalRepl line env = case parse parseReplLine "REPL" line of
                   where reduced = reduce exp
               )
             >> pure env
-    Load path ->
+    Import path ->
       liftIO
         $   (try $ readFile path :: IO (Either IOError String))
         >>= (\case -- TODO: Make this more abstract and reusable
@@ -145,26 +170,26 @@ evalFile path = do
     Right file      -> do
       env <- eval (filter (not . null) $ lines file) []
       case evalFunc "main" env of
-        Nothing  -> putStrLn $ "main function not found"
+        Nothing  -> putStrLn $ "ERROR: main function not found"
         Just exp -> print exp
 
-compile :: String -> IO ()
-compile path = do
+compile :: String -> (a -> IO ()) -> (String -> a) -> IO ()
+compile path write conv = do
   file <- try $ readFile path :: IO (Either IOError String)
   case file of
     Left  exception -> print (exception :: IOError)
     Right file      -> do
       env <- eval (filter (not . null) $ lines file) []
       case lookup "main" env of
-        Nothing  -> putStrLn $ "main function not found"
-        Just exp -> putStrLn $ toBinary exp
+        Nothing  -> putStrLn $ "ERROR: main function not found"
+        Just exp -> write $ conv $ toBinary exp
 
-exec :: String -> IO ()
-exec path = do
-  file <- try $ readFile path :: IO (Either IOError String)
+exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
+exec path read conv = do
+  file <- read path
   case file of
     Left  exception -> print (exception :: IOError)
-    Right file      -> print $ reduce $ fromBinary file
+    Right file      -> print $ reduce $ fromBinary $ conv file
 
 repl :: Environment -> InputT IO ()
 repl env =
@@ -183,7 +208,11 @@ evalMain = do
   case args of
     [] -> runInputT defaultSettings { historyFile = Just ".bruijn-history" }
       $ repl []
-    ["-c", path] -> compile path -- TODO: -C: raw binary
-    ["-e", path] -> exec path -- TODO: -E: raw binary
-    [path]       -> evalFile path
-    _            -> usage
+    ["-c", path] ->
+      compile path (Byte.putStr . Bit.realizeBitStringStrict) toBitString
+    ["-C", path] -> compile path putStrLn id
+    ["-e", path] ->
+      exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
+    ["-E", path] -> exec path (try . readFile) id
+    ['-' : _]    -> usage
+    [path   ]    -> evalFile path

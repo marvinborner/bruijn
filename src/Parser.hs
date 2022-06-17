@@ -35,6 +35,9 @@ almostAnything :: Parser String
 almostAnything =
   many1 $ oneOf ".`#~@$%^&*_+-=|;',/?[]<>(){} " <|> letter <|> digit
 
+importPath :: Parser String
+importPath = many1 $ oneOf "./_+-" <|> letter <|> digit
+
 parseAbstraction :: Parser Expression
 parseAbstraction = do
   reservedOp "["
@@ -57,7 +60,7 @@ parseNumeral :: Parser Expression
 parseNumeral = do
   num <- number
   spaces
-  pure $ decimalToTernary num
+  pure $ decimalToBinary num
  where
   sign   = (char '-' >> return negate) <|> (char '+' >> return id)
   nat    = read <$> many1 digit
@@ -104,8 +107,21 @@ parseReplDefine = do
 parseComment :: Parser Instruction
 parseComment = string "#" >> Comment <$> almostAnything
 
-parseLoad :: Parser Instruction
-parseLoad = string ":load " >> Load <$> almostAnything
+parseImport :: Parser Instruction
+parseImport = do
+  string ":import "
+  spaces
+  path <- importPath
+  spaces
+  pure $ Import $ path ++ ".bruijn"
+
+parsePrint :: Parser Instruction
+parsePrint = do
+  string ":print "
+  spaces
+  exp <- parseExpression
+  spaces
+  pure $ Evaluate exp
 
 parseTest :: Parser Instruction
 parseTest = do
@@ -118,12 +134,17 @@ parseTest = do
   pure $ Test exp1 exp2
 
 parseLine :: Parser Instruction
-parseLine = try parseDefine <|> try parseComment <|> try parseTest
+parseLine =
+  try parseDefine
+    <|> try parseComment
+    <|> try parsePrint
+    <|> try parseImport
+    <|> try parseTest
 
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine
     <|> try parseComment
     <|> try parseEvaluate
-    <|> try parseLoad
+    <|> try parseImport
     <|> try parseTest

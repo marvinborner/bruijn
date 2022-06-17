@@ -6,6 +6,9 @@ import           Helper
 
 -- TODO: Research interaction nets and optimal reduction
 
+-- TODO: Eta-reduction: [f 0] => f
+--   (Abstraction f@_ (Bruijn 0)) = f
+
 (<+>) :: Expression -> Int -> Expression
 (<+>) (Bruijn x             ) n = if x > n then Bruijn (pred x) else Bruijn x
 (<+>) (Application exp1 exp2) n = Application (exp1 <+> n) (exp2 <+> n)

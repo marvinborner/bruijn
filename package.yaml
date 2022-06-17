@@ -1,10 +1,10 @@
 name:                bruijn
 version:             0.1.0.0
 github:              "githubuser/bruijn"
-license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2022 Author name here"
+license:             MIT
+author:              "Marvin Borner"
+maintainer:          "develop@marvinborner.de"
+copyright:           "2022 Marvin Borner"
 
 extra-source-files:
 - README.md
@@ -28,12 +28,14 @@ dependencies:
 - haskeline
 - parsec
 - containers
+- bytestring
+- bitstring
 
 library:
   source-dirs: src
 
 executables:
-  bruijn-exe:
+  bruijn:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
