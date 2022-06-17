@@ -5,71 +5,72 @@ module Parser
 
 import           Control.Monad                  ( ap )
 import           Data.Functor.Identity
+import           Data.Void
 import           Helper
-import           Text.Parsec             hiding ( parseTest )
-import           Text.Parsec.Language
-import qualified Text.Parsec.Token             as Token
+import           Text.Megaparsec         hiding ( parseTest )
+import           Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer    as L
 
-languageDef :: GenLanguageDef String u Identity
-languageDef = emptyDef { Token.commentLine     = "#"
-                       , Token.identStart      = letter <|> char '_'
-                       , Token.identLetter     = alphaNum <|> oneOf "?!'_"
-                       , Token.reservedOpNames = ["[", "]", "="]
-                       }
+type Parser = Parsec Void String
 
-type Parser = Parsec String ()
+sc :: Parser ()
+sc = L.space space1 empty empty
 
-lexer :: Token.GenTokenParser String u Identity
-lexer = Token.makeTokenParser languageDef
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: String -> Parser String
+symbol = L.symbol sc
 
 identifier :: Parser String
-identifier = Token.identifier lexer
-
-reservedOp :: String -> Parser ()
-reservedOp = Token.reservedOp lexer
+identifier = lexeme
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_"))
 
 parens :: Parser a -> Parser a
-parens = Token.parens lexer
+parens = between (symbol "(") (symbol ")")
 
 almostAnything :: Parser String
 almostAnything =
-  many1 $ oneOf ".`#~@$%^&*_+-=|;',/?[]<>(){} " <|> letter <|> digit
+  some $ oneOf ".`#~@$%^&*_+-=|;',/?[]<>(){} " <|> letterChar <|> digitChar
 
 importPath :: Parser String
-importPath = many1 $ oneOf "./_+-" <|> letter <|> digit
+importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
-  reservedOp "["
+  symbol "["
   exp <- parseExpression
-  reservedOp "]"
+  symbol "]"
   pure $ Abstraction exp
 
 parseApplication :: Parser Expression
 parseApplication = do
-  s <- sepBy1 parseSingleton spaces
+  s <- sepBy1 parseSingleton space
   pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
 parseBruijn = do
-  idx <- digit
-  spaces
+  idx <- digitChar
+  space
   pure $ Bruijn $ (read . pure) idx
 
 parseNumeral :: Parser Expression
 parseNumeral = do
   num <- number
-  spaces
+  space
   pure $ decimalToBinary num
  where
-  sign   = (char '-' >> return negate) <|> (char '+' >> return id)
-  nat    = read <$> many1 digit
+  sign :: Parser (Integer -> Integer)
+  sign = (char '-' >> return negate) <|> (char '+' >> return id)
+  nat :: Parser Integer
+  nat = read <$> some digitChar
+  number :: Parser Integer
   number = ap sign nat
 
 parseVariable :: Parser Expression
 parseVariable = do
   var <- identifier
-  spaces
+  space
   pure $ Variable var
 
 parseSingleton :: Parser Expression
@@ -82,9 +83,9 @@ parseSingleton =
 
 parseExpression :: Parser Expression
 parseExpression = do
-  spaces
+  space
   expr <- parseApplication <|> parseSingleton
-  spaces
+  space
   pure expr
 
 parseEvaluate :: Parser Instruction
@@ -93,15 +94,15 @@ parseEvaluate = Evaluate <$> parseExpression
 parseDefine :: Parser Instruction
 parseDefine = do
   var <- identifier
-  spaces
+  space
   Define var <$> parseExpression
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
   var <- identifier
-  spaces
-  reservedOp "="
-  spaces
+  space
+  symbol "="
+  space
   Define var <$> parseExpression
 
 parseComment :: Parser Instruction
@@ -110,26 +111,26 @@ parseComment = string "#" >> Comment <$> almostAnything
 parseImport :: Parser Instruction
 parseImport = do
   string ":import "
-  spaces
+  space
   path <- importPath
-  spaces
+  space
   pure $ Import $ path ++ ".bruijn"
 
 parsePrint :: Parser Instruction
 parsePrint = do
   string ":print "
-  spaces
+  space
   exp <- parseExpression
-  spaces
+  space
   pure $ Evaluate exp
 
 parseTest :: Parser Instruction
 parseTest = do
   string ":test "
   exp1 <- parseExpression
-  spaces
-  reservedOp "="
-  spaces
+  space
+  symbol "="
+  space
   exp2 <- parseExpression
   pure $ Test exp1 exp2
 

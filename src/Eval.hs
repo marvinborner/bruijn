@@ -15,7 +15,7 @@ import           System.Console.Haskeline
 import           System.Environment
 import           System.Exit
 import           System.IO
-import           Text.Parsec             hiding ( State
+import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
 
@@ -61,7 +61,7 @@ evalTest exp1 exp2 =
 eval :: [String] -> Environment -> IO Environment
 eval []          env = pure env
 eval (line : ls) env = case parse parseLine "FILE" line of
-  Left  err   -> print err >> pure env
+  Left  err   -> print (errorBundlePretty err) >> pure env
   Right instr -> case instr of
     Define name exp ->
       let (res, env') = evalDefine name exp `runState` env
@@ -116,7 +116,7 @@ evalFunc func env = do
 -- TODO: Generally improve eval code
 evalRepl :: String -> Environment -> InputT IO Environment
 evalRepl line env = case parse parseReplLine "REPL" line of
-  Left  err   -> outputStrLn (show err) >> pure env
+  Left  err   -> outputStrLn (errorBundlePretty err) >> pure env
   Right instr -> case instr of
     Define name exp ->
       let (res, env') = evalDefine name exp `runState` env

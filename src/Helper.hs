@@ -1,7 +1,6 @@
 module Helper where
 
 import           Control.Monad.State
-import           Text.Parsec             hiding ( State )
 
 data Error = UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
 instance Show Error where

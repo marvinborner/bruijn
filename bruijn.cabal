@@ -41,8 +41,8 @@ library
     , bytestring
     , containers
     , haskeline
+    , megaparsec
     , mtl
-    , parsec
   default-language: Haskell2010
 
 executable bruijn
@@ -61,8 +61,8 @@ executable bruijn
     , bytestring
     , containers
     , haskeline
+    , megaparsec
     , mtl
-    , parsec
   default-language: Haskell2010
 
 test-suite bruijn-test
@@ -82,6 +82,6 @@ test-suite bruijn-test
     , bytestring
     , containers
     , haskeline
+    , megaparsec
     , mtl
-    , parsec
   default-language: Haskell2010
