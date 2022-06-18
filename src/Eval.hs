@@ -19,6 +19,13 @@ import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
 
+loadFile :: String -> IO Environment
+loadFile path = do
+  file <- try $ readFile path :: IO (Either IOError String)
+  case file of
+    Left  exception -> print (exception :: IOError) >> pure []
+    Right file      -> eval (filter (not . null) $ lines file) [] False
+
 evalVar :: String -> Program (Failable Expression)
 evalVar var = state $ \e ->
   ( case lookup var e of
@@ -58,23 +65,19 @@ evalTest exp1 exp2 =
           Right exp1 -> fmap (Test exp1) <$> evalExp exp2
         )
 
-eval :: [String] -> Environment -> IO Environment
-eval []          env = pure env
-eval (line : ls) env = case parse parseLine "FILE" line of
-  Left  err   -> print (errorBundlePretty err) >> pure env
+eval :: [String] -> Environment -> Bool -> IO Environment
+eval []          env _      = pure env
+eval (line : ls) env isRepl = case parse lineParser "BRUIJN" line of
+  Left  err   -> putStrLn (errorBundlePretty err) >> pure env
   Right instr -> case instr of
     Define name exp ->
       let (res, env') = evalDefine name exp `runState` env
       in  case res of
-            Left  err -> print err >> eval ls env'
-            Right _   -> eval ls env'
-    Import path ->
-      liftIO
-        $   (try $ readFile path :: IO (Either IOError String))
-        >>= (\case -- TODO: Make this more abstract and reusable
-              Left exception -> print (exception :: IOError) >> pure env
-              Right file -> eval (filter (not . null) $ lines file) [] >>= pure
-            )
+            Left  err -> putStrLn (show err) >> eval ls env' isRepl
+            Right _   -> if isRepl
+              then (putStrLn $ name <> " = " <> show exp) >> pure env'
+              else eval ls env' isRepl
+    Import path -> loadFile path
     Evaluate exp ->
       let (res, env') = evalExp exp `runState` env
       in  putStrLn
@@ -90,7 +93,7 @@ eval (line : ls) env = case parse parseLine "FILE" line of
                     <> ")"
                   where reduced = reduce exp
               )
-            >> eval ls env
+            >> eval ls env isRepl
     Test exp1 exp2 ->
       let (res, _) = evalTest exp1 exp2 `runState` env
       in  case res of
@@ -104,85 +107,29 @@ eval (line : ls) env = case parse parseLine "FILE" line of
                   <> " != "
                   <> (show exp2)
                   )
-                >> eval ls env
-    _ -> eval ls env
+                >> eval ls env isRepl
+    _ -> eval ls env isRepl
+  where lineParser = if isRepl then parseReplLine else parseLine
 
 evalFunc :: String -> Environment -> Maybe Expression
 evalFunc func env = do
   exp <- lookup func env
   pure $ reduce exp
 
--- TODO: Less duplicate code (liftIO?)
--- TODO: Generally improve eval code
-evalRepl :: String -> Environment -> InputT IO Environment
-evalRepl line env = case parse parseReplLine "REPL" line of
-  Left  err   -> outputStrLn (errorBundlePretty err) >> pure env
-  Right instr -> case instr of
-    Define name exp ->
-      let (res, env') = evalDefine name exp `runState` env
-      in  case res of
-            Left  err -> outputStrLn (show err) >> pure env'
-            Right _   -> (outputStrLn $ name <> " = " <> show exp) >> pure env'
-    Evaluate exp ->
-      let (res, env') = evalExp exp `runState` env
-      in  outputStrLn
-              (case res of
-                Left err -> show err
-                Right exp ->
-                  "<> "
-                    <> (show exp)
-                    <> "\n*> "
-                    <> (show reduced)
-                    <> "\t("
-                    <> (show $ binaryToDecimal reduced)
-                    <> ")"
-                  where reduced = reduce exp
-              )
-            >> pure env
-    Import path ->
-      liftIO
-        $   (try $ readFile path :: IO (Either IOError String))
-        >>= (\case -- TODO: Make this more abstract and reusable
-              Left exception -> print (exception :: IOError) >> pure env
-              Right file -> eval (filter (not . null) $ lines file) [] >>= pure
-            )
-    Test exp1 exp2 ->
-      let (res, _) = evalTest exp1 exp2 `runState` env
-      in  case res of
-            Left err -> outputStrLn (show err) >> pure env
-            Right (Test exp1' exp2') ->
-              when
-                  (reduce exp1' /= reduce exp2')
-                  (  outputStrLn
-                  $  "ERROR: test failed: "
-                  <> (show exp1)
-                  <> " != "
-                  <> (show exp2)
-                  )
-                >> pure env
-    _ -> pure env
+repl :: Environment -> InputT IO ()
+repl env =
+  getInputLine "λ "
+    >>= (\case
+          Nothing   -> pure ()
+          Just line -> (lift $ eval [line] env True) >>= repl
+        )
 
-evalFile :: String -> IO ()
-evalFile path = do
-  file <- try $ readFile path :: IO (Either IOError String)
-  case file of
-    Left  exception -> print (exception :: IOError)
-    Right file      -> do
-      env <- eval (filter (not . null) $ lines file) []
-      case evalFunc "main" env of
-        Nothing  -> putStrLn $ "ERROR: main function not found"
-        Just exp -> print exp
-
-compile :: String -> (a -> IO ()) -> (String -> a) -> IO ()
-compile path write conv = do
-  file <- try $ readFile path :: IO (Either IOError String)
-  case file of
-    Left  exception -> print (exception :: IOError)
-    Right file      -> do
-      env <- eval (filter (not . null) $ lines file) []
-      case lookup "main" env of
-        Nothing  -> putStrLn $ "ERROR: main function not found"
-        Just exp -> write $ conv $ toBinary exp
+evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
+evalFile path write conv = do
+  env <- loadFile path
+  case evalFunc "main" env of
+    Nothing  -> putStrLn $ "ERROR: main function not found"
+    Just exp -> write $ conv exp
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path read conv = do
@@ -190,14 +137,6 @@ exec path read conv = do
   case file of
     Left  exception -> print (exception :: IOError)
     Right file      -> print $ reduce $ fromBinary $ conv file
-
-repl :: Environment -> InputT IO ()
-repl env =
-  getInputLine "λ "
-    >>= (\case
-          Nothing   -> pure ()
-          Just line -> evalRepl line env >>= repl
-        )
 
 usage :: IO ()
 usage = putStrLn "Invalid arguments. Use 'bruijn [file]' instead"
@@ -208,11 +147,12 @@ evalMain = do
   case args of
     [] -> runInputT defaultSettings { historyFile = Just ".bruijn-history" }
       $ repl []
-    ["-c", path] ->
-      compile path (Byte.putStr . Bit.realizeBitStringStrict) toBitString
-    ["-C", path] -> compile path putStrLn id
+    ["-c", path] -> evalFile path
+                             (Byte.putStr . Bit.realizeBitStringStrict)
+                             (toBitString . toBinary)
+    ["-C", path] -> evalFile path putStrLn toBinary
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
     ['-' : _]    -> usage
-    [path   ]    -> evalFile path
+    [path   ]    -> evalFile path print id
