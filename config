@@ -1,0 +1,15 @@
+bellStyle: NoBell
+maxHistorySize: Just 1000
+editMode: Vi
+completionType: MenuCompletion
+completionPaging: True
+completionPromptLimit: Just 100
+listCompletionsImmediately: True
+historyDuplicates: IgnoreConsecutive
+
+bind: { {  } left
+bind: ( (  ) left
+bind: [ [  ] left
+bind: } right
+bind: ] right
+bind: ) right

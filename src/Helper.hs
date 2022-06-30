@@ -15,10 +15,11 @@ data Expression = Bruijn Int | Variable String | Abstraction Expression | Applic
 data Instruction = Define String Expression | Evaluate Expression | Comment String | Import String | Test Expression Expression
   deriving (Show)
 instance Show Expression where
-  show (Bruijn      x        ) = show x
-  show (Variable    var      ) = var
-  show (Abstraction exp      ) = "[" <> show exp <> "]"
-  show (Application exp1 exp2) = "(" <> show exp1 <> " " <> show exp2 <> ")"
+  show (Bruijn      x  ) = "\ESC[31m" <> show x <> "\ESC[0m"
+  show (Variable    var) = "\ESC[35m" <> var <> "\ESC[0m"
+  show (Abstraction exp) = "\ESC[36m[\ESC[0m" <> show exp <> "\ESC[36m]\ESC[0m"
+  show (Application exp1 exp2) =
+    "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
 type Environment = [(String, Expression)]
 type Program = State Environment

@@ -137,6 +137,14 @@ of your operating system.
 Using Haskell Stack, run `stack run -- [args]` to play around and use
 `stack install` to install bruijn into your path.
 
+## REPL config
+
+You can configure the REPL by editing the `config` file. `stack install`
+or `stack run` will move the file into a data directory.
+
+More options can be found
+[here](https://github.com/judah/haskeline/wiki/UserPreferences).
+
 ## Usage
 
 Please read the usage information in the executable by using the `-h`
