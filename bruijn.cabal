@@ -16,7 +16,6 @@ license:        MIT
 build-type:     Simple
 extra-source-files:
     README.md
-    ChangeLog.md
 data-files:
     config
 
