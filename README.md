@@ -39,12 +39,12 @@ normal lambda calculus syntax with De Bruijn indices.
 
 You can use any function that you’ve previously defined. You can also
 overwrite previously defined functions. The environment gets interpreted
-from down to top.
+from bottom to top.
 
 The following are the main syntax specifications in the (minorly
 extended) [Backus-Naur
-form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form). Spaces
-are optional but allowed.
+form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
+Additional spaces are optional but allowed.
 
     <identifier>  ::= [a-ω,A-Ω,_][a-ω,A-Ω,0-9,?,!,',_]*
     <abstraction> ::= "[" <expression> "]"

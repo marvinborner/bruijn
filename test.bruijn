@@ -12,6 +12,20 @@ atom4 [[[[[0]]]]]
 :test [[0 1 0]] atom0 atom1 = atom1 atom0 atom1
 :test [[[[3 2 1 0]]]] atom0 atom1 atom2 atom3 = atom0 atom1 atom2 atom3
 
+# ===========
+# Combinators
+# ===========
+
+S [[[2 0 (1 0)]]]
+K [[1]]
+I [0]
+
+i [0 S K]
+
+:test I = i i
+:test K = i (i (i i))
+:test S = i (i (i (i i)))
+
 # ===============
 # Church numerals
 # ===============
