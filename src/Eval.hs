@@ -90,7 +90,10 @@ eval (line : ls) state@(EnvState env) isRepl =
                     then (putStrLn $ name <> " = " <> show exp)
                       >> return (EnvState env')
                     else eval ls (EnvState env') isRepl
-          Import path -> loadFile path
+          Import path -> do
+            lib    <- getDataFileName path -- TODO: Use actual lib directory
+            exists <- doesFileExist lib
+            loadFile $ if exists then lib else path
           Evaluate exp ->
             let (res, env') = evalExp exp `runState` env
             in  putStrLn

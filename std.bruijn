@@ -45,17 +45,17 @@ upZero [[[[1 (3 2 1 0)]]]]
 upOne [[[[0 (3 2 1 0)]]]]
 up [[[[[4 1 0 (3 2 1 0)]]]]]
 
-zero? [0 T I [F]]
+lsb [0 [[[0]]] [[[[0]]]] [[[[1]]]] [[[[0]]]]]
 
-binZero [[[2]]]
-binOne [[[0 2]]]
+# TODO: almost!
+zero? [0 [[[1]]] [[[[0]]]] [[[[0]]]] [[[[0]]]]]
 
-_succZ (pair binZero binOne)
+_succZ pair +0 +1
 _succA [0 [[pair (upZero 1) (upOne 1)]]]
 _succB [0 [[pair (upOne 1) (upZero 0)]]]
 succ [snd (0 _succZ _succA _succB)]
 
-_predZ (pair binZero binZero)
+_predZ pair +0 +1
 _predA [0 [[pair (upZero 1) (upOne 0)]]]
 _predB [0 [[pair (upOne 1) (upZero 1)]]]
 pred [snd (0 _predZ _predA _predB)]
