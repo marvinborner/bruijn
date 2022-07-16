@@ -58,7 +58,7 @@ parseNumeral :: Parser Expression
 parseNumeral = do
   num <- number
   space
-  pure $ decimalToBinary num
+  pure $ decimalToTernary num
  where
   sign :: Parser (Integer -> Integer)
   sign = (char '-' >> return negate) <|> (char '+' >> return id)

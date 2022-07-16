@@ -16,6 +16,7 @@ import           Paths_bruijn
 import           Reducer
 import           System.Console.Haskeline
 import           System.Console.Haskeline.Completion
+import           System.Directory
 import           System.Environment
 import           System.Exit
 import           System.IO
@@ -92,24 +93,27 @@ eval (line : ls) state@(EnvState env) isRepl =
                     else eval ls (EnvState env') isRepl
           Import path -> do
             lib    <- getDataFileName path -- TODO: Use actual lib directory
-            exists <- doesFileExist lib
+            exists <- pure False -- doesFileExist lib
             loadFile $ if exists then lib else path
           Evaluate exp ->
             let (res, env') = evalExp exp `runState` env
-            in  putStrLn
-                    (case res of
-                      Left err -> show err
-                      Right exp ->
-                        "<> "
-                          <> (show exp)
-                          <> "\n*> "
-                          <> (show reduced)
-                          <> "\t("
-                          <> (show $ binaryToDecimal reduced)
-                          <> ")"
-                        where reduced = reduce exp
-                    )
-                  >> eval ls state isRepl
+            in
+              putStrLn
+                  (case res of
+                    Left err -> show err
+                    Right exp ->
+                      "<> "
+                        <> (show exp)
+                        <> "\n*> "
+                        <> (show reduced)
+                        <> (if likeTernary reduced
+                             then
+                               "\t(" <> (show $ ternaryToDecimal reduced) <> ")"
+                             else ""
+                           )
+                      where reduced = reduce exp
+                  )
+                >> eval ls state isRepl
           Test exp1 exp2 ->
             let (res, _) = evalTest exp1 exp2 `runState` env
             in  case res of
@@ -201,3 +205,4 @@ evalMain = do
     ["-E", path] -> exec path (try . readFile) id
     ['-' : _]    -> usage
     [path   ]    -> evalFile path print id
+    _            -> usage

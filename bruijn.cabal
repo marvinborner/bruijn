@@ -18,6 +18,7 @@ extra-source-files:
     README.md
 data-files:
     config
+    std.bruijn
 
 source-repository head
   type: git
@@ -38,9 +39,11 @@ library
       LambdaCase
   build-depends:
       base >=4.7 && <5
+    , binary
     , bitstring
     , bytestring
     , containers
+    , directory
     , haskeline
     , megaparsec
     , mtl
@@ -57,10 +60,12 @@ executable bruijn
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
     , bitstring
     , bruijn
     , bytestring
     , containers
+    , directory
     , haskeline
     , megaparsec
     , mtl
@@ -78,10 +83,12 @@ test-suite bruijn-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
     , bitstring
     , bruijn
     , bytestring
     , containers
+    , directory
     , haskeline
     , megaparsec
     , mtl

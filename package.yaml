@@ -11,6 +11,7 @@ extra-source-files:
 
 data-files:
 - config
+- std.bruijn
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -30,8 +31,10 @@ dependencies:
 - haskeline
 - megaparsec
 - containers
+- directory
 - bytestring
 - bitstring
+- binary
 
 library:
   source-dirs: src

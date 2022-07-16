@@ -31,100 +31,137 @@ pair [[[0 2 1]]]
 fst [0 T]
 snd [0 F]
 
-# ===================================
-# Binary
-# According to works of T.Æ. Mogensen
-# ===================================
+:test fst (pair [[0]] [[1]]) = [[0]]
+:test snd (pair [[0]] [[1]]) = [[1]]
 
 # TODO: contract-like type-checking
 #       like: `+ ... : [[[[# 3]]]]`
-
-# TODO: Fix for negative 4x abstraction
-
-upZero [[[[1 (3 2 1 0)]]]]
-upOne [[[[0 (3 2 1 0)]]]]
-up [[[[[4 1 0 (3 2 1 0)]]]]]
-
-lsb [0 [[[0]]] [[[[0]]]] [[[[1]]]] [[[[0]]]]]
-
-# TODO: almost!
-zero? [0 [[[1]]] [[[[0]]]] [[[[0]]]] [[[[0]]]]]
-
-_succZ pair +0 +1
-_succA [0 [[pair (upZero 1) (upOne 1)]]]
-_succB [0 [[pair (upOne 1) (upZero 0)]]]
-succ [snd (0 _succZ _succA _succB)]
-
-_predZ pair +0 +1
-_predA [0 [[pair (upZero 1) (upOne 0)]]]
-_predB [0 [[pair (upOne 1) (upZero 1)]]]
-pred [snd (0 _predZ _predA _predB)]
 
 # ===================================
 # Ternary
 # According to works of T.Æ. Mogensen
 # ===================================
 
-# zero? [0 T [F] I [F]]
-# upNeg [[[[[2 (4 3 2 1 0)]]]]]
-# upZero [[[[[1 (4 3 2 1 0)]]]]]
-# upPos [[[[[0 (4 3 2 1 0)]]]]]
-# up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
-# 
-# negate [[[[[4 3 0 1 2]]]]]
-# 
-# tritNeg [[[2]]]
-# tritZero [[[1]]]
-# tritPos [[[0]]]
-# lst [0 tritZero [tritNeg] [tritZero] [tritPos]]
-# 
-# _stripZ pair +0 T
-# _stripANeg [0 [[pair (0 +0 (upNeg 1)) 0]]]
-# _stripAZero [0 [[pair (upZero 1) F]]]
-# _stripAPos [0 [[pair (upPos 1) F]]]
-# strip [fst (0 _stripZ _stripANeg _stripAZero _stripAPos)]
-# 
-# _succZ pair +0 +1
-# _succANeg [0 [[[pair (upNeg 2) (upZero 2)]]]]
-# _succAZero [0 [[[pair (upZero 2) (upPos 2)]]]]
-# _succAPos [0 [[[pair (upPos 2) (upNeg 1)]]]]
-# succ [snd (0 _succZ _succANeg _succAZero _succAPos)]
-# 
-# _predZ pair +0 -1
-# _predANeg [0 [[[pair (upNeg 2) (upPos 1)]]]]
-# _predAZero [0 [[[pair (upZero 2) (upNeg 2)]]]]
-# _predAPos [0 [[[pair (upPos 2) (upZero 2)]]]]
-# pred [snd (0 _predZ _predANeg _predAZero _predAPos)]
-# 
-# _absNeg [[[[[2 4]]]]]
-# _absZero [[[[[1 4]]]]]
-# _absPos [[[[[0 4]]]]]
-# abstractify [0 [[[[3]]]] _absNeg _absZero _absPos]
-# 
-# _normalize [[0 [ +0 ] [[upNeg (1 1 0)]] [[upZero (1 1 0)]] [[upPos (1 1 0)]] 1]]
-# normalize ω _normalize
-# 
-# _eqZero? [zero? (normalize 0)]
-# _eqNeg [[0 F [2 0] [F] [F]]]
-# _eqZero [[0 (1 0) [F] [2 0] [F]]]
-# _eqPos [[0 F [F] [F] [2 0]]]
-# _eqAbs [0 _eqZero? _eqNeg _eqZero _eqPos]
-# eq [[_eqAbs 1 (abstractify 0)]]
-# 
-# _addZ [[0 (pred (normalize 1)) (normalize 1) (succ (normalize 1))]]
-# _addC [[1 0 tritZero]]
-# _addBNeg2 [1 (upZero (3 0 tritNeg)) (upPos (3 0 tritNeg)) (upNeg (3 0 tritZero))]
-# _addBNeg [1 (upPos (3 0 tritNeg)) (upNeg (3 0 tritZero)) (upZero (3 0 tritZero))]
-# _addBZero [up 1 (3 0 tritZero)]
-# _addBPos [1 (upZero (3 0 tritZero)) (upPos (3 0 tritZero)) (upNeg (3 0 tritPos))]
-# _addBPos2 [1 (upPos (3 0 tritZero)) (upNeg (3 0 tritPos)) (upZero (3 0 tritPos))]
-# _addANeg [[[1 (_addBNeg 1) _addBNeg2 _addBNeg _addBZero]]]
-# _addAZero [[[1 (_addBZero 1) _addBNeg _addBZero _addBPos]]]
-# _addAPos [[[1 (_addBPos 1) _addBZero _addBPos _addBPos2]]]
-# _addAbs [_addC (0 _addZ _addANeg _addAZero _addAPos)]
-# add [[_addAbs 1 (abstractify 0)]]
-# 
-# sub [[add 1 (negate 0)]]
+zero? [0 T [F] [F] I]
+:test zero? +0 = T
+:test zero? -1 = F
+:test zero? +1 = F
+:test zero? +42 = F
+
+upNeg [[[[[2 (4 3 2 1 0)]]]]]
+:test upNeg +0 = -1
+:test upNeg -1 = -4
+:test upNeg +42 = +125
+
+upPos [[[[[1 (4 3 2 1 0)]]]]]
+:test upPos +0 = +1
+:test upPos -1 = -2
+:test upPos +42 = +127
+
+upZero [[[[[0 (4 3 2 1 0)]]]]]
+:test upZero +0 = [[[[0 3]]]]
+:test upZero +1 = +3
+:test upZero +42 = +126
+
+up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
+# TODO: up is incorrect
+
+negate [[[[[4 3 1 2 0]]]]]
+:test negate +0 = +0
+:test negate -1 = +1
+:test negate +42 = -42
+
+tritNeg [[[2]]]
+tritPos [[[1]]]
+tritZero [[[0]]]
+lst [0 tritZero [tritNeg] [tritPos] [tritZero]]
+:test lst +0 = tritZero
+:test lst -1 = tritNeg
+:test lst +1 = tritPos
+:test lst +42 = tritZero
+
+_stripZ pair +0 T
+_stripANeg [0 [[pair (upNeg 1) F]]]
+_stripAPos [0 [[pair (upPos 1) F]]]
+_stripAZero [0 [[pair (0 +0 (upZero 1)) 0]]]
+strip [fst (0 _stripZ _stripANeg _stripAPos _stripAZero)]
+:test strip [[[[0 3]]]] = +0
+:test strip [[[[2 (0 (0 (0 (0 3))))]]]] = -1
+:test strip +42 = +42
+
+# I believe Mogensen's Paper has an error in its succ/pred definitions.
+# They use 3 abstractions in the _succ* functions, also we use switched +/0
+# in comparison to their implementation, yet the order of neg/pos/zero is
+# the same. Something's weird.
+
+_succZ pair +0 +1
+_succNeg [0 [[pair (upNeg 1) (upZero 1)]]]
+_succZero [0 [[pair (upZero 1) (upPos 1)]]]
+_succPos [0 [[pair (upPos 1) (upNeg 0)]]]
+succ [snd (0 _succZ _succNeg _succPos _succZero)]
+ssucc [strip (succ 0)]
+:test succ -42 = -41
+:test ssucc -1 = +0
+:test succ +0 = +1
+:test succ (succ (succ (succ (succ +0)))) = +5
+:test succ +42 = +43
+
+_predZ pair +0 -1
+_predNeg [0 [[pair (upNeg 1) (upPos 0)]]]
+_predZero [0 [[pair (upZero 1) (upNeg 1)]]]
+_predPos [0 [[pair (upPos 1) (upZero 1)]]]
+pred [snd (0 _predZ _predNeg _predPos _predZero)]
+spred [strip (pred 0)]
+:test pred -42 = -43
+:test pred +0 = -1
+:test spred (pred (pred (pred (pred +5)))) = +0
+:test spred +1 = +0
+:test pred +42 = +41
+
+_absNeg [[[[[2 4]]]]]
+_absPos [[[[[1 4]]]]]
+_absZero [[[[[0 4]]]]]
+abstractify [0 [[[[3]]]] _absNeg _absPos _absZero]
+:test abstractify -3 = [[[[0 [[[[2 [[[[3]]]]]]]]]]]]
+:test abstractify +0 = [[[[3]]]]
+:test abstractify +3 = [[[[0 [[[[1 [[[[3]]]]]]]]]]]]
+
+# solving recursion using Y/ω
+_normalize [[0 +0 [upNeg ([3 3 0] 0)] [upPos ([3 3 0] 0)] [upZero ([3 3 0] 0)]]]
+normalize ω _normalize
+:test normalize [[[[3]]]] = +0
+:test normalize (abstractify +42) = +42
+:test normalize (abstractify -42) = -42
+
+_eqZ [zero? (normalize 0)]
+_eqNeg [[0 F [2 0] [F] [F]]]
+_eqPos [[0 F [F] [2 0] [F]]]
+_eqZero [[0 (1 0) [F] [F] [2 0]]]
+_eqAbs [0 _eqZ _eqNeg _eqPos _eqZero]
+eq [[_eqAbs 1 (abstractify 0)]]
+:test eq -42 -42 = T
+:test eq -1 -1 = T
+:test eq -1 +0 = F
+:test eq +0 +0 = T
+:test eq +1 +0 = F
+:test eq +1 +1 = T
+:test eq +42 +42 = T
+
+# TODO: Much zero/one switching needed
+_addZ [[0 (pred (normalize 1)) (normalize 1) (succ (normalize 1))]]
+_addC [[1 0 tritZero]]
+_addBNeg2 [1 (upZero (3 0 tritNeg)) (upPos (3 0 tritNeg)) (upNeg (3 0 tritZero))]
+_addBNeg [1 (upPos (3 0 tritNeg)) (upNeg (3 0 tritZero)) (upZero (3 0 tritZero))]
+_addBZero [up 1 (3 0 tritZero)]
+_addBPos [1 (upZero (3 0 tritZero)) (upPos (3 0 tritZero)) (upNeg (3 0 tritPos))]
+_addBPos2 [1 (upPos (3 0 tritZero)) (upNeg (3 0 tritPos)) (upZero (3 0 tritPos))]
+_addANeg [[[1 (_addBNeg 1) _addBNeg2 _addBNeg _addBZero]]]
+_addAZero [[[1 (_addBZero 1) _addBNeg _addBZero _addBPos]]]
+_addAPos [[[1 (_addBPos 1) _addBZero _addBPos _addBPos2]]]
+_addAbs [_addC (0 _addZ _addANeg _addAZero _addAPos)]
+add [[_addAbs 1 (abstractify 0)]]
+
+sub [[add 1 (negate 0)]]
 
 # ===============
 # Boolean algebra
