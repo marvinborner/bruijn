@@ -3,6 +3,8 @@
 A purely academic programming language based on lambda calculus and De
 Bruijn indices written in Haskell.
 
+[Jump to examples](#Examples)
+
 ## Features
 
 -   De Bruijn indices\[0\] eliminate the complexity of α-equivalence and
@@ -34,19 +36,19 @@ You can read more about De Bruijn indices on
 
 ### Syntax
 
-In general the syntax is pretty similar to the previously presented
-normal lambda calculus syntax with De Bruijn indices.
+In general the syntax of bruijn is pretty similar to the previously
+presented normal lambda calculus syntax with De Bruijn indices.
 
 You can use any function that you’ve previously defined. You can also
 overwrite previously defined functions. The environment gets interpreted
-from bottom to top.
+from bottom to top (starting at `main`).
 
 The following are the main syntax specifications in the (minorly
 extended) [Backus-Naur
 form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
 Additional spaces are optional but allowed.
 
-    <identifier>  ::= [a-ω,A-Ω,_][a-ω,A-Ω,0-9,?,!,',_]*
+    <identifier>  ::= [a-ω,A-Ω,_][a-ω,A-Ω,0-9,?,!,',-]*
     <abstraction> ::= "[" <expression> "]"
     <numeral>     ::= ("+" | "-")[0-9]+
     <bruijn>      ::= [0-9]
@@ -73,6 +75,19 @@ mandatory.
     <definition> ::= <identifier> = <expression>
     <line>       ::= <definition> | <expression> | <comment> | <import> | <test> | "\n"
 
+### Numerals
+
+Numbers in bruijn always have a sign in front of them or else they will
+be mistaken for De Bruijn indices. Generally the decimal representation
+is only syntactic sugar for its internal balanced ternary
+representation. We use balanced ternary because it’s a great compromise
+between performance and size (according to \[1\]).
+
+You don’t have to care about the internal side too much though, if you
+use the included operations from the standard library. The REPL even
+tries its best at displaying expressions that look like ternary numbers
+as decimal numbers in paranthesis next to it.
+
 ### Standard library
 
 You may want to use the included standard library to reach your
@@ -83,7 +98,19 @@ You can import it from `std.bruijn` using `:import std`.
 
 ### Examples
 
-Plain execution
+You can try these by experimenting in the REPL or by running them as a
+file. Note, however, that you need an equal sign between the function
+name and its definition if you’re using the REPL.
+
+Plain execution:
+
+    # this is a comment
+    # we now define a function returning a ternary 1
+    get-one +1
+
+    # we can use the function in all functions below its definition
+    get-one2 get-one
+    :test get-one2 = +1
 
     # equivalent of λx.x
     id [0]
@@ -91,29 +118,42 @@ Plain execution
     # equivalent of (λx.x) (λx.λy.x) = λx.λy.x
     :test id [[1]] = [[1]]
 
+    # multiple arguments
+    set-of-three [[[[0 1 2 3]]]]
+    number-set set-of-three +1 +2 +3
+    access-first [0 [[[0]]]]
+    :test access-first number-set = +1
+
     # endless loop using omega combinator
     om [0 0]
     nom om
     main om nom
 
-Using standard library
+    # you may have realized you can't easily operate with numbers
+    # or anything else really without writing crazy functions
+    # -> luckily the standard library defines many standard operations!
+
+Using standard library:
 
     :import std
 
-    # equivalent of (λx.x) (λx.λy.x) = λx.λy.x
-    outer id [[1]]
-    :test outer = [[1]]
-
-    # pairs
+    # pairs with some values
     me [[[1]]]
     you [[[2]]]
     love pair me you
     :test fst love = me
     :test snd love = you
 
+    # numerical operations
+    five pred (sub (add +8 -4) -2)
+    not-five? [if (eq? 0 +5) false true]
+    :test not-five? five = false
+
     # boolean
     main not (or (and false true) true)
     :test main = [0]
+
+    # read the std.bruijn file for an overview of all functions
 
 ### Compilation to BLC
 

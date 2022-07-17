@@ -12,6 +12,15 @@ atom4 [[[[[0]]]]]
 :test [[0 1 0]] atom0 atom1 = atom1 atom0 atom1
 :test [[[[3 2 1 0]]]] atom0 atom1 atom2 atom3 = atom0 atom1 atom2 atom3
 
+# ===============
+# Random examples
+# ===============
+
+set-of-three [[[[0 1 2 3]]]]
+number-set set-of-three +1 +2 +3
+access-first [0 [[[0]]]]
+:test access-first number-set = +1
+
 # ===========
 # Combinators
 # ===========
@@ -30,55 +39,55 @@ i [0 S K]
 # Church numerals
 # ===============
 
-chrch_n0 [[0]]
-chrch_n1 [[1 0]]
-chrch_n2 [[1 (1 0)]]
-chrch_n3 [[1 (1 (1 0))]]
-chrch_n4 [[1 (1 (1 (1 0)))]]
-chrch_n5 [[1 (1 (1 (1 (1 0))))]]
-chrch_n6 [[1 (1 (1 (1 (1 (1 0)))))]]
-chrch_n7 [[1 (1 (1 (1 (1 (1 (1 0))))))]]
-chrch_n8 [[1 (1 (1 (1 (1 (1 (1 (1 0)))))))]]
-chrch_n9 [[1 (1 (1 (1 (1 (1 (1 (1 (1 0))))))))]]
-chrch_add [[[[3 1 (2 1 0)]]]]
-chrch_mul [[[2 (1 0)]]]
-chrch_pow [[0 1]]
+church-n0 [[0]]
+church-n1 [[1 0]]
+church-n2 [[1 (1 0)]]
+church-n3 [[1 (1 (1 0))]]
+church-n4 [[1 (1 (1 (1 0)))]]
+church-n5 [[1 (1 (1 (1 (1 0))))]]
+church-n6 [[1 (1 (1 (1 (1 (1 0)))))]]
+church-n7 [[1 (1 (1 (1 (1 (1 (1 0))))))]]
+church-n8 [[1 (1 (1 (1 (1 (1 (1 (1 0)))))))]]
+church-n9 [[1 (1 (1 (1 (1 (1 (1 (1 (1 0))))))))]]
+church-add [[[[3 1 (2 1 0)]]]]
+church-mul [[[2 (1 0)]]]
+church-pow [[0 1]]
 
-:test chrch_add chrch_n2 chrch_n3 = chrch_n5
-:test chrch_mul chrch_n2 chrch_n3 = chrch_n6
-:test chrch_pow chrch_n2 chrch_n3 = chrch_n8
+:test church-add church-n2 church-n3 = church-n5
+:test church-mul church-n2 church-n3 = church-n6
+:test church-pow church-n2 church-n3 = church-n8
 
 # ==================
 # Lennart
 # From Lambda-n-ways
 # ==================
 
-lnnrt_true [[0]]
-lnnrt_false [[1]]
-lnnrt_if [[[2 0 1]]]
-lnnrt_zero [[1]]
-lnnrt_succ [[[0 2]]]
-lnnrt_one lnnrt_succ lnnrt_zero
-lnnrt_two lnnrt_succ lnnrt_one
-lnnrt_three lnnrt_succ lnnrt_two
-lnnrt_const [[1]]
-lnnrt_pair [[[0 2 1]]]
-lnnrt_fst [[1 0 [[1]]]]
-lnnrt_snd [[1 0 [[0]]]]
-lnnrt_fix [[1 (0 0)] [1 (0 0)]]
-lnnrt_add lnnrt_fix [[[1 0 [lnnrt_succ (3 0 1)]]]]
-lnnrt_mul lnnrt_fix [[[1 lnnrt_zero [lnnrt_add 1 (3 0 1)]]]]
-lnnrt_fac lnnrt_fix [[0 lnnrt_one [lnnrt_mul 1 (2 0)]]]
-lnnrt_eqnat lnnrt_fix [[[1 (0 lnnrt_true (lnnrt_const lnnrt_false)) [1 lnnrt_false [4 1 0]]]]]
-lnnrt_sumto lnnrt_fix [[0 lnnrt_zero [lnnrt_add 1 (2 0)]]]
-lnnrt_n5 lnnrt_add lnnrt_two lnnrt_three
-lnnrt_n6 lnnrt_add lnnrt_three lnnrt_three
-lnnrt_n17 lnnrt_add lnnrt_n6 (lnnrt_add lnnrt_n6 lnnrt_n5)
-lnnrt_n37 lnnrt_succ (lnnrt_mul lnnrt_n6 lnnrt_n6)
-lnnrt_n703 lnnrt_sumto lnnrt_n37
-lnnrt_n720 lnnrt_fac lnnrt_n6
+lnnrt-true [[0]]
+lnnrt-false [[1]]
+lnnrt-if [[[2 0 1]]]
+lnnrt-zero [[1]]
+lnnrt-succ [[[0 2]]]
+lnnrt-one lnnrt-succ lnnrt-zero
+lnnrt-two lnnrt-succ lnnrt-one
+lnnrt-three lnnrt-succ lnnrt-two
+lnnrt-const [[1]]
+lnnrt-pair [[[0 2 1]]]
+lnnrt-fst [[1 0 [[1]]]]
+lnnrt-snd [[1 0 [[0]]]]
+lnnrt-fix [[1 (0 0)] [1 (0 0)]]
+lnnrt-add lnnrt-fix [[[1 0 [lnnrt-succ (3 0 1)]]]]
+lnnrt-mul lnnrt-fix [[[1 lnnrt-zero [lnnrt-add 1 (3 0 1)]]]]
+lnnrt-fac lnnrt-fix [[0 lnnrt-one [lnnrt-mul 1 (2 0)]]]
+lnnrt-eqnat lnnrt-fix [[[1 (0 lnnrt-true (lnnrt-const lnnrt-false)) [1 lnnrt-false [4 1 0]]]]]
+lnnrt-sumto lnnrt-fix [[0 lnnrt-zero [lnnrt-add 1 (2 0)]]]
+lnnrt-n5 lnnrt-add lnnrt-two lnnrt-three
+lnnrt-n6 lnnrt-add lnnrt-three lnnrt-three
+lnnrt-n17 lnnrt-add lnnrt-n6 (lnnrt-add lnnrt-n6 lnnrt-n5)
+lnnrt-n37 lnnrt-succ (lnnrt-mul lnnrt-n6 lnnrt-n6)
+lnnrt-n703 lnnrt-sumto lnnrt-n37
+lnnrt-n720 lnnrt-fac lnnrt-n6
 
 # this test can take a minute, comment it if you're in a hurry
-:test lnnrt_eqnat lnnrt_n720 (lnnrt_add lnnrt_n703 lnnrt_n17) = lnnrt_true
+:test lnnrt-eqnat lnnrt-n720 (lnnrt-add lnnrt-n703 lnnrt-n17) = lnnrt-true
 
 main [[1]]

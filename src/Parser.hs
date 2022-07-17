@@ -24,7 +24,7 @@ symbol = L.symbol sc
 
 identifier :: Parser String
 identifier = lexeme
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_"))
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
