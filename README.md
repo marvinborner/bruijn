@@ -151,7 +151,7 @@ Using standard library:
 
     # boolean
     main not (or (and false true) true)
-    :test main = [0]
+    :test main = false
 
     # read the std.bruijn file for an overview of all functions
 
