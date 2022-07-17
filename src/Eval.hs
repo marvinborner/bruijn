@@ -19,6 +19,7 @@ import           System.Console.Haskeline.Completion
 import           System.Directory
 import           System.Environment
 import           System.Exit
+import           System.FilePath.Posix          ( takeBaseName )
 import           System.IO
 import           Text.Megaparsec         hiding ( State
                                                 , try
@@ -29,6 +30,7 @@ data EnvState = EnvState
   }
 type M = StrictState.StateT EnvState IO
 
+-- TODO: Force naming convention for namespaces/files
 loadFile :: String -> IO EnvState
 loadFile path = do
   file <- try $ readFile path :: IO (Either IOError String)
@@ -75,8 +77,8 @@ evalTest exp1 exp2 =
         )
 
 eval :: [String] -> EnvState -> Bool -> IO EnvState
-eval []   state@(EnvState env) _ = return state
-eval [""] state@(EnvState env) _ = return state
+eval []   state _ = return state
+eval [""] state _ = return state
 eval (line : ls) state@(EnvState env) isRepl =
   handleInterrupt (putStrLn "<aborted>" >> return state)
     $ case parse lineParser "" line of
@@ -91,10 +93,17 @@ eval (line : ls) state@(EnvState env) isRepl =
                     then (putStrLn $ name <> " = " <> show exp)
                       >> return (EnvState env')
                     else eval ls (EnvState env') isRepl
-          Import path -> do
-            lib    <- getDataFileName path -- TODO: Use actual lib directory
-            exists <- doesFileExist lib
-            loadFile $ if exists then lib else path
+          -- TODO: Import loop detection
+          -- TODO: Don't import subimports into main env
+          Import path namespace -> do
+            lib           <- getDataFileName path -- TODO: Use actual lib directory
+            exists        <- doesFileExist lib
+            EnvState env' <- loadFile $ if exists then lib else path
+            let prefix | null namespace   = takeBaseName path ++ "."
+                       | namespace == "." = ""
+                       | otherwise        = namespace ++ "."
+            env' <- pure $ map (\(n, e) -> (prefix ++ n, e)) env'
+            eval ls (EnvState $ env <> env') isRepl
           Evaluate exp ->
             let (res, env') = evalExp exp `runState` env
             in

@@ -13,12 +13,19 @@ author:         Marvin Borner
 maintainer:     develop@marvinborner.de
 copyright:      2022 Marvin Borner
 license:        MIT
+license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
 data-files:
     config
-    std.bruijn
+    std/Boolean.bruijn
+    std/Church.bruijn
+    std/Combinator.bruijn
+    std/Number.bruijn
+    std/Option.bruijn
+    std/Pair.bruijn
+    std/Result.bruijn
 
 source-repository head
   type: git
@@ -44,6 +51,7 @@ library
     , bytestring
     , containers
     , directory
+    , filepath
     , haskeline
     , megaparsec
     , mtl
@@ -66,6 +74,7 @@ executable bruijn
     , bytestring
     , containers
     , directory
+    , filepath
     , haskeline
     , megaparsec
     , mtl
@@ -89,6 +98,7 @@ test-suite bruijn-test
     , bytestring
     , containers
     , directory
+    , filepath
     , haskeline
     , megaparsec
     , mtl

@@ -1,0 +1,22 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+S [[[2 0 (1 0)]]]
+K [[1]]
+I [0]
+B [[[2 (1 0)]]]
+C [[[2 0 1]]]
+W [[1 0 0]]
+T [[1]]
+F [[0]]
+ω [0 0]
+Ω ω ω
+Y [[1 (0 0)] [1 (0 0)]]
+Θ [[0 (1 1 0)]] [[0 (1 1 0)]]
+i [0 S K]
+
+:test I = i i
+:test K = i (i (i i))
+:test S = i (i (i (i i)))
+:test B = S (K S) K
+:test C = S (S (K (S (K S) K)) S) (K K)
+:test W = S S (S K)

@@ -22,9 +22,21 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser String
 symbol = L.symbol sc
 
+-- def identifier disallows the import prefix dots
+defIdentifier :: Parser String
+defIdentifier = lexeme
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
+
+-- TODO: write as extension to defIdentifier
 identifier :: Parser String
 identifier = lexeme
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-."))
+
+namespace :: Parser String
+namespace =
+  lexeme ((:) <$> upperChar <*> many letterChar)
+    <|> string "."
+    <|> (space >> return "")
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
@@ -93,13 +105,13 @@ parseEvaluate = Evaluate <$> parseExpression
 
 parseDefine :: Parser Instruction
 parseDefine = do
-  var <- identifier
+  var <- defIdentifier
   space
   Define var <$> parseExpression
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
-  var <- identifier
+  var <- defIdentifier
   space
   symbol "="
   space
@@ -114,7 +126,9 @@ parseImport = do
   space
   path <- importPath
   space
-  pure $ Import $ path ++ ".bruijn"
+  ns <- namespace
+  space
+  pure $ Import (path ++ ".bruijn") ns
 
 parsePrint :: Parser Instruction
 parsePrint = do

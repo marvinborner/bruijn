@@ -1,47 +1,8 @@
-# ==================
-# Common combinators
-# ==================
-
-S [[[2 0 (1 0)]]]
-K [[1]]
-I [0]
-B [[[2 (1 0)]]]
-C [[[2 0 1]]]
-T [[1]]
-F [[0]]
-ω [0 0]
-Ω ω ω
-Y [[1 (0 0)] [1 (0 0)]]
-Θ [[0 (1 1 0)]] [[0 (1 1 0)]]
-i [0 S K]
-
-:test I = i i
-:test K = i (i (i i))
-:test S = i (i (i (i i)))
-
-# =====
-# Pairs
-# =====
-
-# pairs two expressions into one
-pair [[[0 2 1]]]
-
-# extracts first expression from pair
-fst [0 T]
-:test fst (pair [[0]] [[1]]) = [[0]]
-
-# extracts second expression from pair
-snd [0 F]
-:test snd (pair [[0]] [[1]]) = [[1]]
-
-# TODO: investigate currying and chaining functions
-#       -> WHNF things?
-# chain [[[2 (1 0)]]]
-
-# ===================================
-# Ternary
+# MIT License, Copyright (c) 2022 Marvin Borner
 # According to works of T.Æ. Mogensen
-# ===================================
+
+:import std/Combinator .
+:import std/Pair .
 
 # checks whether balanced ternary number is zero
 zero? [0 T [F] [F] I]
@@ -209,25 +170,4 @@ smul [[strip (mul 1 0)]]
 :test eq? (mul +3 +11) +33 = T
 :test eq? (mul +42 -4) -168 = T
 
-# ===============
-# Boolean algebra
-# ===============
 
-not [0 F T]
-and [[1 0 F]]
-or [[1 T 0]]
-xor [[1 (not 0) 0]]
-if [[[2 1 0]]]
-:test not (or (and false true) true) = false
-
-# ===============
-# Church numerals
-# ===============
-
-church-zero [[0]]
-church-succ [[[1 (2 1 0)]]]
-church-add [[[[3 1 (2 1 0)]]]]
-church-mul [[[2 (1 0)]]]
-church-exp [[0 1]]
-
-main [[[0 2 1]]]

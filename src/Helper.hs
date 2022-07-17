@@ -12,7 +12,7 @@ type Failable = Either Error
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression | Evaluate Expression | Comment String | Import String | Test Expression Expression
+data Instruction = Define String Expression | Evaluate Expression | Comment String | Import String String | Test Expression Expression
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x  ) = "\ESC[31m" <> show x <> "\ESC[0m"

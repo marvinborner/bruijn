@@ -17,8 +17,8 @@ Bruijn indices written in Haskell.
 -   Highly space-efficient compilation to binary lambda calculus
     (BLC)\[2\]\[3\] additionally to normal interpretation and REPL
 -   Recursion can be implemented using combinators such as Y or ω
--   Included standard library featuring many useful functions
-    (`std.bruijn`)
+-   Included standard library featuring many useful functions (see
+    `std/`)
 
 ## Basics
 
@@ -49,14 +49,15 @@ form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
 Additional spaces are optional but allowed.
 
     <identifier>  ::= [a-ω,A-Ω,_][a-ω,A-Ω,0-9,?,!,',-]*
+    <namespace>   ::= [A-Ω][a-ω,A-Ω]+
     <abstraction> ::= "[" <expression> "]"
     <numeral>     ::= ("+" | "-")[0-9]+
     <bruijn>      ::= [0-9]
-    <singleton>   ::= <bruijn> | <numeral> | <abstraction> | "(" <application> ")" | <identifier>
+    <singleton>   ::= <bruijn> | <numeral> | <abstraction> | "(" <application> ")" | [namespace.]<identifier>
     <application> ::= <singleton> <singleton>
     <expression>  ::= <application> | <singleton>
     <test>        ::= ":test " <expression> = <expression>
-    <import>      ::= ":import " <path>
+    <import>      ::= ":import " <path> [namespace]
     <comment>     ::= "# " <letter>*
 
 The following are the differences in syntax between REPL and file:
@@ -94,7 +95,9 @@ You may want to use the included standard library to reach your
 program’s full potential. It includes many common combinators as well as
 functions for numerical, boolean and IO operations and much more.
 
-You can import it from `std.bruijn` using `:import std`.
+For example, you can import the standard library for numbers using
+`:import std/Number`. You can find all available libraries in the `std/`
+directory.
 
 ### Examples
 
@@ -135,7 +138,11 @@ Plain execution:
 
 Using standard library:
 
-    :import std
+    :import std/Boolean .
+    :import std/Combinator .
+    :import std/Number .
+    :import std/Option .
+    :import std/Pair .
 
     # pairs with some values
     me [[[1]]]
@@ -144,16 +151,22 @@ Using standard library:
     :test fst love = me
     :test snd love = you
 
+    # options
+    :test map succ (some +1) = some +2
+    :test apply (some +1) [some (succ 0)] = some +2
+
     # numerical operations
     five pred (sub (add +8 -4) -2)
-    not-five? [if (eq? 0 +5) false true]
-    :test not-five? five = false
+    not-five? [if (eq? 0 +5) F T]
+    :test not-five? five = F
+
+    :test eq? (uncurry mul (pair +3 +2)) = +6
 
     # boolean
-    main not (or (and false true) true)
-    :test main = false
+    main not (or (and F T) T)
+    :test main = F
 
-    # read the std.bruijn file for an overview of all functions
+    # read the files in std/ for an overview of all functions/libraries
 
 ### Compilation to BLC
 

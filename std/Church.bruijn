@@ -1,0 +1,7 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+church-zero [[0]]
+church-succ [[[1 (2 1 0)]]]
+church-add [[[[3 1 (2 1 0)]]]]
+church-mul [[[2 (1 0)]]]
+church-exp [[0 1]]

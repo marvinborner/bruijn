@@ -1,0 +1,21 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+:import std/Combinator .
+
+# encapsulates a value in ok
+ok [[[1 2]]]
+:test ok [[0]] = [[1 [[0]]]]
+
+# encapsulates a value in err
+err [[[0 2]]]
+:test err [[0]] = [[0 [[0]]]]
+
+# checks whether result is ok
+ok? [0 [T] [F]]
+:test ok? (ok [[0]]) = T
+:test ok? (err [[0]]) = F
+
+# checks whether result is not ok
+err? [0 [F] [T]]
+:test err? (ok [[0]]) = F
+:test err? (err [[0]]) = T
