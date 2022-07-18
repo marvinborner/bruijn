@@ -198,7 +198,14 @@ runRepl = do
   return code
 
 usage :: IO ()
-usage = putStrLn "Invalid arguments. Use 'bruijn [file]' instead"
+usage = do
+  putStrLn "Invalid arguments. Use 'bruijn [option] path' instead"
+  putStrLn "-c\tcompile path to binary-BLC"
+  putStrLn "-C\tcompile path to ASCII-BLC"
+  putStrLn "-e\texecute path as binary-BLC"
+  putStrLn "-E\texecute path as ASCII-BLC"
+  putStrLn "-*\tshow this help"
+  putStrLn "<default>\texecute path as text-bruijn"
 
 evalMain :: IO ()
 evalMain = do
