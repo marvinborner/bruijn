@@ -169,5 +169,3 @@ smul [[strip (mul 1 0)]]
 :test eq? (mul -1 +42) -42 = T
 :test eq? (mul +3 +11) +33 = T
 :test eq? (mul +42 -4) -168 = T
-
-

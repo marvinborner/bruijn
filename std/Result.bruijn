@@ -1,6 +1,7 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/Combinator .
+:import std/Option .
 
 # encapsulates a value in ok
 ok [[[1 2]]]
@@ -19,3 +20,33 @@ ok? [0 [T] [F]]
 err? [0 [F] [T]]
 :test err? (ok [[0]]) = F
 :test err? (err [[0]]) = T
+
+# encapsulates result ok value in a option
+option-ok [0 some [none]]
+:test option-ok (ok [[0]]) = some [[0]]
+:test option-ok (err [[0]]) = none
+
+# encapsulate result err value in a option
+option-err [0 [none] some]
+:test option-err (ok [[0]]) = none
+:test option-err (err [[0]]) = some [[0]]
+
+# extracts value from result or returns first arg
+unwrap-or [[0 I [2]]]
+:test unwrap-or [[1]] (ok [[0]]) = [[0]]
+:test unwrap-or [[1]] (err [[0]]) = [[1]]
+
+# applies a function to the value in ok result
+map [[0 [ok (2 0)] err]]
+:test map [[1]] (ok [[0]]) = ok [[[0]]]
+:test map [[1]] (err [[0]]) = err [[0]]
+
+# applies a function to the value in err result
+map-err [[0 ok [err (2 0)]]]
+:test map-err [[1]] (ok [[0]]) = (ok [[0]])
+:test map-err [[1]] (err [[0]]) = (err [[[0]]])
+
+# applies encapsulated value to given function (if ok)
+apply [[1 0 err]]
+:test apply (err [[0]]) [ok ([[1]] 0)] = err [[0]]
+:test apply (ok [[0]]) [ok ([[1]] 0)] = ok [[[0]]]
