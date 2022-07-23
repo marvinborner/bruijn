@@ -18,12 +18,12 @@ some? [0 F [T]]
 :test some? none = F
 :test some? (some [[0]]) = T
 
-# applies a function to the value in a option
+# applies a function to the value in option
 map [[0 none [some (2 0)]]]
 :test map [[1]] (some [[0]]) = some [[[0]]]
 :test map [[1]] none = none
 
-# applies a function to the value in a option or returns first arg if none
+# applies a function to the value in option or returns first arg if none
 map-or [[[0 2 1]]]
 :test map-or [[[2]]] [[1]] (some [[0]]) = [[[0]]]
 :test map-or [[[2]]] [[1]] none = [[[2]]]

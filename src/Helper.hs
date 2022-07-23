@@ -1,6 +1,8 @@
 module Helper where
 
 import           Control.Monad.State
+import qualified Data.BitString                as Bit
+import qualified Data.ByteString               as Byte
 
 data Error = UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
 instance Show Error where
@@ -12,7 +14,7 @@ type Failable = Either Error
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression | Evaluate Expression | Comment String | Import String String | Test Expression Expression
+data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment String | Import String String | Test Expression Expression
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x  ) = "\ESC[31m" <> show x <> "\ESC[0m"
@@ -21,8 +23,33 @@ instance Show Expression where
   show (Application exp1 exp2) =
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
-type Environment = [(String, Expression)]
+type EnvDef = (String, Expression)
+type Environment = [(EnvDef, [EnvDef])]
 type Program = State Environment
+
+---
+
+listify :: [Expression] -> Expression
+listify [] = Abstraction (Abstraction (Bruijn 0))
+listify (fst : rst) =
+  Abstraction (Application (Application (Bruijn 0) fst) (listify rst))
+
+encodeByte :: Bit.BitString -> Expression
+encodeByte bits = listify (map encodeBit (Bit.toList bits))
+ where
+  encodeBit False = Abstraction (Abstraction (Bruijn 0))
+  encodeBit True  = Abstraction (Abstraction (Bruijn 1))
+
+encodeBytes :: Byte.ByteString -> Expression
+encodeBytes bytes =
+  listify (map (encodeByte . Bit.from01List . (: [])) (Byte.unpack bytes))
+
+encodeStdin :: IO Expression
+encodeStdin = do
+  bytes <- Byte.getContents
+  pure $ encodeBytes bytes
+
+---
 
 likeTernary :: Expression -> Bool
 likeTernary (Abstraction (Abstraction (Abstraction (Abstraction _)))) = True

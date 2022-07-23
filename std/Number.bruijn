@@ -98,35 +98,35 @@ strip [fst (0 _strip-z _strip-neg _strip-pos _strip-zero)]
 :test strip +42 = +42
 
 # I believe Mogensen's Paper has an error in its succ/pred definitions.
-# They use 3 abstractions in the _succ* functions, also we use switched +/0
+# They use 3 abstractions in the _inc* functions, also we use switched +/0
 # in comparison to their implementation, yet the order of neg/pos/zero is
 # the same. Something's weird.
 
 # adds +1 to a balanced ternary number (can introduce leading 0s)
-_succ-z pair +0 +1
-_succ-neg [0 [[pair (up-neg 1) (up-zero 1)]]]
-_succ-zero [0 [[pair (up-zero 1) (up-pos 1)]]]
-_succ-pos [0 [[pair (up-pos 1) (up-neg 0)]]]
-succ [snd (0 _succ-z _succ-neg _succ-pos _succ-zero)]
-ssucc [strip (succ 0)]
-:test eq? (succ -42) -41 = T
-:test eq? (succ -1) +0 = T
-:test eq? (succ +0) +1 = T
-:test eq? (succ (succ (succ (succ (succ +0))))) +5 = T
-:test eq? (succ +42) +43 = T
+_inc-z pair +0 +1
+_inc-neg [0 [[pair (up-neg 1) (up-zero 1)]]]
+_inc-zero [0 [[pair (up-zero 1) (up-pos 1)]]]
+_inc-pos [0 [[pair (up-pos 1) (up-neg 0)]]]
+inc [snd (0 _inc-z _inc-neg _inc-pos _inc-zero)]
+sinc [strip (inc 0)]
+:test eq? (inc -42) -41 = T
+:test eq? (inc -1) +0 = T
+:test eq? (inc +0) +1 = T
+:test eq? (inc (inc (inc (inc (inc +0))))) +5 = T
+:test eq? (inc +42) +43 = T
 
 # subs +1 from a balanced ternary number (can introduce leading 0s)
-_pred-z pair +0 -1
-_pred-neg [0 [[pair (up-neg 1) (up-pos 0)]]]
-_pred-zero [0 [[pair (up-zero 1) (up-neg 1)]]]
-_pred-pos [0 [[pair (up-pos 1) (up-zero 1)]]]
-pred [snd (0 _pred-z _pred-neg _pred-pos _pred-zero)]
-spred [strip (pred 0)]
-:test pred -42 = -43
-:test pred +0 = -1
-:test spred (pred (pred (pred (pred +5)))) = +0
-:test spred +1 = +0
-:test pred +42 = +41
+_dec-z pair +0 -1
+_dec-neg [0 [[pair (up-neg 1) (up-pos 0)]]]
+_dec-zero [0 [[pair (up-zero 1) (up-neg 1)]]]
+_dec-pos [0 [[pair (up-pos 1) (up-zero 1)]]]
+dec [snd (0 _dec-z _dec-neg _dec-pos _dec-zero)]
+sdec [strip (dec 0)]
+:test dec -42 = -43
+:test dec +0 = -1
+:test sdec (dec (dec (dec (dec +5)))) = +0
+:test sdec +1 = +0
+:test dec +42 = +41
 
 # adds two balanced ternary numbers (can introduce leading 0s)
 _add-c [[1 0 trit-zero]]
@@ -138,7 +138,7 @@ _add-b-pos2 [1 (up-pos (3 0 trit-zero)) (up-zero (3 0 trit-pos)) (up-neg (3 0 tr
 _add-a-neg [[[1 (_add-b-neg 1) _add-b-neg2 _add-b-zero _add-b-neg]]]
 _add-a-pos [[[1 (_add-b-pos 1) _add-b-zero _add-b-pos2 _add-b-pos]]]
 _add-a-zero [[[1 (_add-b-zero 1) _add-b-neg _add-b-pos _add-b-zero]]]
-_add-z [[0 (pred (normalize 1)) (succ (normalize 1)) (normalize 1)]]
+_add-z [[0 (dec (normalize 1)) (inc (normalize 1)) (normalize 1)]]
 _add-abs [_add-c (0 _add-z _add-a-neg _add-a-pos _add-a-zero)]
 add [[_add-abs 1 (abstractify 0)]]
 sadd [[strip (add 1 0)]]

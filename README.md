@@ -152,11 +152,11 @@ Using standard library:
     :test snd love = you
 
     # options
-    :test map succ (some +1) = some +2
-    :test apply (some +1) [some (succ 0)] = some +2
+    :test map inc (some +1) = some +2
+    :test apply (some +1) [some (inc 0)] = some +2
 
     # numerical operations
-    five pred (sub (add +8 -4) -2)
+    five dec (sub (add +8 -4) -2)
     not-five? [if (eq? 0 +5) F T]
     :test not-five? five = F
 

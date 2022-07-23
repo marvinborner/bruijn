@@ -1,9 +1,11 @@
 module Parser
-  ( parseLine
+  ( parseBlock
   , parseReplLine
   ) where
 
-import           Control.Monad                  ( ap )
+import           Control.Monad                  ( ap
+                                                , void
+                                                )
 import           Data.Functor.Identity
 import           Data.Void
 import           Helper
@@ -13,30 +15,45 @@ import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Parser = Parsec Void String
 
+-- exactly one space
+-- TODO: replace many scs with sc
 sc :: Parser ()
-sc = L.space space1 empty empty
+sc = void $ char ' '
+
+-- zero or more spaces
+scs :: Parser ()
+scs = void $ takeWhileP (Just "white space") (== ' ')
 
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
+lexeme = L.lexeme scs
 
 symbol :: String -> Parser String
-symbol = L.symbol sc
+symbol = L.symbol scs
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
-defIdentifier = lexeme
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
+defIdentifier =
+  lexeme
+      ((:) <$> (letterChar <|> char '_') <*> many
+        (alphaNumChar <|> oneOf "?!'_-")
+      )
+    <?> "defining identifier"
 
 -- TODO: write as extension to defIdentifier
 identifier :: Parser String
-identifier = lexeme
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-."))
+identifier =
+  lexeme
+      ((:) <$> (letterChar <|> char '_') <*> many
+        (alphaNumChar <|> oneOf "?!'_-.")
+      )
+    <?> "identifier"
 
 namespace :: Parser String
 namespace =
   lexeme ((:) <$> upperChar <*> many letterChar)
     <|> string "."
-    <|> (space >> return "")
+    <|> (scs >> return "")
+    <?> "namespace"
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
@@ -50,26 +67,26 @@ importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
-  symbol "["
+  symbol "[" <?> "opening abstraction"
   exp <- parseExpression
-  symbol "]"
+  symbol "]" <?> "closing abstraction"
   pure $ Abstraction exp
 
 parseApplication :: Parser Expression
 parseApplication = do
-  s <- sepBy1 parseSingleton space
+  s <- sepBy1 parseSingleton scs
   pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
 parseBruijn = do
   idx <- digitChar
-  space
+  scs
   pure $ Bruijn $ (read . pure) idx
 
 parseNumeral :: Parser Expression
 parseNumeral = do
-  num <- number
-  space
+  num <- number <?> "signed number"
+  scs
   pure $ decimalToTernary num
  where
   sign :: Parser (Integer -> Integer)
@@ -82,7 +99,7 @@ parseNumeral = do
 parseVariable :: Parser Expression
 parseVariable = do
   var <- identifier
-  space
+  scs
   pure $ Variable var
 
 parseSingleton :: Parser Expression
@@ -90,67 +107,75 @@ parseSingleton =
   parseBruijn
     <|> parseNumeral
     <|> parseAbstraction
-    <|> parens parseApplication
+    <|> (parens parseApplication <?> "enclosed application")
     <|> parseVariable
 
 parseExpression :: Parser Expression
 parseExpression = do
-  space
+  scs
   expr <- parseApplication <|> parseSingleton
-  space
-  pure expr
+  scs
+  pure expr <?> "expression"
 
 parseEvaluate :: Parser Instruction
 parseEvaluate = Evaluate <$> parseExpression
 
-parseDefine :: Parser Instruction
-parseDefine = do
+parseDefine :: Int -> Parser Instruction
+parseDefine lvl = do
   var <- defIdentifier
-  space
-  Define var <$> parseExpression
+  scs
+  exp  <- parseExpression
+  -- TODO: Fix >1 sub-defs
+  subs <-
+    (try $ newline *> (sepEndBy (parseBlock (lvl + 1)) newline))
+      <|> (try eof >> return [])
+  pure $ Define var exp subs
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
   var <- defIdentifier
-  space
+  scs
   symbol "="
-  space
-  Define var <$> parseExpression
+  scs
+  exp <- parseExpression
+  pure $ Define var exp []
 
 parseComment :: Parser Instruction
-parseComment = string "#" >> Comment <$> almostAnything
+parseComment = string "#" >> Comment <$> almostAnything <?> "comment"
 
 parseImport :: Parser Instruction
 parseImport = do
-  string ":import "
-  space
+  string ":import " <?> "import"
+  scs
   path <- importPath
-  space
+  scs
   ns <- namespace
-  space
+  scs
   pure $ Import (path ++ ".bruijn") ns
 
 parsePrint :: Parser Instruction
 parsePrint = do
-  string ":print "
-  space
+  string ":print " <?> "print"
+  scs
   exp <- parseExpression
-  space
+  scs
   pure $ Evaluate exp
 
 parseTest :: Parser Instruction
 parseTest = do
-  string ":test "
+  string ":test " <?> "test"
   exp1 <- parseExpression
-  space
+  scs
   symbol "="
-  space
+  scs
   exp2 <- parseExpression
   pure $ Test exp1 exp2
 
-parseLine :: Parser Instruction
-parseLine =
-  try parseDefine
+-- TODO: Add comment/test [Instruction] parser and combine with (this) def block
+parseBlock :: Int -> Parser Instruction
+parseBlock lvl =
+  string (replicate lvl '\t')
+    *>  try (parseDefine lvl)
     <|> try parseComment
     <|> try parsePrint
     <|> try parseImport
