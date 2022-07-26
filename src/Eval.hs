@@ -231,8 +231,11 @@ runRepl = do
 usage :: IO ()
 usage = do
   putStrLn "Invalid arguments. Use 'bruijn [option] path' instead"
-  putStrLn "-c\tcompile path to binary-BLC"
-  putStrLn "-C\tcompile path to ASCII-BLC"
+  putStrLn "-o\toptimize path"
+  putStrLn "-c\tcompress path to binary-BLC"
+  putStrLn "-C\tcompress path to ASCII-BLC"
+  putStrLn "-b\tcompile path to binary-BLC"
+  putStrLn "-B\tcompile path to ASCII-BLC"
   putStrLn "-e\texecute path as binary-BLC"
   putStrLn "-E\texecute path as ASCII-BLC"
   putStrLn "-*\tshow this help"
@@ -243,10 +246,10 @@ evalMain = do
   args <- getArgs
   case args of
     []           -> runRepl
-    ["-c", path] -> evalFile path
+    ["-b", path] -> evalFile path
                              (Byte.putStr . Bit.realizeBitStringStrict)
                              (toBitString . toBinary)
-    ["-C", path] -> evalFile path putStrLn toBinary
+    ["-B", path] -> evalFile path putStrLn toBinary
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id

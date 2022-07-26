@@ -14,8 +14,15 @@ Bruijn indices written in Haskell.
 -   Balanced ternary allows negative numbers while having a reasonably
     compact representation, operator and time complexity (in comparison
     to unary/binary church numerals)\[1\]
+-   Arbitrary-precision floating-point artihmetic using balanced ternary
+    numerals
 -   Highly space-efficient compilation to binary lambda calculus
     (BLC)\[2\]\[3\] additionally to normal interpretation and REPL
+-   Use BLC compilation in combination with generative asymmetric
+    numeral systems (ANS/FSE)\[4\] as incredibly effective compressor
+-   Contracts as a form of typing because typing while guaranteeing
+    turing-completeness isn’t a trivial
+    [problem](https://cstheory.stackexchange.com/a/31321) in LC
 -   Recursion can be implemented using combinators such as Y or ω
 -   Included standard library featuring many useful functions (see
     `std/`)
@@ -84,8 +91,8 @@ is only syntactic sugar for its internal balanced ternary
 representation. We use balanced ternary because it’s a great compromise
 between performance and size (according to \[1\]).
 
-You don’t have to care about the internal side too much though, if you
-use the included operations from the standard library. The REPL even
+You don’t have to care about the internals too much though as long as
+you use the included operations from the standard library. The REPL even
 tries its best at displaying expressions that look like ternary numbers
 as decimal numbers in paranthesis next to it.
 
@@ -105,7 +112,7 @@ You can try these by experimenting in the REPL or by running them as a
 file. Note, however, that you need an equal sign between the function
 name and its definition if you’re using the REPL.
 
-Plain execution:
+Plain execution without any predefined functions:
 
     # this is a comment
     # we now define a function returning a ternary 1
@@ -217,3 +224,5 @@ argument.
     Randomness and Complexity, from Leibniz to Chaitin. 2007. 237-260.
 -   \[3\] Tromp, John. “Functional Bits: Lambda Calculus based
     Algorithmic Information Theory.” (2022).
+-   \[4\] Duda, Jarek. “Asymmetric numeral systems.” arXiv preprint
+    arXiv:0902.0271 (2009).
