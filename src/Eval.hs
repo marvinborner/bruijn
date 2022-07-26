@@ -8,6 +8,7 @@ import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
+import           Data.Either
 import           Data.List
 import           Debug.Trace
 import           Helper
@@ -48,42 +49,55 @@ loadFile path = do
     Right file ->
       eval (filter (not . null) $ split "\n\n" file) (EnvState []) False
 
-evalVar :: String -> Program (Failable Expression)
-evalVar var = state $ \e ->
-  ( case lookup var (map fst e) of
-    Nothing -> Left $ UndeclaredFunction var
-    Just x  -> Right x
-  , e
-  )
+-- TODO: Add subdefs ([Program (Failable Expression)]) to State somehow
+evalVar
+  :: String -> [Program (Failable Expression)] -> Program (Failable Expression)
+evalVar var sub = state $ \e ->
+  let find name env = case lookup name env of
+        Nothing -> Left $ UndeclaredFunction var
+        Just x  -> Right x
+      -- search in sub env
+      subs = map (\s -> let (res, env') = s `runState` e in find var env') sub
+  in  case rights subs of
+        (head : rst) -> (Right head, e)
+        _            -> (find var e, e) -- search in global env
 
-evalApp :: Expression -> Expression -> Program (Failable Expression)
-evalApp f g =
-  evalExp f
+evalApp
+  :: Expression
+  -> Expression
+  -> [Program (Failable Expression)]
+  -> Program (Failable Expression)
+evalApp f g sub =
+  evalExp f sub
     >>= (\case
           Left  e  -> pure $ Left e
-          Right f' -> fmap (Application f') <$> evalExp g
+          Right f' -> fmap (Application f') <$> evalExp g sub
         )
 
-evalExp :: Expression -> Program (Failable Expression)
-evalExp idx@(Bruijn      _  ) = pure $ Right idx
-evalExp (    Variable    var) = evalVar var
-evalExp (    Abstraction exp) = evalExp exp >>= pure . fmap Abstraction
-evalExp (    Application f g) = evalApp f g
+evalExp
+  :: Expression
+  -> [Program (Failable Expression)]
+  -> Program (Failable Expression)
+evalExp idx@(Bruijn      _  ) _   = pure $ Right idx
+evalExp (    Variable    var) sub = evalVar var sub
+evalExp (    Abstraction exp) sub = evalExp exp sub >>= pure . fmap Abstraction
+evalExp (    Application f g) sub = evalApp f g sub
 
 evalDefine :: String -> Expression -> [EnvDef] -> Program (Failable Expression)
 evalDefine name exp sub =
-  evalExp exp
-    >>= (\case
-          Left  e -> pure $ Left e
-          Right f -> modify (((name, f), sub) :) >> pure (Right f)
-        )
+  let sub' = fmap (\(name, exp) -> evalDefine name exp []) sub
+  in  evalExp exp sub'
+        >>= (\case
+              Left  e -> pure $ Left e
+              Right f -> modify ((name, f) :) >> pure (Right f)
+            )
 
 evalTest :: Expression -> Expression -> Program (Failable Instruction)
 evalTest exp1 exp2 =
-  evalExp exp1
+  evalExp exp1 []
     >>= (\case
           Left  exp1 -> pure $ Left exp1
-          Right exp1 -> fmap (Test exp1) <$> evalExp exp2
+          Right exp1 -> fmap (Test exp1) <$> evalExp exp2 []
         )
 
 eval :: [String] -> EnvState -> Bool -> IO EnvState
@@ -95,8 +109,8 @@ eval (block : bs) state@(EnvState env) isRepl =
         Left  err   -> putStrLn (errorBundlePretty err) >> eval bs state isRepl
         Right instr -> case instr of
           Define name exp sub ->
-            -- TODO: sub: [Instruction] -> [EnvDef] (rec-mapping or sth?)
-            let (res, env') = evalDefine name exp [] `runState` env
+            let subenv      = [ (name, exp) | (Define name exp _) <- sub ]
+                (res, env') = evalDefine name exp subenv `runState` env
             in  case res of
                   Left err ->
                     putStrLn (show err) >> eval bs (EnvState env') isRepl
@@ -113,10 +127,10 @@ eval (block : bs) state@(EnvState env) isRepl =
             let prefix | null namespace   = takeBaseName path ++ "."
                        | namespace == "." = ""
                        | otherwise        = namespace ++ "."
-            env' <- pure $ map (\((n, e), s) -> ((prefix ++ n, e), s)) env'
+            env' <- pure $ map (\(n, e) -> (prefix ++ n, e)) env'
             eval bs (EnvState $ env <> env') False -- import => isRepl = False
           Evaluate exp ->
-            let (res, env') = evalExp exp `runState` env
+            let (res, env') = evalExp exp [] `runState` env
             in
               putStrLn
                   (case res of
@@ -153,12 +167,12 @@ eval (block : bs) state@(EnvState env) isRepl =
 
 evalFunc :: String -> Environment -> Maybe Expression
 evalFunc func env = do
-  exp <- lookup func $ map fst env
+  exp <- lookup func env
   pure $ reduce exp
 
 evalMainFunc :: Environment -> Expression -> Maybe Expression
 evalMainFunc env arg = do
-  exp <- lookup "main" $ map fst env
+  exp <- lookup "main" env
   pure $ reduce $ Application exp arg
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
@@ -192,8 +206,8 @@ repl state =
 lookupCompletion :: String -> M [Completion]
 lookupCompletion str = do
   (EnvState env) <- StrictState.get
-  return $ map (\((s, _), _) -> Completion s s False) $ filter
-    (\((s, _), _) -> str `isPrefixOf` s)
+  return $ map (\(s, _) -> Completion s s False) $ filter
+    (\(s, _) -> str `isPrefixOf` s)
     env
 
 completionSettings :: String -> Settings M

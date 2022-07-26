@@ -24,7 +24,7 @@ instance Show Expression where
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
 type EnvDef = (String, Expression)
-type Environment = [(EnvDef, [EnvDef])]
+type Environment = [EnvDef]
 type Program = State Environment
 
 ---
