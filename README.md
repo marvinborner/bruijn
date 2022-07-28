@@ -7,19 +7,21 @@ Bruijn indices written in Haskell.
 
 ## Features
 
--   De Bruijn indices\[0\] eliminate the complexity of α-equivalence and
-    α-conversion
+-   De Bruijn indices[\[0\]](#References) eliminate the complexity of
+    α-equivalence and α-conversion
 -   Unique bracket-style representation for lambda abstractions enables
     improved human-readability and faster syntactic perception
 -   Balanced ternary allows negative numbers while having a reasonably
     compact representation, operator and time complexity (in comparison
-    to unary/binary church numerals)\[1\]
+    to unary/binary church numerals)[\[1\]](#References)
 -   Arbitrary-precision floating-point artihmetic using balanced ternary
     numerals
 -   Highly space-efficient compilation to binary lambda calculus
-    (BLC)\[2\]\[3\] additionally to normal interpretation and REPL
+    (BLC)[\[2\]](#References)[\[3\]](#References) additionally to normal
+    interpretation and REPL
 -   Use BLC compilation in combination with generative asymmetric
-    numeral systems (ANS/FSE)\[4\] as incredibly effective compressor
+    numeral systems (ANS/FSE)[\[4\]](#References) as incredibly
+    effective compressor
 -   Contracts as a form of typing because typing while guaranteeing
     turing-completeness isn’t a trivial
     [problem](https://cstheory.stackexchange.com/a/31321) in LC
@@ -31,9 +33,9 @@ Bruijn indices written in Haskell.
 
 ### De Bruijn indices
 
-De Bruijn indices\[0\] replace the concept of variables in lambda
-calculus. The index basically represents the abstraction layer you want
-to reference beginning at 0 with the innermost layer.
+De Bruijn indices[\[0\]](#References) replace the concept of variables
+in lambda calculus. The index basically represents the abstraction layer
+you want to reference beginning at 0 with the innermost layer.
 
 For example, λx.x becomes λ0 because x referenced the first abstraction
 layer. Furthermore, λx.λy.xy becomes λλ10 and so forth.
@@ -89,7 +91,7 @@ Numbers in bruijn always have a sign in front of them or else they will
 be mistaken for De Bruijn indices. Generally the decimal representation
 is only syntactic sugar for its internal balanced ternary
 representation. We use balanced ternary because it’s a great compromise
-between performance and size (according to \[1\]).
+between performance and size (according to [\[1\]](#References)).
 
 You don’t have to care about the internals too much though as long as
 you use the included operations from the standard library. The REPL even
@@ -177,9 +179,9 @@ Using standard library:
 
 ### Compilation to BLC
 
-You can compile bruijn to John Tromp’s BLC\[2\]\[3\]. Only the used
-functions actually get compiled in order to achieve a minimal binary
-size.
+You can compile bruijn to John Tromp’s
+BLC[\[2\]](#References)[\[3\]](#References). Only the used functions
+actually get compiled in order to achieve a minimal binary size.
 
 BLC uses the following encoding:
 
@@ -212,17 +214,17 @@ argument.
 
 ## References
 
--   \[0\] De Bruijn, Nicolaas Govert. “Lambda calculus notation with
-    nameless dummies, a tool for automatic formula manipulation, with
-    application to the Church-Rosser theorem.” Indagationes Mathematicae
+0.  De Bruijn, Nicolaas Govert. “Lambda calculus notation with nameless
+    dummies, a tool for automatic formula manipulation, with application
+    to the Church-Rosser theorem.” Indagationes Mathematicae
     (Proceedings). Vol. 75. No. 5. North-Holland, 1972.
--   \[1\] Mogensen, Torben. “An investigation of compact and efficient
-    number representations in the pure lambda calculus.” International
-    Andrei Ershov Memorial Conference on Perspectives of System
-    Informatics. Springer, Berlin, Heidelberg, 2001.
--   \[2\] Tromp, John. “Binary lambda calculus and combinatory logic.”
+1.  Mogensen, Torben. “An investigation of compact and efficient number
+    representations in the pure lambda calculus.” International Andrei
+    Ershov Memorial Conference on Perspectives of System Informatics.
+    Springer, Berlin, Heidelberg, 2001.
+2.  Tromp, John. “Binary lambda calculus and combinatory logic.”
     Randomness and Complexity, from Leibniz to Chaitin. 2007. 237-260.
--   \[3\] Tromp, John. “Functional Bits: Lambda Calculus based
-    Algorithmic Information Theory.” (2022).
--   \[4\] Duda, Jarek. “Asymmetric numeral systems.” arXiv preprint
+3.  Tromp, John. “Functional Bits: Lambda Calculus based Algorithmic
+    Information Theory.” (2022).
+4.  Duda, Jarek. “Asymmetric numeral systems.” arXiv preprint
     arXiv:0902.0271 (2009).
