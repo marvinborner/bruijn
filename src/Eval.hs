@@ -45,28 +45,25 @@ loadFile :: String -> IO EnvState
 loadFile path = do
   file <- try $ readFile path :: IO (Either IOError String)
   case file of
-    Left exception -> print (exception :: IOError) >> pure (EnvState [])
-    Right file ->
-      eval (filter (not . null) $ split "\n\n" file) (EnvState []) False
+    Left exception ->
+      print (exception :: IOError) >> pure (EnvState $ Environment [])
+    Right file -> eval (filter (not . null) $ split "\n\n" file)
+                       (EnvState $ Environment [])
+                       False
 
--- TODO: Add subdefs ([Program (Failable Expression)]) to State somehow
-evalVar
-  :: String -> [Program (Failable Expression)] -> Program (Failable Expression)
-evalVar var sub = state $ \e ->
+evalVar :: String -> Environment -> Program (Failable Expression)
+evalVar var (Environment sub) = state $ \env@(Environment e) ->
   let find name env = case lookup name env of
         Nothing -> Left $ UndeclaredFunction var
         Just x  -> Right x
-      -- search in sub env
-      subs = map (\s -> let (res, env') = s `runState` e in find var env') sub
-  in  case rights subs of
-        (head : rst) -> (Right head, e)
-        _            -> (find var e, e) -- search in global env
+  in  case find var (map fst sub) of
+        s@(Right _) -> (s, env)
+        _           -> (find var (map fst e), env) -- search in global env
 
-evalApp
-  :: Expression
-  -> Expression
-  -> [Program (Failable Expression)]
-  -> Program (Failable Expression)
+evalAbs :: Expression -> Environment -> Program (Failable Expression)
+evalAbs exp sub = evalExp exp sub >>= pure . fmap Abstraction
+
+evalApp :: Expression -> Expression -> Environment -> Program (Failable Expression)
 evalApp f g sub =
   evalExp f sub
     >>= (\case
@@ -74,31 +71,98 @@ evalApp f g sub =
           Right f' -> fmap (Application f') <$> evalExp g sub
         )
 
-evalExp
-  :: Expression
-  -> [Program (Failable Expression)]
-  -> Program (Failable Expression)
-evalExp idx@(Bruijn      _  ) _   = pure $ Right idx
-evalExp (    Variable    var) sub = evalVar var sub
-evalExp (    Abstraction exp) sub = evalExp exp sub >>= pure . fmap Abstraction
-evalExp (    Application f g) sub = evalApp f g sub
+evalExp :: Expression -> Environment -> Program (Failable Expression)
+evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
+evalExp (    Variable    var) = evalVar var
+evalExp (    Abstraction exp) = evalAbs exp
+evalExp (    Application f g) = evalApp f g
 
-evalDefine :: String -> Expression -> [EnvDef] -> Program (Failable Expression)
+evalDefine
+  :: String -> Expression -> Environment -> Program (Failable Expression)
 evalDefine name exp sub =
-  let sub' = fmap (\(name, exp) -> evalDefine name exp []) sub
-  in  evalExp exp sub'
-        >>= (\case
-              Left  e -> pure $ Left e
-              Right f -> modify ((name, f) :) >> pure (Right f)
-            )
+  evalExp exp sub
+    >>= (\case
+          Left e -> pure $ Left e
+          Right f ->
+            modify (\(Environment s) -> Environment $ ((name, f), Environment []) : s)
+              >> pure (Right f)
+        )
 
-evalTest :: Expression -> Expression -> Program (Failable Instruction)
-evalTest exp1 exp2 =
-  evalExp exp1 []
+evalTest :: Expression -> Expression -> Environment -> Program (Failable Instruction)
+evalTest exp1 exp2 sub =
+  evalExp exp1 sub
     >>= (\case
           Left  exp1 -> pure $ Left exp1
-          Right exp1 -> fmap (Test exp1) <$> evalExp exp2 []
+          Right exp1 -> fmap (Test exp1) <$> evalExp exp2 sub
         )
+
+evalSubEnv :: [Instruction] -> EnvState -> Bool -> IO EnvState
+evalSubEnv [] state _ = return state
+evalSubEnv (instr : is) state@(EnvState env) isRepl =
+  handleInterrupt (putStrLn "<aborted>" >> return state)
+    $ evalInstruction instr state (evalSubEnv is) isRepl
+
+evalInstruction
+  :: Instruction
+  -> EnvState
+  -> (EnvState -> Bool -> IO EnvState)
+  -> Bool
+  -> IO EnvState
+evalInstruction instr state@(EnvState env) rec isRepl = case instr of
+  Define name exp sub -> do
+    EnvState subEnv <- evalSubEnv sub state isRepl
+    let
+      (res, env') = evalDefine name exp subEnv `runState` env
+     in  case res of
+          Left  err -> print err >> rec (EnvState env') isRepl
+          Right _   -> if isRepl
+            then (putStrLn $ name <> " = " <> show exp)
+              >> return (EnvState env')
+            else rec (EnvState env') isRepl
+  -- TODO: Import loop detection
+  -- TODO: Don't import subimports into main env
+  Import path namespace -> do
+    lib           <- getDataFileName path -- TODO: Use actual lib directory
+    exists        <- doesFileExist lib
+    EnvState env' <- loadFile $ if exists then lib else path
+    let prefix | null namespace   = takeBaseName path ++ "."
+               | namespace == "." = ""
+               | otherwise        = namespace ++ "."
+    env' <- pure $ Environment $ map (\((n, e), s) -> ((prefix ++ n, e), s))
+                                     ((\(Environment e) -> e) env') -- TODO: Improve
+    rec (EnvState $ env <> env') False -- import => isRepl = False
+  Evaluate exp ->
+    let (res, env') = evalExp exp (Environment []) `runState` env
+    in  putStrLn
+            (case res of
+              Left err -> show err
+              Right exp ->
+                "<> "
+                  <> (show exp)
+                  <> "\n*> "
+                  <> (show reduced)
+                  <> (if likeTernary reduced
+                       then "\t(" <> (show $ ternaryToDecimal reduced) <> ")"
+                       else ""
+                     )
+                where reduced = reduce exp
+            )
+          >> rec state isRepl
+  Test exp1 exp2 ->
+    let (res, _) = evalTest exp1 exp2 (Environment []) `runState` env
+    in  case res of
+          Left err -> print err >> pure state
+          Right (Test exp1' exp2') ->
+            when
+                (reduce exp1' /= reduce exp2')
+                (  putStrLn
+                $  "ERROR: test failed: "
+                <> (show exp1)
+                <> " != "
+                <> (show exp2)
+                )
+              >> rec state isRepl
+  _ -> rec state isRepl
 
 eval :: [String] -> EnvState -> Bool -> IO EnvState
 eval []   state _ = return state
@@ -107,72 +171,17 @@ eval (block : bs) state@(EnvState env) isRepl =
   handleInterrupt (putStrLn "<aborted>" >> return state)
     $ case parse blockParser "" block of
         Left  err   -> putStrLn (errorBundlePretty err) >> eval bs state isRepl
-        Right instr -> case instr of
-          Define name exp sub ->
-            let subenv      = [ (name, exp) | (Define name exp _) <- sub ]
-                (res, env') = evalDefine name exp subenv `runState` env
-            in  case res of
-                  Left err ->
-                    putStrLn (show err) >> eval bs (EnvState env') isRepl
-                  Right _ -> if isRepl
-                    then (putStrLn $ name <> " = " <> show exp)
-                      >> return (EnvState env')
-                    else eval bs (EnvState env') isRepl
-          -- TODO: Import loop detection
-          -- TODO: Don't import subimports into main env
-          Import path namespace -> do
-            lib           <- getDataFileName path -- TODO: Use actual lib directory
-            exists        <- doesFileExist lib
-            EnvState env' <- loadFile $ if exists then lib else path
-            let prefix | null namespace   = takeBaseName path ++ "."
-                       | namespace == "." = ""
-                       | otherwise        = namespace ++ "."
-            env' <- pure $ map (\(n, e) -> (prefix ++ n, e)) env'
-            eval bs (EnvState $ env <> env') False -- import => isRepl = False
-          Evaluate exp ->
-            let (res, env') = evalExp exp [] `runState` env
-            in
-              putStrLn
-                  (case res of
-                    Left err -> show err
-                    Right exp ->
-                      "<> "
-                        <> (show exp)
-                        <> "\n*> "
-                        <> (show reduced)
-                        <> (if likeTernary reduced
-                             then
-                               "\t(" <> (show $ ternaryToDecimal reduced) <> ")"
-                             else ""
-                           )
-                      where reduced = reduce exp
-                  )
-                >> eval bs state isRepl
-          Test exp1 exp2 ->
-            let (res, _) = evalTest exp1 exp2 `runState` env
-            in  case res of
-                  Left err -> putStrLn (show err) >> pure state
-                  Right (Test exp1' exp2') ->
-                    when
-                        (reduce exp1' /= reduce exp2')
-                        (  putStrLn
-                        $  "ERROR: test failed: "
-                        <> (show exp1)
-                        <> " != "
-                        <> (show exp2)
-                        )
-                      >> eval bs state isRepl
-          _ -> eval bs state isRepl
+        Right instr -> evalInstruction instr state (eval bs) isRepl
   where blockParser = if isRepl then parseReplLine else parseBlock 0
 
 evalFunc :: String -> Environment -> Maybe Expression
-evalFunc func env = do
-  exp <- lookup func env
+evalFunc func (Environment env) = do
+  exp <- lookup func (map fst env)
   pure $ reduce exp
 
 evalMainFunc :: Environment -> Expression -> Maybe Expression
-evalMainFunc env arg = do
-  exp <- lookup "main" env
+evalMainFunc (Environment env) arg = do
+  exp <- lookup "main" (map fst env)
   pure $ reduce $ Application exp arg
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
@@ -180,7 +189,7 @@ evalFile path write conv = do
   EnvState env <- loadFile path
   arg          <- encodeStdin
   case evalMainFunc env arg of
-    Nothing  -> putStrLn $ "ERROR: main function not found"
+    Nothing  -> putStrLn "ERROR: main function not found"
     Just exp -> write $ conv exp
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
@@ -205,9 +214,9 @@ repl state =
 
 lookupCompletion :: String -> M [Completion]
 lookupCompletion str = do
-  (EnvState env) <- StrictState.get
-  return $ map (\(s, _) -> Completion s s False) $ filter
-    (\(s, _) -> str `isPrefixOf` s)
+  (EnvState (Environment env)) <- StrictState.get
+  return $ map (\((s, _), _) -> Completion s s False) $ filter
+    (\((s, _), _) -> str `isPrefixOf` s)
     env
 
 completionSettings :: String -> Settings M
@@ -222,10 +231,11 @@ runRepl = do
   config  <- getDataFileName "config"
   history <- getDataFileName "history"
   prefs   <- readPrefs config
-  let looper = runInputTWithPrefs prefs
-                                  (completionSettings history)
-                                  (withInterrupt $ repl $ EnvState [])
-  code <- StrictState.evalStateT looper (EnvState [])
+  let looper = runInputTWithPrefs
+        prefs
+        (completionSettings history)
+        (withInterrupt $ repl $ EnvState $ Environment [])
+  code <- StrictState.evalStateT looper (EnvState $ Environment [])
   return code
 
 usage :: IO ()

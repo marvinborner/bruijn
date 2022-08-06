@@ -3,6 +3,7 @@ module Helper where
 import           Control.Monad.State
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
+import           Data.List
 
 data Error = UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
 instance Show Error where
@@ -14,7 +15,7 @@ type Failable = Either Error
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment String | Import String String | Test Expression Expression
+data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Import String String | Test Expression Expression
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x  ) = "\ESC[31m" <> show x <> "\ESC[0m"
@@ -24,8 +25,16 @@ instance Show Expression where
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
 type EnvDef = (String, Expression)
-type Environment = [EnvDef]
+data Environment = Environment [(EnvDef, Environment)]
 type Program = State Environment
+
+instance Semigroup Environment where
+  (Environment e1) <> (Environment e2) = Environment $ e1 <> e2
+
+instance Show Environment where
+  show (Environment env) = intercalate "\n" $ map
+    (\((n, f), s) -> "\t" <> show n <> ": " <> show f <> " - " <> show s)
+    env
 
 ---
 

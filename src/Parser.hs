@@ -58,10 +58,6 @@ namespace =
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
 
-almostAnything :: Parser String
-almostAnything =
-  some $ oneOf ".`#~@$%^&*_+-=|;',/?[]<>(){} " <|> letterChar <|> digitChar
-
 importPath :: Parser String
 importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
@@ -127,8 +123,7 @@ parseDefine lvl = do
   exp  <- parseExpression
   -- TODO: Fix >1 sub-defs
   subs <-
-    (try $ newline *> (sepEndBy (parseBlock (lvl + 1)) newline))
-      <|> (try eof >> return [])
+    (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
   pure $ Define var exp subs
 
 parseReplDefine :: Parser Instruction
@@ -140,8 +135,11 @@ parseReplDefine = do
   exp <- parseExpression
   pure $ Define var exp []
 
-parseComment :: Parser Instruction
-parseComment = string "#" >> Comment <$> almostAnything <?> "comment"
+parseComment :: Parser ()
+parseComment = do
+  string "# " <?> "comment"
+  some $ noneOf "\r\n"
+  return ()
 
 parseImport :: Parser Instruction
 parseImport = do
@@ -171,20 +169,29 @@ parseTest = do
   exp2 <- parseExpression
   pure $ Test exp1 exp2
 
--- TODO: Add comment/test [Instruction] parser and combine with (this) def block
+parseCommentBlock :: Parser Instruction
+parseCommentBlock = do
+  sepEndBy1 parseComment newline
+  eof
+  return Comment
+
+-- TODO: Add comment/test [Instruction] parser and combine with (this) def block?
+parseDefBlock :: Int -> Parser Instruction
+parseDefBlock lvl =
+  (sepEndBy parseComment newline)
+    *> string (replicate lvl '\t')
+    *> (   try (parseDefine lvl)
+       <|> try parsePrint
+       <|> try parseImport
+       <|> try parseTest
+       )
+
 parseBlock :: Int -> Parser Instruction
-parseBlock lvl =
-  string (replicate lvl '\t')
-    *>  try (parseDefine lvl)
-    <|> try parseComment
-    <|> try parsePrint
-    <|> try parseImport
-    <|> try parseTest
+parseBlock lvl = try parseCommentBlock <|> parseDefBlock lvl
 
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine
-    <|> try parseComment
     <|> try parseEvaluate
     <|> try parseImport
     <|> try parseTest

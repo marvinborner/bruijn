@@ -28,4 +28,23 @@ n37 succ (mul n6 n6)
 n703 sumto n37
 n720 fac n6
 
-main eqnat n720 (add n703 n17) = true
+# this can take some time..
+# - should return true
+:print eqnat n720 (add n703 n17)
+
+# =========
+# Ackermann
+# From AIT
+# =========
+
+two [[1 (1 0)]]
+omega [0 0]
+ackify [[0 1 0]]
+ackerlike [0 ackify omega 0]
+
+# this can take a VERY long while
+# maybe even too long for benchmarking
+# - should return exponential tower with 256 levels
+# :print ackerlike two
+
+main [0]
