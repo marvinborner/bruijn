@@ -125,7 +125,7 @@ evalInstruction instr s@(EnvState env) rec isRepl = case instr of
                | otherwise        = namespace ++ "."
     env'' <- pure $ Environment $ map (\((n, e), o) -> ((prefix ++ n, e), o))
                                      ((\(Environment e) -> e) env') -- TODO: Improve
-    rec (EnvState $ env <> env'') False -- import => isRepl = False
+    rec (EnvState $ env'' <> env) False -- import => isRepl = False
   Evaluate e ->
     let (res, _) = evalExp e (Environment []) `runState` env
     in  putStrLn

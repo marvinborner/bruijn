@@ -5,22 +5,37 @@
 
 :import std/Pair .
 
-# checks whether balanced ternary number is zero
-zero? [0 T [F] [F] I]
+:import std/List
 
-:test zero? +0 = T
-:test zero? -1 = F
-:test zero? +1 = F
-:test zero? +42 = F
+:import std/Logic .
 
 # negative trit indicating coeffecient of -1
 trit-neg [[[2]]]
 
+# returns whether a trit is negative
+trit-neg? [0 T F F]
+
 # positive trit indicating coeffecient of +1
 trit-pos [[[1]]]
 
+# returns whether a trit is positive
+trit-pos? [0 F T F]
+
 # zero trit indicating coeffecient of 0
 trit-zero [[[0]]]
+
+# returns whether a trit is zero
+trit-zero? [0 F F T]
+
+:test trit-neg? trit-neg = T
+:test trit-neg? trit-pos = F
+:test trit-neg? trit-zero = F
+:test trit-pos? trit-neg = F
+:test trit-pos? trit-pos = T
+:test trit-pos? trit-zero = F
+:test trit-zero? trit-neg = F
+:test trit-zero? trit-pos = F
+:test trit-zero? trit-zero = T
 
 # shifts a negative trit into a balanced ternary number
 up-neg [[[[[2 (4 3 2 1 0)]]]]]
@@ -50,12 +65,12 @@ up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
 :test up trit-pos +42 = up-pos +42
 :test up trit-zero +42 = up-zero +42
 
-# negates a balanced ternary number
-negate [[[[[4 3 1 2 0]]]]]
-
-:test negate +0 = +0
-:test negate -1 = +1
-:test negate +42 = -42
+# shifts the least significant trit out - basically div by 3
+down [snd (0 z neg pos zero)]
+	z pair +0 +0
+	neg [0 [[pair (up-neg 1) 1]]]
+	pos [0 [[pair (up-pos 1) 1]]]
+	zero [0 [[pair (up-zero 1) 1]]]
 
 # extracts least significant trit from balanced ternary numbers
 lst [0 trit-zero [trit-neg] [trit-pos] [trit-zero]]
@@ -65,34 +80,96 @@ lst [0 trit-zero [trit-neg] [trit-pos] [trit-zero]]
 :test lst +1 = trit-pos
 :test lst +42 = trit-zero
 
+# negates a balanced ternary number
+negate [[[[[4 3 1 2 0]]]]]
+
+:test negate +0 = +0
+:test negate -1 = +1
+:test negate +42 = -42
+
+# converts a balanced ternary number to a list of trits
+list! [0 z neg pos zero]
+	z List.empty
+	neg [[pair trit-neg 1]]
+	pos [[pair trit-pos 1]]
+	zero [[pair trit-zero 1]]
+
+# TODO: Tests!
+
+# strips leading 0s from balanced ternary number
+strip [fst (0 z neg pos zero)]
+	z pair +0 T
+	neg [0 [[pair (up-neg 1) F]]]
+	pos [0 [[pair (up-pos 1) F]]]
+	zero [0 [[pair (0 +0 (up-zero 1)) 0]]]
+
+:test strip [[[[0 3]]]] = +0
+:test strip [[[[2 (0 (0 (0 (0 3))))]]]] = -1
+:test strip +42 = +42
+
+# extracts most significant trit from balanced ternary numbers
+# TODO: Find a more elegant way to do this
+mst [fix (List.last (list! (strip 0)))]
+	fix [if (or (trit-neg? 0) (or (trit-pos? 0) (trit-zero? 0))) 0 [[0]]]
+
+:test mst +0 = trit-zero
+:test mst -1 = trit-neg
+:test mst +1 = trit-pos
+:test mst +42 = trit-pos
+
+# returns whether balanced ternary number is negative
+negative? [trit-neg? (mst 0)]
+
+:test negative? +0 = F
+:test negative? -1 = T
+:test negative? +1 = F
+:test negative? +42 = F
+
+# returns whether balanced ternary number is positive
+positive? [trit-pos? (mst 0)]
+
+:test positive? +0 = F
+:test positive? -1 = F
+:test positive? +1 = T
+:test positive? +42 = T
+
+# checks whether balanced ternary number is zero
+zero? [0 T [F] [F] I]
+
+:test zero? +0 = T
+:test zero? -1 = F
+:test zero? +1 = F
+:test zero? +42 = F
+
 # converts the normal balanced ternary representation into abstract
 # -> the abstract representation is used in add/sub/mul
-abstractify [0 [[[[3]]]] abs-neg abs-pos abs-zero]
-	abs-neg [[[[[2 4]]]]]
-	abs-pos [[[[[1 4]]]]]
-	abs-zero [[[[[0 4]]]]]
+abstract! [0 z neg pos zero]
+	z +0
+	neg [[[[[2 4]]]]]
+	pos [[[[[1 4]]]]]
+	zero [[[[[0 4]]]]]
 
-:test abstractify -3 = [[[[0 [[[[2 [[[[3]]]]]]]]]]]]
-:test abstractify +0 = [[[[3]]]]
-:test abstractify +3 = [[[[0 [[[[1 [[[[3]]]]]]]]]]]]
+:test abstract! -3 = [[[[0 [[[[2 [[[[3]]]]]]]]]]]]
+:test abstract! +0 = [[[[3]]]]
+:test abstract! +3 = [[[[0 [[[[1 [[[[3]]]]]]]]]]]]
 
 # converts the abstracted balanced ternary representation back to normal
-# using Y/ω to solve recursion
-normalize ω normalize'
-	normalize' [[0 +0 [up-neg ([3 3 0] 0)] [up-pos ([3 3 0] 0)] [up-zero ([3 3 0] 0)]]]
+# using ω to solve recursion
+normal! ω rec
+	rec [[0 +0 [up-neg ([3 3 0] 0)] [up-pos ([3 3 0] 0)] [up-zero ([3 3 0] 0)]]]
 
-:test normalize [[[[3]]]] = +0
-:test normalize (abstractify +42) = +42
-:test normalize (abstractify -42) = -42
+:test normal! [[[[3]]]] = +0
+:test normal! (abstract! +42) = +42
+:test normal! (abstract! -42) = -42
 
 # checks whether two balanced ternary numbers are equal
 # -> removes leading 0s!
-eq? [[eq-abs 1 (abstractify 0)]]
-	eq-z [zero? (normalize 0)]
-	eq-neg [[0 F [2 0] [F] [F]]]
-	eq-pos [[0 F [F] [2 0] [F]]]
-	eq-zero [[0 (1 0) [F] [F] [2 0]]]
-	eq-abs [0 eq-z eq-neg eq-pos eq-zero]
+eq? [[abs 1 (abstract! 0)]]
+	z [zero? (normal! 0)]
+	neg [[0 F [2 0] [F] [F]]]
+	pos [[0 F [F] [2 0] [F]]]
+	zero [[0 (1 0) [F] [F] [2 0]]]
+	abs [0 z neg pos zero]
 
 :test eq? -42 -42 = T
 :test eq? -1 -1 = T
@@ -103,28 +180,17 @@ eq? [[eq-abs 1 (abstractify 0)]]
 :test eq? +42 +42 = T
 :test eq? [[[[(1 (0 (0 (0 (0 3)))))]]]] +1 = T
 
-# strips leading 0s from balanced ternary number
-strip [fst (0 strip-z strip-neg strip-pos strip-zero)]
-	strip-z pair +0 T
-	strip-neg [0 [[pair (up-neg 1) F]]]
-	strip-pos [0 [[pair (up-pos 1) F]]]
-	strip-zero [0 [[pair (0 +0 (up-zero 1)) 0]]]
-
-:test strip [[[[0 3]]]] = +0
-:test strip [[[[2 (0 (0 (0 (0 3))))]]]] = -1
-:test strip +42 = +42
-
-# I believe Mogensen's Paper has an error in its inc/dec definitions.
-# They use 3 abstractions in the inc* functions, also we use switched +/0
-# in comparison to their implementation, yet the order of neg/pos/zero is
+# I believe Mogensen's Paper has an error in its inc/dec/add/mul/eq definitions.
+# They use 3 instead of 2 abstractions in the functions, also we use switched
+# +/0 in comparison to their implementation, yet the order of neg/pos/zero is
 # the same. Something's weird.
 
 # adds +1 to a balanced ternary number (can introduce leading 0s)
-inc [snd (0 inc-z inc-neg inc-pos inc-zero)]
-	inc-z pair +0 +1
-	inc-neg [0 [[pair (up-neg 1) (up-zero 1)]]]
-	inc-zero [0 [[pair (up-zero 1) (up-pos 1)]]]
-	inc-pos [0 [[pair (up-pos 1) (up-neg 0)]]]
+inc [snd (0 z neg pos zero)]
+	z pair +0 +1
+	neg [0 [[pair (up-neg 1) (up-zero 1)]]]
+	zero [0 [[pair (up-zero 1) (up-pos 1)]]]
+	pos [0 [[pair (up-pos 1) (up-neg 0)]]]
 
 sinc [strip (inc 0)]
 
@@ -143,25 +209,25 @@ dec [snd (0 dec-z dec-neg dec-pos dec-zero)]
 
 sdec [strip (dec 0)]
 
-:test dec -42 = -43
-:test dec +0 = -1
-:test sdec (dec (dec (dec (dec +5)))) = +0
-:test sdec +1 = +0
-:test dec +42 = +41
+:test eq? (dec -42) -43 = T
+:test eq? (dec +0) -1 = T
+:test eq? (dec (dec (dec (dec (dec +5))))) +0 = T
+:test eq? (dec +1) +0 = T
+:test eq? (dec +42) +41 = T
 
 # adds two balanced ternary numbers (can introduce leading 0s)
-add [[add-abs 1 (abstractify 0)]]
-	add-c [[1 0 trit-zero]]
-	add-b-neg2 [1 (up-zero (3 0 trit-neg)) (up-neg (3 0 trit-zero)) (up-pos (3 0 trit-neg))]
-	add-b-neg [1 (up-pos (3 0 trit-neg)) (up-zero (3 0 trit-zero)) (up-neg (3 0 trit-zero))]
-	add-b-zero [up 1 (3 0 trit-zero)]
-	add-b-pos [1 (up-zero (3 0 trit-zero)) (up-neg (3 0 trit-pos)) (up-pos (3 0 trit-zero))]
-	add-b-pos2 [1 (up-pos (3 0 trit-zero)) (up-zero (3 0 trit-pos)) (up-neg (3 0 trit-pos))]
-	add-a-neg [[[1 (add-b-neg 1) add-b-neg2 add-b-zero add-b-neg]]]
-	add-a-pos [[[1 (add-b-pos 1) add-b-zero add-b-pos2 add-b-pos]]]
-	add-a-zero [[[1 (add-b-zero 1) add-b-neg add-b-pos add-b-zero]]]
-	add-z [[0 (dec (normalize 1)) (inc (normalize 1)) (normalize 1)]]
-	add-abs [add-c (0 add-z add-a-neg add-a-pos add-a-zero)]
+add [[abs 1 (abstract! 0)]]
+	c [[1 0 trit-zero]]
+	b-neg2 [1 (up-zero (3 0 trit-neg)) (up-neg (3 0 trit-zero)) (up-pos (3 0 trit-neg))]
+	b-neg [1 (up-pos (3 0 trit-neg)) (up-zero (3 0 trit-zero)) (up-neg (3 0 trit-zero))]
+	b-zero [up 1 (3 0 trit-zero)]
+	b-pos [1 (up-zero (3 0 trit-zero)) (up-neg (3 0 trit-pos)) (up-pos (3 0 trit-zero))]
+	b-pos2 [1 (up-pos (3 0 trit-zero)) (up-zero (3 0 trit-pos)) (up-neg (3 0 trit-pos))]
+	a-neg [[[1 (b-neg 1) b-neg2 b-zero b-neg]]]
+	a-pos [[[1 (b-pos 1) b-zero b-pos2 b-pos]]]
+	a-zero [[[1 (b-zero 1) b-neg b-pos b-zero]]]
+	z [[0 (dec (normal! 1)) (inc (normal! 1)) (normal! 1)]]
+	abs [c (0 z a-neg a-pos a-zero)]
 
 sadd [[strip (add 1 0)]]
 
@@ -184,11 +250,19 @@ ssub [[strip (sub 1 0)]]
 :test eq? (sub +1 +2) -1 = T
 :test eq? (sub +42 +1) +41 = T
 
+# returns whether number is greater than other number
+gre? [[negative? (sub 0 1)]]
+
+# returns whether number is less than or equal to other number
+leq? [[not (gre? 1 0)]]
+
+:test List.sort leq? gre? (List.append +1 (List.append +4 (List.append +3 (List.append +0 List.empty)))) = List.append +0 (List.append +1 (List.append +3 (List.append +4 List.empty)))
+
 # muls two balanced ternary numbers (can introduce leading 0s)
-mul [[1 +0 mul-neg mul-pos mul-zero]]
-	mul-neg [sub (up-zero 0) 1]
-	mul-pos [add (up-zero 0) 1]
-	mul-zero [up-zero 0]
+mul [[1 +0 neg pos zero]]
+	neg [sub (up-zero 0) 1]
+	pos [add (up-zero 0) 1]
+	zero [up-zero 0]
 
 smul [[strip (mul 1 0)]]
 

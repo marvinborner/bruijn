@@ -147,7 +147,7 @@ Plain execution without any predefined functions:
 
 Using standard library:
 
-    :import std/Boolean .
+    :import std/Logic .
     :import std/Combinator .
     :import std/Number .
     :import std/Option .

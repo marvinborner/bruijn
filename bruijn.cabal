@@ -19,9 +19,10 @@ extra-source-files:
     README.md
 data-files:
     config
-    std/Boolean.bruijn
     std/Church.bruijn
     std/Combinator.bruijn
+    std/List.bruijn
+    std/Logic.bruijn
     std/Number.bruijn
     std/Option.bruijn
     std/Pair.bruijn
