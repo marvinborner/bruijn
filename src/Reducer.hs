@@ -10,33 +10,36 @@ import           Helper
 --   (Abstraction f@_ (Bruijn 0)) = f
 
 (<+>) :: Expression -> Int -> Expression
-(<+>) (Bruijn x             ) n = if x > n then Bruijn (pred x) else Bruijn x
-(<+>) (Application exp1 exp2) n = Application (exp1 <+> n) (exp2 <+> n)
-(<+>) (Abstraction exp      ) n = Abstraction $ exp <+> (succ n)
+(<+>) (Bruijn x         ) n = if x > n then Bruijn (pred x) else Bruijn x
+(<+>) (Application e1 e2) n = Application (e1 <+> n) (e2 <+> n)
+(<+>) (Abstraction e    ) n = Abstraction $ e <+> (succ n)
+(<+>) _                   _ = error "invalid"
 
 (<->) :: Expression -> Int -> Expression
-(<->) (Bruijn x             ) n = if x > n then Bruijn (succ x) else Bruijn x
-(<->) (Application exp1 exp2) n = Application (exp1 <-> n) (exp2 <-> n)
-(<->) (Abstraction exp      ) n = Abstraction $ exp <-> (succ n)
+(<->) (Bruijn x         ) n = if x > n then Bruijn (succ x) else Bruijn x
+(<->) (Application e1 e2) n = Application (e1 <-> n) (e2 <-> n)
+(<->) (Abstraction e    ) n = Abstraction $ e <-> (succ n)
+(<->) _                   _ = error "invalid"
 
 bind :: Expression -> Expression -> Int -> Expression
-bind exp (Bruijn x) n = if x == n then exp else Bruijn x
-bind exp (Application exp1 exp2) n =
-  Application (bind exp exp1 n) (bind exp exp2 n)
-bind exp (Abstraction exp') n = Abstraction (bind (exp <-> (-1)) exp' (succ n))
+bind e (Bruijn x         ) n = if x == n then e else Bruijn x
+bind e (Application e1 e2) n = Application (bind e e1 n) (bind e e2 n)
+bind e (Abstraction exp' ) n = Abstraction (bind (e <-> (-1)) exp' (succ n))
+bind _ _                   _ = error "invalid"
 
 step :: Expression -> Expression
-step (Bruijn exp                        ) = Bruijn exp
-step (Application (Abstraction exp) app ) = (bind (app <-> (-1)) exp 0) <+> 0
-step (Application exp1              exp2) = Application (step exp1) (step exp2)
-step (Abstraction exp                   ) = Abstraction (step exp)
+step (Bruijn e) = Bruijn e
+step (Application (Abstraction e) app) = (bind (app <-> (-1)) e 0) <+> 0
+step (Application e1 e2) = Application (step e1) (step e2)
+step (Abstraction e) = Abstraction (step e)
+step _ = error "invalid"
 
 reduceable :: Expression -> Bool
-reduceable (Bruijn   _                      ) = False
-reduceable (Variable _                      ) = True
-reduceable (Application (Abstraction _) _   ) = True
-reduceable (Application exp1 exp2) = reduceable exp1 || reduceable exp2
-reduceable (Abstraction exp                 ) = reduceable exp
+reduceable (Bruijn   _                    ) = False
+reduceable (Variable _                    ) = True
+reduceable (Application (Abstraction _) _ ) = True
+reduceable (Application e1              e2) = reduceable e1 || reduceable e2
+reduceable (Abstraction e                 ) = reduceable e
 
 -- alpha conversion is not needed with de bruijn indexing
 reduce :: Expression -> Expression

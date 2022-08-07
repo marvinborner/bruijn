@@ -6,7 +6,7 @@ cabal-version: 1.12
 
 name:           bruijn
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/bruijn#readme>
+description:    Please see the README on GitHub at <https://github.com/marvinborner/bruijn>
 homepage:       https://github.com/githubuser/bruijn#readme
 bug-reports:    https://github.com/githubuser/bruijn/issues
 author:         Marvin Borner
@@ -44,6 +44,7 @@ library
       src
   default-extensions:
       LambdaCase
+  ghc-options: -Wall -Wextra -Werror -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , binary
@@ -65,7 +66,7 @@ executable bruijn
       app
   default-extensions:
       LambdaCase
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , binary

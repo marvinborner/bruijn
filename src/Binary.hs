@@ -5,25 +5,23 @@ module Binary
   , fromBitString
   ) where
 
-import           Control.Applicative
 import           Data.Binary                    ( decode
                                                 , encode
                                                 )
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString.Lazy          as Byte
-import           Data.Char
 import           Data.Int                       ( Int8 )
 import           Helper
 
 toBinary :: Expression -> String
 toBinary (Bruijn      x        ) = (replicate (x + 1) '1') ++ "0"
-toBinary (Abstraction exp      ) = "00" ++ toBinary exp
+toBinary (Abstraction e        ) = "00" ++ toBinary e
 toBinary (Application exp1 exp2) = "01" ++ (toBinary exp1) ++ (toBinary exp2)
+toBinary _                       = "" -- shouldn't happen
 
 fromBinary' :: String -> (Expression, String)
 fromBinary' = \case
-  '0' : '0' : rst ->
-    let (exp, rst) = fromBinary' rst in (Abstraction exp, rst)
+  '0' : '0' : rst -> let (e, es) = fromBinary' rst in (Abstraction e, es)
   '0' : '1' : rst ->
     let (exp1, rst1) = fromBinary' rst
         (exp2, rst2) = fromBinary' rst1
@@ -51,6 +49,7 @@ toBitString str = Bit.concat
     (\case
       '0' -> False
       '1' -> True
+      _   -> error "invalid bit"
     )
     str
   ]
@@ -66,4 +65,4 @@ fromBitString bits =
     $ Bit.toList
     $ Bit.take (Bit.length bits - pad bits)
     $ Bit.drop 8 bits
-  where pad bits = decode $ Bit.realizeBitStringLazy $ Bit.take 8 bits
+  where pad = decode . Bit.realizeBitStringLazy . Bit.take 8

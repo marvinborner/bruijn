@@ -5,22 +5,46 @@ import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
 import           Data.List
 
-data Error = UndeclaredFunction String | DuplicateFunction String | InvalidIndex Int | FatalError String
+printContext :: String -> String
+printContext str = p $ lines str
+ where
+  p [l] = "in \"" <> l <> "\"\n"
+  p (l : ls) =
+    (p [l])
+      <> "near\n"
+      <> (intercalate "\n" $ map ("  | " ++) $ take 3 $ ls)
+      <> "\n"
+  p _ = ""
+
+errPrefix :: String
+errPrefix = "\ESC[41mERROR\ESC[0m "
+data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error String
 instance Show Error where
-  show (UndeclaredFunction err) = "ERROR: undeclared function " <> show err
-  show (DuplicateFunction  err) = "ERROR: duplicate function " <> show err
-  show (InvalidIndex       err) = "ERROR: invalid index " <> show err
-  show (FatalError         err) = show err
+  show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
+  show (SyntaxError err        ) = errPrefix <> "invalid syntax\nnear " <> err
+  show (UndeclaredFunction func) =
+    errPrefix <> "undeclared function " <> show func
+  show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
+  show (FailedTest exp1 exp2 red1 red2) =
+    errPrefix
+      <> "test failed: "
+      <> show exp1
+      <> " = "
+      <> show exp2
+      <> "\n      reduced to "
+      <> show red1
+      <> " = "
+      <> show red2
 type Failable = Either Error
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Import String String | Test Expression Expression
+data Instruction = Define String Expression [Instruction] String | Evaluate Expression | Comment | Import String String | Test Expression Expression
   deriving (Show)
 instance Show Expression where
-  show (Bruijn      x  ) = "\ESC[31m" <> show x <> "\ESC[0m"
-  show (Variable    var) = "\ESC[35m" <> var <> "\ESC[0m"
-  show (Abstraction exp) = "\ESC[36m[\ESC[0m" <> show exp <> "\ESC[36m]\ESC[0m"
+  show (Bruijn      x  ) = "\ESC[91m" <> show x <> "\ESC[0m"
+  show (Variable    var) = "\ESC[95m" <> var <> "\ESC[0m"
+  show (Abstraction e  ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
   show (Application exp1 exp2) =
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
@@ -40,8 +64,8 @@ instance Show Environment where
 
 listify :: [Expression] -> Expression
 listify [] = Abstraction (Abstraction (Bruijn 0))
-listify (fst : rst) =
-  Abstraction (Application (Application (Bruijn 0) fst) (listify rst))
+listify (e : es) =
+  Abstraction (Application (Application (Bruijn 0) e) (listify es))
 
 encodeByte :: Bit.BitString -> Expression
 encodeByte bits = listify (map encodeBit (Bit.toList bits))
@@ -71,17 +95,19 @@ decimalToTernary n =
   Abstraction $ Abstraction $ Abstraction $ Abstraction $ gen n
  where
   gen 0 = Bruijn 3
-  gen n = Application (Bruijn $ fromIntegral $ mod n 3) (gen $ div (n + 1) 3)
+  gen n' =
+    Application (Bruijn $ fromIntegral $ mod n' 3) (gen $ div (n' + 1) 3)
 
 ternaryToDecimal :: Expression -> Integer
-ternaryToDecimal exp = sum $ zipWith (*) (resolve exp) (iterate (* 3) 1)
+ternaryToDecimal e = sum $ zipWith (*) (resolve e) (iterate (* 3) 1)
  where
   multiplier (Bruijn 0) = 0
   multiplier (Bruijn 1) = 1
   multiplier (Bruijn 2) = (-1)
+  multiplier _          = 0 -- ??
   resolve' (Application x@(Bruijn _) (Bruijn 3)) = [multiplier x]
-  resolve' (Application fst@(Bruijn _) rst@(Application _ _)) =
-    (multiplier fst) : (resolve' rst)
+  resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
+    (multiplier x) : (resolve' xs)
   resolve' _ = [0]
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n

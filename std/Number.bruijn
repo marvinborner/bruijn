@@ -125,6 +125,7 @@ inc [snd (0 inc-z inc-neg inc-pos inc-zero)]
 	inc-neg [0 [[pair (up-neg 1) (up-zero 1)]]]
 	inc-zero [0 [[pair (up-zero 1) (up-pos 1)]]]
 	inc-pos [0 [[pair (up-pos 1) (up-neg 0)]]]
+
 sinc [strip (inc 0)]
 
 :test eq? (inc -42) -41 = T
@@ -139,6 +140,7 @@ dec [snd (0 dec-z dec-neg dec-pos dec-zero)]
 	dec-neg [0 [[pair (up-neg 1) (up-pos 0)]]]
 	dec-zero [0 [[pair (up-zero 1) (up-neg 1)]]]
 	dec-pos [0 [[pair (up-pos 1) (up-zero 1)]]]
+
 sdec [strip (dec 0)]
 
 :test dec -42 = -43
@@ -160,7 +162,8 @@ add [[add-abs 1 (abstractify 0)]]
 	add-a-zero [[[1 (add-b-zero 1) add-b-neg add-b-pos add-b-zero]]]
 	add-z [[0 (dec (normalize 1)) (inc (normalize 1)) (normalize 1)]]
 	add-abs [add-c (0 add-z add-a-neg add-a-pos add-a-zero)]
-# sadd [[strip (add 1 0)]]
+
+sadd [[strip (add 1 0)]]
 
 :test eq? (add -42 -1) -43 = T
 :test eq? (add -5 +6) +1 = T
@@ -171,6 +174,7 @@ add [[add-abs 1 (abstractify 0)]]
 
 # subs two balanced ternary numbers (can introduce leading 0s)
 sub [[add 1 (negate 0)]]
+
 ssub [[strip (sub 1 0)]]
 
 :test eq? (sub -42 -1) -41 = T
@@ -185,11 +189,10 @@ mul [[1 +0 mul-neg mul-pos mul-zero]]
 	mul-neg [sub (up-zero 0) 1]
 	mul-pos [add (up-zero 0) 1]
 	mul-zero [up-zero 0]
+
 smul [[strip (mul 1 0)]]
 
 :test eq? (mul +42 +0) +0 = T
 :test eq? (mul -1 +42) -42 = T
 :test eq? (mul +3 +11) +33 = T
 :test eq? (mul +42 -4) -168 = T
-
-main [inc +1]

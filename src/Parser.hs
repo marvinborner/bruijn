@@ -6,7 +6,6 @@ module Parser
 import           Control.Monad                  ( ap
                                                 , void
                                                 )
-import           Data.Functor.Identity
 import           Data.Void
 import           Helper
 import           Text.Megaparsec         hiding ( parseTest )
@@ -17,8 +16,8 @@ type Parser = Parsec Void String
 
 -- exactly one space
 -- TODO: replace many scs with sc
-sc :: Parser ()
-sc = void $ char ' '
+-- sc :: Parser ()
+-- sc = void $ char ' '
 
 -- zero or more spaces
 scs :: Parser ()
@@ -63,10 +62,10 @@ importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
-  symbol "[" <?> "opening abstraction"
-  exp <- parseExpression
-  symbol "]" <?> "closing abstraction"
-  pure $ Abstraction exp
+  _ <- symbol "[" <?> "opening abstraction"
+  e <- parseExpression
+  _ <- symbol "]" <?> "closing abstraction"
+  pure $ Abstraction e
 
 parseApplication :: Parser Expression
 parseApplication = do
@@ -109,41 +108,43 @@ parseSingleton =
 parseExpression :: Parser Expression
 parseExpression = do
   scs
-  expr <- parseApplication <|> parseSingleton
+  e <- parseApplication <|> parseSingleton
   scs
-  pure expr <?> "expression"
+  pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
 parseEvaluate = Evaluate <$> parseExpression
 
 parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
+  inp <- getInput
   var <- defIdentifier
   scs
-  exp  <- parseExpression
+  e    <- parseExpression
   -- TODO: Fix >1 sub-defs
   subs <-
     (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
-  pure $ Define var exp subs
+  pure $ Define var e subs inp
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
+  inp <- getInput
   var <- defIdentifier
   scs
-  symbol "="
+  _ <- symbol "="
   scs
-  exp <- parseExpression
-  pure $ Define var exp []
+  e <- parseExpression
+  pure $ Define var e [] inp
 
 parseComment :: Parser ()
 parseComment = do
-  string "# " <?> "comment"
-  some $ noneOf "\r\n"
+  _ <- string "# " <?> "comment"
+  _ <- some $ noneOf "\r\n"
   return ()
 
 parseImport :: Parser Instruction
 parseImport = do
-  string ":import " <?> "import"
+  _ <- string ":import " <?> "import"
   scs
   path <- importPath
   scs
@@ -153,25 +154,25 @@ parseImport = do
 
 parsePrint :: Parser Instruction
 parsePrint = do
-  string ":print " <?> "print"
+  _ <- string ":print " <?> "print"
   scs
-  exp <- parseExpression
+  e <- parseExpression
   scs
-  pure $ Evaluate exp
+  pure $ Evaluate e
 
 parseTest :: Parser Instruction
 parseTest = do
-  string ":test " <?> "test"
-  exp1 <- parseExpression
+  _  <- string ":test " <?> "test"
+  e1 <- parseExpression
   scs
-  symbol "="
+  _ <- symbol "="
   scs
-  exp2 <- parseExpression
-  pure $ Test exp1 exp2
+  e2 <- parseExpression
+  pure $ Test e1 e2
 
 parseCommentBlock :: Parser Instruction
 parseCommentBlock = do
-  sepEndBy1 parseComment newline
+  _ <- sepEndBy1 parseComment newline
   eof
   return Comment
 

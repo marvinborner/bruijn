@@ -20,7 +20,7 @@ data-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/bruijn#readme>
+description:         Please see the README on GitHub at <https://github.com/marvinborner/bruijn>
 
 default-extensions:
   - LambdaCase
@@ -39,13 +39,20 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Wall
+  - -Wextra
+  - -Werror
+  - -Wincomplete-uni-patterns
+  - -Wincomplete-record-updates
+  - -Widentities
+  - -Wredundant-constraints
 
 executables:
   bruijn:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
