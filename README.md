@@ -25,6 +25,7 @@ Bruijn indices written in Haskell.
 -   Contracts as a form of typing because typing while guaranteeing
     turing-completeness isn’t a trivial
     [problem](https://cstheory.stackexchange.com/a/31321) in LC
+-   Strongly opinionated parser with strict syntax rules
 -   Recursion can be implemented using combinators such as Y or ω
 -   Included standard library featuring many useful functions (see
     `std/`)
@@ -55,7 +56,6 @@ from bottom to top (starting at `main`).
 The following are the main syntax specifications in the (minorly
 extended) [Backus-Naur
 form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
-Additional spaces are optional but allowed.
 
     <identifier>  ::= [a-ω,A-Ω,_][a-ω,A-Ω,0-9,?,!,',-]*
     <namespace>   ::= [A-Ω][a-ω,A-Ω]+

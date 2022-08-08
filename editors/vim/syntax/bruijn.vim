@@ -7,7 +7,7 @@ endif
 
 syn match bruijnApplication /[()]/
 syn match bruijnAbstraction /[[\]]/
-syn match bruijnIndex display "\d"
+syn match bruijnIndex /\([^0-9]\)\@<=\d\([^0-9]\)\@=/
 syn match bruijnNumber /[+-]\d\+/
 syn match bruijnDefinition /^\t*\S\+/
 syn match bruijnKeyword /:test\|:import\|:print/

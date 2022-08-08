@@ -10,78 +10,60 @@ import           Data.Void
 import           Helper
 import           Text.Megaparsec         hiding ( parseTest )
 import           Text.Megaparsec.Char
-import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Parser = Parsec Void String
 
 -- exactly one space
--- TODO: replace many scs with sc
--- sc :: Parser ()
--- sc = void $ char ' '
+sc :: Parser ()
+sc = void $ char ' '
 
 -- zero or more spaces
-scs :: Parser ()
-scs = void $ takeWhileP (Just "white space") (== ' ')
-
-lexeme :: Parser a -> Parser a
-lexeme = L.lexeme scs
-
-symbol :: String -> Parser String
-symbol = L.symbol scs
+-- scs :: Parser ()
+-- scs = void $ takeWhileP (Just "white space") (== ' ')
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
-  lexeme
-      ((:) <$> (letterChar <|> char '_') <*> many
-        (alphaNumChar <|> oneOf "?!'_-")
-      )
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
     <?> "defining identifier"
 
 -- TODO: write as extension to defIdentifier
 identifier :: Parser String
 identifier =
-  lexeme
-      ((:) <$> (letterChar <|> char '_') <*> many
-        (alphaNumChar <|> oneOf "?!'_-.")
-      )
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-."))
     <?> "identifier"
 
 namespace :: Parser String
 namespace =
-  lexeme ((:) <$> upperChar <*> many letterChar)
-    <|> string "."
-    <|> (scs >> return "")
-    <?> "namespace"
+  ((:) <$> upperChar <*> many letterChar) <|> string "." <?> "namespace"
 
 parens :: Parser a -> Parser a
-parens = between (symbol "(") (symbol ")")
+parens = between (string "(") (string ")")
 
 importPath :: Parser String
 importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
-  _ <- symbol "[" <?> "opening abstraction"
+  _ <- string "[" <?> "opening abstraction"
   e <- parseExpression
-  _ <- symbol "]" <?> "closing abstraction"
+  _ <- string "]" <?> "closing abstraction"
   pure $ Abstraction e
 
+-- one or more singletons wrapped in coupled application
 parseApplication :: Parser Expression
 parseApplication = do
-  s <- sepBy1 parseSingleton scs
+  s <- sepEndBy1 parseSingleton sc -- TODO: Fix consuming space at end (re. test =)
   pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
 parseBruijn = do
-  idx <- digitChar
-  scs
+  idx <- digitChar <?> "bruijn index"
   pure $ Bruijn $ (read . pure) idx
 
 parseNumeral :: Parser Expression
 parseNumeral = do
   num <- number <?> "signed number"
-  scs
   pure $ decimalToTernary num
  where
   sign :: Parser (Integer -> Integer)
@@ -94,7 +76,6 @@ parseNumeral = do
 parseVariable :: Parser Expression
 parseVariable = do
   var <- identifier
-  scs
   pure $ Variable var
 
 parseSingleton :: Parser Expression
@@ -107,9 +88,7 @@ parseSingleton =
 
 parseExpression :: Parser Expression
 parseExpression = do
-  scs
-  e <- parseApplication <|> parseSingleton
-  scs
+  e <- parseApplication
   pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
@@ -119,7 +98,7 @@ parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
   inp <- getInput
   var <- defIdentifier
-  scs
+  sc
   e    <- parseExpression
   -- TODO: Fix >1 sub-defs
   subs <-
@@ -130,10 +109,8 @@ parseReplDefine :: Parser Instruction
 parseReplDefine = do
   inp <- getInput
   var <- defIdentifier
-  scs
-  _ <- symbol "="
-  scs
-  e <- parseExpression
+  _   <- string " = "
+  e   <- parseExpression
   pure $ Define var e [] inp
 
 parseComment :: Parser ()
@@ -144,29 +121,22 @@ parseComment = do
 
 parseImport :: Parser Instruction
 parseImport = do
-  _ <- string ":import " <?> "import"
-  scs
+  _    <- string ":import " <?> "import"
   path <- importPath
-  scs
-  ns <- namespace
-  scs
+  ns   <- (try $ sc *> namespace) <|> (eof >> return "")
   pure $ Import (path ++ ".bruijn") ns
 
 parsePrint :: Parser Instruction
 parsePrint = do
   _ <- string ":print " <?> "print"
-  scs
   e <- parseExpression
-  scs
   pure $ Evaluate e
 
 parseTest :: Parser Instruction
 parseTest = do
   _  <- string ":test " <?> "test"
   e1 <- parseExpression
-  scs
-  _ <- symbol "="
-  scs
+  _  <- string "= " -- TODO: Disallow missing space (non-trivial)
   e2 <- parseExpression
   pure $ Test e1 e2
 
