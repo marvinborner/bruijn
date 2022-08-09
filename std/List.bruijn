@@ -78,9 +78,6 @@ filter Z [[[empty? 0 [empty] [2 (head 1) (cons (head 1)) I (3 2 (tail 1))] I]]]
 
 :test filter N.zero? (cons +1 (cons +0 (cons +3 empty))) = cons +0 empty
 
-# checks whether an element is part of a list
-elem [[foldr [or (N.eq? 1 0)] F 2]]
-
 # returns the last element of a list
 last Z [[empty? 0 [empty] [empty? (tail 1) (head 1) (2 (tail 1))] I]]
 

@@ -18,7 +18,7 @@ printContext str = p $ lines str
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error String
+data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error String | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SyntaxError err        ) = errPrefix <> "invalid syntax\nnear " <> err
@@ -35,6 +35,7 @@ instance Show Error where
       <> show red1
       <> " = "
       <> show red2
+  show (ImportError path) = errPrefix <> "invalid import " <> show path
 type Failable = Either Error
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
@@ -49,6 +50,11 @@ instance Show Expression where
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
 
 type EnvDef = (String, Expression)
+-- TODO: Add EvalConf to EnvState?
+data EvalConf = EvalConf
+  { isRepl    :: Bool
+  , evalPaths :: [String]
+  }
 data Environment = Environment [(EnvDef, Environment)]
 type Program = State Environment
 
