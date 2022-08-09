@@ -1,54 +1,129 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-#              Copyright (c) 2017-2019 Sandro Lovnički
-# TODO: Tests.
 
 :import std/Combinator .
 
+:import std/Pair P
+
 :import std/Logic .
 
+:import std/Number N
+
 # empty list element
-empty [[1]]
-
-# appends an element to a list
-append [[[[0 3 2]]]]
-
-# returns the head of a list or empty
-head [0 F T]
-
-# returns the tail of a list or empty
-tail [0 F F]
+empty F
 
 # returns whether a list is empty
-empty? [0 T [[F]]]
+empty? [0 [[[F]]] T]
 
-# returns the last element of a list or empty
-last Z [[empty? 0 [empty] [empty? (tail 1) (head 1) (2 (tail 1))] I]]
+:test empty? empty = T
+:test empty? (cons +2 empty) = F
 
-# swaps both sides of a list
-swap [[[2 0 1]]]
+# appends an element to a list
+cons P.pair
 
-# TODO: Fix ternary inc
-# finds index of number in list or empty
-# find [[Y rec 1 0 +0]]
-# 	rec [[[[(empty? 1) empty ((eq? 2 (head 1)) 0 (3 2 (tail 1) (S 0)))]]]]
+:test cons +1 (cons +2 empty) = P.pair +1 (P.pair +2 empty)
 
-# TODO: Fix ternary inc
-# gets element of list by index or empty
-# get [[Y rec 1 0 +0]]
-# 	rec [[[[(empty? 1) empty ((eq? 2 0) (head 1) (3 2 (tail 1) (S 0)))]]]]
+# returns the head of a list or empty
+head P.fst
 
-# merges two lists to one
-merge Y rec
-	rec [[[1 0 [[append 1 (4 0 2)]]]]]
+:test head (cons +1 (cons +2 empty)) = +1
+
+# returns the tail of a list or empty
+tail P.snd
+
+:test tail (cons +1 (cons +2 empty)) = cons +2 empty
+
+# returns the length of a list in balanced ternary
+length Z [[[empty? 0 [2] [3 (N.inc 2) (tail 1)] I]]] +0
+
+:test length (cons +1 (cons +2 empty)) = +2
+:test length empty = +0
+
+# returns the element at index in list
+# TODO: fix for balanced ternary
+index [[head (1 tail 0)]]
 
 # reverses a list
-reverse [Y rec 0 empty]
-	rec [[[(empty? 1) 0 (2 (tail 1) (append (head 1) 0))]]]
+reverse Z [[[empty? 0 [2] [3 (cons (head 1) 2) (tail 1)] I]]] empty
 
-# removes elements of a list that satisfy a condition
-remove Y rec
-	rec [[[0 empty [[((3 1) I (append 1)) (4 3 0)]]]]]
+:test reverse (cons +1 (cons +2 (cons +3 empty))) = cons +3 (cons +2 (cons +1 empty))
 
-# sorts a list using quick sort (leq? and gre? as argument)
-sort [[Y (rec 1 0)]]
-	rec [[[[0 empty [[merge (3 (remove (swap 4 1) 0)) (append 1 (3 (remove (swap 5 1) 0)))]]]]]]
+# creates list out of n terms
+# TODO: fix for balanced ternary
+list [0 [[[2 (cons 0 1)]]] reverse empty]
+
+# merges two lists
+merge Z [[[empty? 1 [1] [cons (head 2) (3 (tail 2) 1)] I]]]
+
+:test merge (cons +1 (cons +2 (cons +3 empty))) (cons +4 empty) = cons +1 (cons +2 (cons +3 (cons +4 empty)))
+
+# maps each element to a function
+map Z [[[empty? 0 [empty] [cons (2 (head 1)) (3 2 (tail 1))] I]]]
+
+:test map N.inc (cons +1 (cons +2 (cons +3 empty))) = cons +2 (cons +3 (cons +4 empty))
+
+# applies a left fold on a list
+foldl Z [[[[empty? 0 [2] [4 3 (3 2 (head 1)) (tail 1)] I]]]]
+
+:test N.eq? (foldl N.add +0 (cons +1 (cons +2 (cons +3 empty)))) +6 = T
+:test N.eq? (foldl N.sub +6 (cons +1 (cons +2 (cons +3 empty)))) +0 = T
+
+# applies a right fold on a list
+foldr [[[Z [[empty? 0 [4] [5 (head 1) (2 (tail 1))] I]] 0]]]
+
+:test N.eq? (foldr N.add +0 (cons +1 (cons +2 (cons +3 empty)))) +6 = T
+:test N.eq? (foldr N.sub +2 (cons +1 (cons +2 (cons +3 empty)))) +0 = T
+
+# filters a list based on a predicate
+filter Z [[[empty? 0 [empty] [2 (head 1) (cons (head 1)) I (3 2 (tail 1))] I]]]
+
+:test filter N.zero? (cons +1 (cons +0 (cons +3 empty))) = cons +0 empty
+
+# checks whether an element is part of a list
+elem [[foldr [or (N.eq? 1 0)] F 2]]
+
+# returns the last element of a list
+last Z [[empty? 0 [empty] [empty? (tail 1) (head 1) (2 (tail 1))] I]]
+
+:test last (cons +1 (cons +2 (cons +3 empty))) = +3
+
+# returns everything but the last element of a list
+init Z [[empty? 0 [empty] [empty? (tail 1) empty (cons (head 1) (2 (tail 1)))] I]]
+
+:test init (cons +1 (cons +2 (cons +3 empty))) = cons +1 (cons +2 empty)
+
+# zips two lists discarding excess elements
+zip Z [[[empty? 1 [empty] [empty? 1 empty (cons (cons (head 2) (head 1)) (3 (tail 2) (tail 1)))] I]]]
+
+:test zip (cons +1 (cons +2 empty)) (cons +2 (cons +1 empty)) = cons (P.pair +1 +2) (cons (P.pair +2 +1) empty)
+
+# applies pairs of the zipped list as arguments to a function
+zip-with Z [[[[empty? 1 [empty] [empty? 1 empty (cons (3 (head 2) (head 1)) (4 3 (tail 2) (tail 1)))] I]]]]
+
+:test zip-with N.add (cons +1 (cons +2 empty)) (cons +2 (cons +1 empty)) = cons +3 (cons +3 empty)
+
+# returns first n elements of a list
+take Z [[[empty? 0 [empty] [N.zero? 2 empty (cons (head 1) (3 (N.dec 2) (tail 1)))] I]]]
+
+:test take +2 (cons +1 (cons +2 (cons +3 empty))) = cons +1 (cons +2 empty)
+
+# takes elements while a predicate is satisfied
+take-while Z [[[empty? 0 [empty] [2 (head 1) (cons (head 1) (3 2 (tail 1))) empty] I]]]
+
+:test take-while N.zero? (cons +0 (cons +0 (cons +1 empty))) = cons +0 (cons +0 empty)
+
+# removes first n elements of a list
+drop Z [[[empty? 0 [empty] [N.zero? 2 1 (3 (N.dec 2) (tail 1))] I]]]
+
+:test drop +2 (cons +1 (cons +2 (cons +3 empty))) = cons +3 empty
+
+# removes elements while a predicate is satisfied
+drop-while Z [[[empty? 0 [empty] [2 (head 1) (3 2 (tail 1)) 1] I]]]
+
+:test drop-while N.zero? (cons +0 (cons +0 (cons +1 empty))) = cons +1 empty
+
+# returns a list with n-times a element
+repeat Z [[[N.zero? 1 [empty] [P.pair 1 (3 (N.dec 2) 1)] I]]]
+
+:test repeat +5 +4 = (cons +4 (cons +4 (cons +4 (cons +4 (cons +4 empty)))))
+:test repeat +1 +4 = (cons +4 empty)
+:test repeat +0 +4 = empty

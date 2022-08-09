@@ -5,8 +5,6 @@
 
 :import std/Pair .
 
-:import std/List
-
 :import std/Logic .
 
 # negative trit indicating coeffecient of -1
@@ -72,14 +70,6 @@ down [snd (0 z neg pos zero)]
 	pos [0 [[pair (up-pos 1) 1]]]
 	zero [0 [[pair (up-zero 1) 1]]]
 
-# extracts least significant trit from balanced ternary numbers
-lst [0 trit-zero [trit-neg] [trit-pos] [trit-zero]]
-
-:test lst +0 = trit-zero
-:test lst -1 = trit-neg
-:test lst +1 = trit-pos
-:test lst +42 = trit-zero
-
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
 
@@ -89,7 +79,7 @@ negate [[[[[4 3 1 2 0]]]]]
 
 # converts a balanced ternary number to a list of trits
 list! [0 z neg pos zero]
-	z List.empty
+	z F
 	neg [[pair trit-neg 1]]
 	pos [[pair trit-pos 1]]
 	zero [[pair trit-zero 1]]
@@ -107,10 +97,21 @@ strip [fst (0 z neg pos zero)]
 :test strip [[[[2 (0 (0 (0 (0 3))))]]]] = -1
 :test strip +42 = +42
 
+# extracts least significant trit from balanced ternary numbers
+lst [0 trit-zero [trit-neg] [trit-pos] [trit-zero]]
+
+:test lst +0 = trit-zero
+:test lst -1 = trit-neg
+:test lst +1 = trit-pos
+:test lst +42 = trit-zero
+
 # extracts most significant trit from balanced ternary numbers
 # TODO: Find a more elegant way to do this
-mst [fix (List.last (list! (strip 0)))]
-	fix [if (or (trit-neg? 0) (or (trit-pos? 0) (trit-zero? 0))) 0 [[0]]]
+# mst [fix (List.last (list! (strip 0)))]
+# fix [if (or (trit-neg? 0) (or (trit-pos? 0) (trit-zero? 0))) 0 [[0]]]
+
+# TODO: Fix list import loop
+mst [trit-zero]
 
 :test mst +0 = trit-zero
 :test mst -1 = trit-neg
@@ -163,7 +164,7 @@ normal! ω rec
 :test normal! (abstract! -42) = -42
 
 # checks whether two balanced ternary numbers are equal
-# -> removes leading 0s!
+# -> ignores leading 0s!
 eq? [[abs 1 (abstract! 0)]]
 	z [zero? (normal! 0)]
 	neg [[0 F [2 0] [F] [F]]]
@@ -192,6 +193,7 @@ inc [snd (0 z neg pos zero)]
 	zero [0 [[pair (up-zero 1) (up-pos 1)]]]
 	pos [0 [[pair (up-pos 1) (up-neg 0)]]]
 
+# adds +1 to a balanced ternary number and strips leading 0s
 sinc [strip (inc 0)]
 
 :test eq? (inc -42) -41 = T
@@ -207,6 +209,7 @@ dec [snd (0 dec-z dec-neg dec-pos dec-zero)]
 	dec-zero [0 [[pair (up-zero 1) (up-neg 1)]]]
 	dec-pos [0 [[pair (up-pos 1) (up-zero 1)]]]
 
+# subs +1 from a balanced ternary number and strips leading 0s
 sdec [strip (dec 0)]
 
 :test eq? (dec -42) -43 = T
@@ -229,6 +232,7 @@ add [[abs 1 (abstract! 0)]]
 	z [[0 (dec (normal! 1)) (inc (normal! 1)) (normal! 1)]]
 	abs [c (0 z a-neg a-pos a-zero)]
 
+# adds two balanced ternary numbers and strips leading 0s
 sadd [[strip (add 1 0)]]
 
 :test eq? (add -42 -1) -43 = T
@@ -241,6 +245,7 @@ sadd [[strip (add 1 0)]]
 # subs two balanced ternary numbers (can introduce leading 0s)
 sub [[add 1 (negate 0)]]
 
+# subs two balanced ternary numbers and strips leading 0s
 ssub [[strip (sub 1 0)]]
 
 :test eq? (sub -42 -1) -41 = T
@@ -255,8 +260,6 @@ gre? [[negative? (sub 0 1)]]
 
 # returns whether number is less than or equal to other number
 leq? [[not (gre? 1 0)]]
-
-:test List.sort leq? gre? (List.append +1 (List.append +4 (List.append +3 (List.append +0 List.empty)))) = List.append +0 (List.append +1 (List.append +3 (List.append +4 List.empty)))
 
 # muls two balanced ternary numbers (can introduce leading 0s)
 mul [[1 +0 neg pos zero]]
