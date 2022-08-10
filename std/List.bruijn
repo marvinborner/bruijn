@@ -21,6 +21,7 @@ empty? [0 [[[F]]] T]
 cons P.pair
 
 :test cons +1 (cons +2 empty) = P.pair +1 (P.pair +2 empty)
+:test cons 'a' (cons 'b' (cons 'c' empty)) = "abc"
 
 # returns the head of a list or empty
 head P.fst

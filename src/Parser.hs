@@ -73,6 +73,16 @@ parseNumeral = do
   number :: Parser Integer
   number = ap sign nat
 
+parseString :: Parser Expression
+parseString = do
+  str <- between (char '\"') (char '\"') (some $ satisfy (`notElem` "\"\\"))
+  pure (stringToExpression str) <?> "string"
+
+parseChar :: Parser Expression
+parseChar = do
+  ch <- between (char '\'') (char '\'') (satisfy (`notElem` "\"\\"))
+  pure (charToExpression ch) <?> "char"
+
 parseVariable :: Parser Expression
 parseVariable = do
   var <- identifier
@@ -82,6 +92,8 @@ parseSingleton :: Parser Expression
 parseSingleton =
   parseBruijn
     <|> parseNumeral
+    <|> parseString
+    <|> parseChar
     <|> parseAbstraction
     <|> (parens parseApplication <?> "enclosed application")
     <|> parseVariable

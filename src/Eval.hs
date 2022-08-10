@@ -137,7 +137,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
                   <> (show e')
                   <> "\n*> "
                   <> (show reduced)
-                  <> (if likeTernary reduced
+                  <> (if likeTernary reduced -- TODO: Also sugar string/char
                        then "\t(" <> (show $ ternaryToDecimal reduced) <> ")"
                        else ""
                      )
@@ -255,5 +255,5 @@ evalMain = do
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
     ['-' : _]    -> usage
-    [path   ]    -> evalFile path putStrLn decodeStdout
+    [path   ]    -> evalFile path putStr decodeStdout
     _            -> usage

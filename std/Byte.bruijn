@@ -1,0 +1,14 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+:import std/Combinator .
+
+:import std/List .
+
+# bit 0
+b0 F
+
+# bit 1
+b1 T
+
+# generates a byte with correct endianness
+byte [[[[[[[[cons 0 (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (cons 6 (cons 7 empty)))))))]]]]]]]]

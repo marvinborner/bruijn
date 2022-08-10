@@ -19,6 +19,7 @@ extra-source-files:
     README.md
 data-files:
     config
+    std/Byte.bruijn
     std/Church.bruijn
     std/Combinator.bruijn
     std/List.bruijn

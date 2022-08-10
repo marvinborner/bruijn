@@ -8,6 +8,7 @@ module Helper where
 import qualified Control.Monad.State           as S
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
+import qualified Data.ByteString.Char8         as C
 import           Data.List
 import           Text.Megaparsec
 
@@ -136,8 +137,15 @@ encodeBytes bytes = listify $ map
   (encodeByte . Bit.toList . Bit.bitString . Byte.pack . (: []))
   (Byte.unpack bytes)
 
+stringToExpression :: String -> Expression
+stringToExpression = encodeBytes . C.pack
+
+charToExpression :: Char -> Expression
+charToExpression ch = encodeByte $ Bit.toList $ Bit.bitString $ C.pack [ch]
+
 encodeStdin :: IO Expression
 encodeStdin = do
+  putStrLn "Waiting for stdin eof"
   bytes <- Byte.getContents
   pure $ encodeBytes bytes
 
@@ -153,10 +161,10 @@ decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstr
   = False : (decodeByte es)
 decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 1)))) es))
   = True : (decodeByte es)
-decodeByte _ = error "invalid"
+decodeByte _ = error "invalid" -- TODO: Better errors using Maybe
 
 decodeStdout :: Expression -> String
-decodeStdout e = show $ Byte.concat $ map
+decodeStdout e = C.unpack $ Byte.concat $ map
   (Bit.realizeBitStringStrict . Bit.fromList . decodeByte)
   (unlistify e)
 
