@@ -73,9 +73,16 @@ parseNumeral = do
   number :: Parser Integer
   number = ap sign nat
 
+specialEscape :: Parser Char
+specialEscape =
+  choice (zipWith (\c r -> r <$ char c) "bnfrt\\\"/" "\b\n\f\r\t\\\"/")
+
 parseString :: Parser Expression
 parseString = do
-  str <- between (char '\"') (char '\"') (some $ satisfy (`notElem` "\"\\"))
+  str <- between
+    (char '\"')
+    (char '\"')
+    (some $ (char '\\' *> specialEscape) <|> (satisfy (`notElem` "\"\\")))
   pure (stringToExpression str) <?> "string"
 
 parseChar :: Parser Expression

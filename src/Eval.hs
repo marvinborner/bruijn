@@ -137,14 +137,12 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
                   <> (show e')
                   <> "\n*> "
                   <> (show reduced)
-                  <> (if likeTernary reduced -- TODO: Also sugar string/char
-                       then "\t(" <> (show $ ternaryToDecimal reduced) <> ")"
-                       else ""
-                     )
+                  <> " "
+                  <> (humanifyExpression reduced)
                 where reduced = reduce e'
             )
           >> rec s conf
-  Test e1 e2 ->
+  Test e1 e2 -> if (evalTests conf) then
     let (res, _) = evalTest e1 e2 (Environment []) `runState` env
     in  case res of
           Left err -> print (ContextualError err (Context inp (nicePath conf))) >> pure s
@@ -157,6 +155,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
               lhs = reduce e1'
               rhs = reduce e2'
           _ -> rec s conf
+    else rec s conf
   _ -> rec s conf
 evalInstruction instr s rec conf = evalInstruction (ContextualInstruction instr "<unknown>") s rec conf
 
@@ -175,13 +174,19 @@ evalMainFunc (Environment env) arg = do
   e <- lookup "main" (map fst env)
   pure $ reduce $ Application e arg
 
-evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalFile path wr conv = do
-  EnvState env <- loadFile path (EvalConf { isRepl = False, nicePath = path, evalPaths = [] })
+evalFileConf :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> IO ()
+evalFileConf path wr conv conf = do
+  EnvState env <- loadFile path conf
   arg          <- encodeStdin
   case evalMainFunc env arg of
     Nothing  -> print $ ContextualError (UndeclaredFunction "main") (Context "" path)
     Just e -> wr $ conv e
+
+evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
+evalFile path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = True, nicePath = path, evalPaths = [] })
+
+evalYolo :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
+evalYolo path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = False, nicePath = path, evalPaths = [] })
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path rd conv = do
@@ -197,8 +202,8 @@ repl s =
     )
     >>= (\case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
-          Just line -> do
-            s' <- (liftIO $ eval [line] s (EvalConf { isRepl = True, nicePath = "<repl>", evalPaths = [] }))
+          Just line -> do -- TODO: Use -y in repl for YOLO lifestyle
+            s' <- (liftIO $ eval [line] s (EvalConf { isRepl = True, evalTests = True, nicePath = "<repl>", evalPaths = [] }))
             lift (StrictState.put s')
             repl s'
         )
@@ -239,11 +244,13 @@ usage = do
   putStrLn "-B\tcompile path to ASCII-BLC"
   putStrLn "-e\texecute path as binary-BLC"
   putStrLn "-E\texecute path as ASCII-BLC"
+  putStrLn "-y\tdisable execution of tests - YOLO"
   putStrLn "-*\tshow this help"
   putStrLn "<default>\texecute path as text-bruijn"
 
 evalMain :: IO ()
 evalMain = do
+  -- TODO: use actual args parser
   args <- getArgs
   case args of
     []           -> runRepl
@@ -254,6 +261,7 @@ evalMain = do
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
+    ["-y", path] -> evalYolo path putStr humanifyExpression
     ['-' : _]    -> usage
-    [path   ]    -> evalFile path putStr decodeStdout
+    [path   ]    -> evalFile path putStr humanifyExpression
     _            -> usage

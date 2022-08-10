@@ -104,6 +104,7 @@ type EnvDef = (String, Expression)
 -- TODO: Add EvalConf to EnvState?
 data EvalConf = EvalConf
   { isRepl    :: Bool
+  , evalTests :: Bool
   , nicePath  :: String
   , evalPaths :: [String]
   }
@@ -145,34 +146,45 @@ charToExpression ch = encodeByte $ Bit.toList $ Bit.bitString $ C.pack [ch]
 
 encodeStdin :: IO Expression
 encodeStdin = do
-  putStrLn "Waiting for stdin eof"
   bytes <- Byte.getContents
   pure $ encodeBytes bytes
 
-unlistify :: Expression -> [Expression]
-unlistify (Abstraction (Abstraction (Bruijn 0))) = []
+unlistify :: Expression -> Maybe [Expression]
+unlistify (Abstraction (Abstraction (Bruijn 0))) = Just []
 unlistify (Abstraction (Application (Application (Bruijn 0) e) es)) =
-  e : (unlistify es)
-unlistify _ = error "invalid"
+  (:) <$> Just e <*> (unlistify es)
+unlistify _ = Nothing
 
-decodeByte :: Expression -> [Bool]
-decodeByte (Abstraction (Abstraction (Bruijn 0))) = []
+decodeByte :: Expression -> Maybe [Bool]
+decodeByte (Abstraction (Abstraction (Bruijn 0))) = Just []
 decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 0)))) es))
-  = False : (decodeByte es)
+  = (:) <$> Just False <*> (decodeByte es)
 decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 1)))) es))
-  = True : (decodeByte es)
-decodeByte _ = error "invalid" -- TODO: Better errors using Maybe
+  = (:) <$> Just True <*> (decodeByte es)
+decodeByte _ = Nothing
 
-decodeStdout :: Expression -> String
-decodeStdout e = C.unpack $ Byte.concat $ map
-  (Bit.realizeBitStringStrict . Bit.fromList . decodeByte)
-  (unlistify e)
+decodeStdout :: Expression -> Maybe String
+decodeStdout e = do
+  u <- unlistify e
+  pure $ C.unpack $ Byte.concat $ map
+    (\m -> case decodeByte m of
+      Just b  -> Bit.realizeBitStringStrict $ Bit.fromList b
+      Nothing -> Byte.empty
+    )
+    u
 
 ---
 
-likeTernary :: Expression -> Bool
-likeTernary (Abstraction (Abstraction (Abstraction (Abstraction _)))) = True
-likeTernary _ = False
+-- TODO: Expression -> Maybe Char is missing
+maybeHumanifyExpression :: Expression -> Maybe String
+maybeHumanifyExpression e = ternaryToDecimal e <|> decodeStdout e
+
+humanifyExpression :: Expression -> String
+humanifyExpression e = case maybeHumanifyExpression e of
+  Nothing -> ""
+  Just h  -> h
+
+---
 
 -- Dec to Bal3 in Bruijn encoding: reversed application with 0=>0; 1=>1; T=>2; end=>3
 -- e.g. 0=0=[[[[3]]]]; 2=1T=[[[[2 (0 3)]]]] -5=T11=[[[[0 (0 (2 3))]]]]
@@ -184,17 +196,20 @@ decimalToTernary n =
   gen n' =
     Application (Bruijn $ fromIntegral $ mod n' 3) (gen $ div (n' + 1) 3)
 
-ternaryToDecimal :: Expression -> Integer
-ternaryToDecimal e = sum $ zipWith (*) (resolve e) (iterate (* 3) 1)
+ternaryToDecimal :: Expression -> Maybe String
+ternaryToDecimal e = do
+  res <- resolve e
+  return $ show $ (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer)
  where
-  multiplier (Bruijn 0) = 0
-  multiplier (Bruijn 1) = 1
-  multiplier (Bruijn 2) = (-1)
-  multiplier _          = 0 -- ??
-  resolve' (Application x@(Bruijn _) (Bruijn 3)) = [multiplier x]
+  multiplier (Bruijn 0) = Just 0
+  multiplier (Bruijn 1) = Just 1
+  multiplier (Bruijn 2) = Just (-1)
+  multiplier _          = Nothing
+  resolve' (Application x@(Bruijn _) (Bruijn 3)) =
+    (:) <$> multiplier x <*> Just []
   resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
-    (multiplier x) : (resolve' xs)
-  resolve' _ = [0]
+    (:) <$> (multiplier x) <*> (resolve' xs)
+  resolve' _ = Nothing
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n
-  resolve _ = [0]
+  resolve _ = Nothing
