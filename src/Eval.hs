@@ -41,10 +41,10 @@ loadFile path conf = do
   f <- try $ readFile path :: IO (Either IOError String)
   case f of
     Left exception ->
-      print (exception :: IOError) >> pure (EnvState $ Environment [])
+      print (ContextualError (ImportError $ show (exception :: IOError)) (Context "" (nicePath conf))) >> pure (EnvState $ Environment [])
     Right f' -> eval (filter (not . null) $ split "\n\n" f')
                        (EnvState $ Environment [])
-                       (EvalConf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
+                       (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
 
 evalVar :: String -> Environment -> Program (Failable Expression)
 evalVar var (Environment sub) = state $ \env@(Environment e) ->
@@ -103,13 +103,13 @@ evalInstruction
   -> (EnvState -> EvalConf -> IO EnvState)
   -> EvalConf
   -> IO EnvState
-evalInstruction instr s@(EnvState env) rec conf = case instr of
-  Define name e sub inp -> do
+evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = case instr of
+  Define name e sub -> do
     EnvState subEnv <- evalSubEnv sub s conf
     let
       (res, env') = evalDefine name e subEnv `runState` env
      in  case res of
-          Left  err -> print (ContextualError err inp) >> pure s -- don't continue
+          Left  err -> print (ContextualError err (Context inp (nicePath conf))) >> pure s -- don't continue
           Right _   -> if isRepl conf
             then (putStrLn $ name <> " = " <> show e)
               >> return (EnvState env')
@@ -119,8 +119,8 @@ evalInstruction instr s@(EnvState env) rec conf = case instr of
     lib           <- getDataFileName path -- TODO: Use actual lib directory
     exists        <- doesFileExist lib
     actual        <- pure $ if exists then lib else path
-    if (actual `elem` evalPaths conf) then (print (ImportError path) >> pure s) else do
-      EnvState env' <- loadFile actual conf
+    if (actual `elem` evalPaths conf) then (print (ContextualError (ImportError path) (Context inp (nicePath conf))) >> pure s) else do
+      EnvState env' <- loadFile actual (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
       let prefix | null namespace   = takeBaseName path ++ "."
                  | namespace == "." = ""
                  | otherwise        = namespace ++ "."
@@ -147,7 +147,7 @@ evalInstruction instr s@(EnvState env) rec conf = case instr of
   Test e1 e2 ->
     let (res, _) = evalTest e1 e2 (Environment []) `runState` env
     in  case res of
-          Left err -> print err >> pure s
+          Left err -> print (ContextualError err (Context inp (nicePath conf))) >> pure s
           Right (Test e1' e2') ->
             when
                 (lhs /= rhs)
@@ -158,6 +158,7 @@ evalInstruction instr s@(EnvState env) rec conf = case instr of
               rhs = reduce e2'
           _ -> rec s conf
   _ -> rec s conf
+evalInstruction instr s rec conf = evalInstruction (ContextualInstruction instr "<unknown>") s rec conf
 
 eval :: [String] -> EnvState -> EvalConf -> IO EnvState
 eval []   s _ = return s
@@ -165,7 +166,7 @@ eval [""] s _ = return s
 eval (block : bs) s conf =
   handleInterrupt (putStrLn "<aborted>" >> return s)
     $ case parse blockParser "" block of
-        Left  err   -> print (SyntaxError $ errorBundlePretty err) >> eval bs s conf
+        Left  err   -> print (ContextualError (SyntaxError $ printBundle err) (Context "" (nicePath conf))) >> eval bs s conf
         Right instr -> evalInstruction instr s (eval bs) conf
   where blockParser = if isRepl conf then parseReplLine else parseBlock 0
 
@@ -176,10 +177,10 @@ evalMainFunc (Environment env) arg = do
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 evalFile path wr conv = do
-  EnvState env <- loadFile path (EvalConf { isRepl = False, evalPaths = [] })
+  EnvState env <- loadFile path (EvalConf { isRepl = False, nicePath = path, evalPaths = [] })
   arg          <- encodeStdin
   case evalMainFunc env arg of
-    Nothing  -> print $ ContextualError (UndeclaredFunction "main") path
+    Nothing  -> print $ ContextualError (UndeclaredFunction "main") (Context "" path)
     Just e -> wr $ conv e
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
@@ -197,7 +198,7 @@ repl s =
     >>= (\case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
           Just line -> do
-            s' <- (liftIO $ eval [line] s (EvalConf { isRepl = True, evalPaths = [] }))
+            s' <- (liftIO $ eval [line] s (EvalConf { isRepl = True, nicePath = "<repl>", evalPaths = [] }))
             lift (StrictState.put s')
             repl s'
         )
@@ -254,5 +255,5 @@ evalMain = do
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
     ['-' : _]    -> usage
-    [path   ]    -> evalFile path print id
+    [path   ]    -> evalFile path putStrLn decodeStdout
     _            -> usage

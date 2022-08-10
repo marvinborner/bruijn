@@ -92,7 +92,10 @@ parseExpression = do
   pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
-parseEvaluate = Evaluate <$> parseExpression
+parseEvaluate = do
+  inp <- getInput
+  e   <- parseExpression
+  pure $ ContextualInstruction (Evaluate e) inp
 
 parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
@@ -103,7 +106,7 @@ parseDefine lvl = do
   -- TODO: Fix >1 sub-defs
   subs <-
     (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
-  pure $ Define var e subs inp
+  pure $ ContextualInstruction (Define var e subs) inp
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
@@ -111,7 +114,7 @@ parseReplDefine = do
   var <- defIdentifier
   _   <- string " = "
   e   <- parseExpression
-  pure $ Define var e [] inp
+  pure $ ContextualInstruction (Define var e []) inp
 
 parseComment :: Parser ()
 parseComment = do
@@ -121,30 +124,34 @@ parseComment = do
 
 parseImport :: Parser Instruction
 parseImport = do
+  inp  <- getInput
   _    <- string ":import " <?> "import"
   path <- importPath
   ns   <- (try $ sc *> namespace) <|> (eof >> return "")
-  pure $ Import (path ++ ".bruijn") ns
+  pure $ ContextualInstruction (Import (path ++ ".bruijn") ns) inp
 
 parsePrint :: Parser Instruction
 parsePrint = do
-  _ <- string ":print " <?> "print"
-  e <- parseExpression
-  pure $ Evaluate e
+  inp <- getInput
+  _   <- string ":print " <?> "print"
+  e   <- parseExpression
+  pure $ ContextualInstruction (Evaluate e) inp
 
 parseTest :: Parser Instruction
 parseTest = do
-  _  <- string ":test " <?> "test"
-  e1 <- parseExpression
-  _  <- string "= " -- TODO: Disallow missing space (non-trivial)
-  e2 <- parseExpression
-  pure $ Test e1 e2
+  inp <- getInput
+  _   <- string ":test " <?> "test"
+  e1  <- parseExpression
+  _   <- string "= " -- TODO: Disallow missing space (non-trivial)
+  e2  <- parseExpression
+  pure $ ContextualInstruction (Test e1 e2) inp
 
 parseCommentBlock :: Parser Instruction
 parseCommentBlock = do
-  _ <- sepEndBy1 parseComment newline
+  inp <- getInput
+  _   <- sepEndBy1 parseComment newline
   eof
-  return Comment
+  return $ ContextualInstruction Comment inp
 
 -- TODO: Add comment/test [Instruction] parser and combine with (this) def block?
 parseDefBlock :: Int -> Parser Instruction

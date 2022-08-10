@@ -1,27 +1,43 @@
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RecordWildCards #-}
+-- these extensions are only used because of printBundle from megaparsec
+
 module Helper where
 
-import           Control.Monad.State
+import qualified Control.Monad.State           as S
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
 import           Data.List
+import           Text.Megaparsec
 
-printContext :: String -> String
-printContext str = p $ lines str
+data Context = Context
+  { ctxInput :: String
+  , ctxPath  :: String
+  }
+
+printContext :: Context -> String
+printContext (Context inp ""  ) = printContext (Context inp "<unknown>")
+printContext (Context inp path) = p $ lines inp
  where
-  p [l] = "in \"" <> l <> "\"\n"
+  withinText = "\ESC[42mwithin\ESC[0m "
+  inText     = "\ESC[44min\ESC[0m "
+  nearText   = "\ESC[45mnear\ESC[0m\n"
+  p []  = withinText <> show path <> "\n"
+  p [l] = inText <> show l <> "\n" <> withinText <> show path <> "\n"
   p (l : ls) =
     (p [l])
-      <> "near\n"
+      <> nearText
       <> (intercalate "\n" $ map ("  | " ++) $ take 3 $ ls)
       <> "\n"
-  p _ = ""
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error String | ImportError String
+data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
-  show (SyntaxError err        ) = errPrefix <> "invalid syntax\nnear " <> err
+  show (SyntaxError err) =
+    errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
   show (UndeclaredFunction func) =
     errPrefix <> "undeclared function " <> show func
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
@@ -38,9 +54,43 @@ instance Show Error where
   show (ImportError path) = errPrefix <> "invalid import " <> show path
 type Failable = Either Error
 
+-- Modified from megaparsec's errorBundlePretty
+printBundle
+  :: forall s e
+   . (VisualStream s, TraversableStream s, ShowErrorComponent e)
+  => ParseErrorBundle s e
+  -> String
+printBundle ParseErrorBundle {..} =
+  let (r, _) = foldl f (id, bundlePosState) bundleErrors in drop 1 (r "")
+ where
+  f :: (ShowS, PosState s) -> ParseError s e -> (ShowS, PosState s)
+  f (o, !pst) e = (o . (outChunk ++), pst')
+   where
+    (msline, pst') = reachOffset (errorOffset e) pst
+    epos           = pstateSourcePos pst'
+    outChunk       = "\n\n" <> offendingLine <> (init $ parseErrorTextPretty e)
+    offendingLine  = case msline of
+      Nothing -> ""
+      Just sline ->
+        let pointer    = "^"
+            rpadding   = replicate rpshift ' '
+            rpshift    = unPos (sourceColumn epos) - 2
+            lineNumber = (show . unPos . sourceLine) epos
+            padding    = replicate (length lineNumber + 1) ' '
+        in  padding
+              <> "|\n"
+              <> "  | "
+              <> sline
+              <> "\n"
+              <> padding
+              <> "|  "
+              <> rpadding
+              <> pointer
+              <> "\n"
+
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression [Instruction] String | Evaluate Expression | Comment | Import String String | Test Expression Expression
+data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Import String String | Test Expression Expression | ContextualInstruction Instruction String
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x  ) = "\ESC[91m" <> show x <> "\ESC[0m"
@@ -53,10 +103,11 @@ type EnvDef = (String, Expression)
 -- TODO: Add EvalConf to EnvState?
 data EvalConf = EvalConf
   { isRepl    :: Bool
+  , nicePath  :: String
   , evalPaths :: [String]
   }
 data Environment = Environment [(EnvDef, Environment)]
-type Program = State Environment
+type Program = S.State Environment
 
 instance Semigroup Environment where
   (Environment e1) <> (Environment e2) = Environment $ e1 <> e2
@@ -73,20 +124,41 @@ listify [] = Abstraction (Abstraction (Bruijn 0))
 listify (e : es) =
   Abstraction (Application (Application (Bruijn 0) e) (listify es))
 
-encodeByte :: Bit.BitString -> Expression
-encodeByte bits = listify (map encodeBit (Bit.toList bits))
+encodeByte :: [Bool] -> Expression
+encodeByte bits = listify (map encodeBit bits)
  where
   encodeBit False = Abstraction (Abstraction (Bruijn 0))
   encodeBit True  = Abstraction (Abstraction (Bruijn 1))
 
+-- TODO: There must be a better way to do this :D
 encodeBytes :: Byte.ByteString -> Expression
-encodeBytes bytes =
-  listify (map (encodeByte . Bit.from01List . (: [])) (Byte.unpack bytes))
+encodeBytes bytes = listify $ map
+  (encodeByte . Bit.toList . Bit.bitString . Byte.pack . (: []))
+  (Byte.unpack bytes)
 
 encodeStdin :: IO Expression
 encodeStdin = do
   bytes <- Byte.getContents
   pure $ encodeBytes bytes
+
+unlistify :: Expression -> [Expression]
+unlistify (Abstraction (Abstraction (Bruijn 0))) = []
+unlistify (Abstraction (Application (Application (Bruijn 0) e) es)) =
+  e : (unlistify es)
+unlistify _ = error "invalid"
+
+decodeByte :: Expression -> [Bool]
+decodeByte (Abstraction (Abstraction (Bruijn 0))) = []
+decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 0)))) es))
+  = False : (decodeByte es)
+decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 1)))) es))
+  = True : (decodeByte es)
+decodeByte _ = error "invalid"
+
+decodeStdout :: Expression -> String
+decodeStdout e = show $ Byte.concat $ map
+  (Bit.realizeBitStringStrict . Bit.fromList . decodeByte)
+  (unlistify e)
 
 ---
 
