@@ -18,13 +18,18 @@ sc :: Parser ()
 sc = void $ char ' '
 
 infixOperator :: Parser String
-infixOperator = some $ oneOf "!?*@+$%^&<>/|="
+infixOperator = some $ oneOf "!?*@:+-#$%^&<>/|~="
+
+prefixOperator :: Parser String
+prefixOperator = some $ oneOf "!?*@:+-#$%^&<>/|~="
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
   ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
-    <|> parens infixOperator
+    <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
+        )
+    <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
     <?> "defining identifier"
 
 -- TODO: write as extension to defIdentifier
@@ -53,7 +58,7 @@ parseAbstraction = do
 -- one or more singletons wrapped in coupled application
 parseApplication :: Parser Expression
 parseApplication = do
-  s <- sepEndBy1 parseSingleton sc
+  s <- sepEndBy1 (try parsePrefix <|> parseSingleton) sc
   pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
@@ -63,7 +68,7 @@ parseBruijn = do
 
 parseNumeral :: Parser Expression
 parseNumeral = do
-  num <- number <?> "signed number"
+  num <- parens number <?> "signed number"
   pure $ decimalToTernary num
  where
   sign :: Parser (Integer -> Integer)
@@ -104,6 +109,12 @@ parseInfix = do
   e2 <- parseSingleton
   pure $ Infix e1 i e2
 
+parsePrefix :: Parser Expression
+parsePrefix = do
+  p <- prefixOperator
+  e <- parseSingleton
+  pure $ Prefix p e
+
 parseSingleton :: Parser Expression
 parseSingleton =
   parseBruijn
@@ -114,10 +125,11 @@ parseSingleton =
     <|> try (parens parseInfix <?> "enclosed infix expr")
     <|> (parens parseApplication <?> "enclosed application")
     <|> parseVariable
+    <|> parsePrefix
 
 parseExpression :: Parser Expression
 parseExpression = do
-  e <- try parseInfix <|> parseApplication
+  e <- try parseInfix <|> try parseApplication <|> parsePrefix
   pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
@@ -199,6 +211,6 @@ parseBlock lvl = try parseCommentBlock <|> parseDefBlock lvl
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine
-    <|> try parseEvaluate
     <|> try parseImport
     <|> try parseTest
+    <|> try parseEvaluate

@@ -4,15 +4,19 @@
 
 not [0 F T]
 
-:test (not T) (F)
-:test (not F) (T)
+!( not
+
+:test (!T) (F)
+:test (!F) (T)
 
 and [[1 0 F]]
 
-:test (and T T) (T)
-:test (and T F) (F)
-:test (and F T) (F)
-:test (and F F) (F)
+(&&) and
+
+:test (T && T) (T)
+:test (T && F) (F)
+:test (F && T) (F)
+:test (F && F) (F)
 
 nand [[1 0 1 F T]]
 
@@ -23,10 +27,12 @@ nand [[1 0 1 F T]]
 
 or [[1 T 0]]
 
-:test (or T T) (T)
-:test (or T F) (T)
-:test (or F T) (T)
-:test (or F F) (F)
+(||) or
+
+:test (T || T) (T)
+:test (T || F) (T)
+:test (F || T) (T)
+:test (F || F) (F)
 
 nor [[1 1 0 F T]]
 
@@ -51,19 +57,27 @@ xnor [[1 0 (not 0)]]
 
 if [[[2 1 0]]]
 
+(?!) if
+
 :test (if T T F) (T)
+:test ((T ?! T) F) (T)
 :test (if F T F) (F)
+:test ((F ?! T) F) (F)
 
 implies [[or (not 1) 0]]
 
-:test (implies T T) (T)
-:test (implies T F) (F)
-:test (implies F T) (T)
-:test (implies F F) (T)
+(=>?) implies
+
+:test (T =>? T) (T)
+:test (T =>? F) (F)
+:test (F =>? T) (T)
+:test (F =>? F) (T)
 
 iff [[and (implies 1 0) (implies 0 1)]]
 
-:test (iff T T) (T)
-:test (iff T F) (F)
-:test (iff F T) (F)
-:test (iff F F) (T)
+(<=>?) iff
+
+:test (T <=>? T) (T)
+:test (T <=>? F) (F)
+:test (F <=>? T) (F)
+:test (F <=>? F) (T)

@@ -88,8 +88,9 @@ mandatory.
 ### Numerals
 
 Numbers in bruijn always have a sign in front of them or else they will
-be mistaken for De Bruijn indices. Generally the decimal representation
-is only syntactic sugar for its internal balanced ternary
+be mistaken for De Bruijn indices. They also need to be between
+parenthesis because of prefix functions. Generally the decimal
+representation is only syntactic sugar for its internal balanced ternary
 representation. We use balanced ternary because it’s a great compromise
 between performance and size (according to [\[1\]](#References)).
 
@@ -118,11 +119,11 @@ Plain execution without any predefined functions:
 
     # this is a comment
     # we now define a function returning a ternary 1
-    get-one +1
+    get-one (+1)
 
     # we can use the function in all functions below its definition
     get-one2 get-one
-    :test (get-one2) (+1)
+    :test (get-one2 =? (+1)) (T)
 
     # equivalent of λx.x
     id [0]
@@ -132,9 +133,10 @@ Plain execution without any predefined functions:
 
     # multiple arguments
     set-of-three [[[[0 1 2 3]]]]
-    number-set set-of-three +1 +2 +3
+    number-set set-of-three (+1) (+2) (+3)
     access-first [0 [[[0]]]]
-    :test (access-first number-set) (+1)
+
+    :test ((access-first number-set) =? (+1)) (T)
 
     # endless loop using omega combinator
     om [0 0]
@@ -161,18 +163,20 @@ Using standard library:
     :test (snd love) (you)
 
     # options
-    :test (map inc (some +1)) (some +2)
-    :test (apply (some +1) [some (inc 0)]) (some +2)
+    :test (map inc (some (+1))) (some (+2))
+    :test (apply (some (+1)) [some (inc 0)]) (some (+2))
 
     # numerical operations
-    five dec (sub (add +8 -4) -2)
-    not-five? [if (eq? 0 +5) F T]
+    five --(((+8) + (-4)) - (-2))
+    not-five? [if (0 =? (+5)) F T]
+
     :test (not-five? five) (F)
 
-    :test (eq? (uncurry mul (pair +3 +2))) (+6)
+    :test ((uncurry mul (pair (+3) (+2))) =? (+6)) (T)
 
     # boolean
     main not (or (and F T) T)
+
     :test (main) (F)
 
     # read the files in std/ for an overview of all functions/libraries
