@@ -89,7 +89,7 @@ printBundle ParseErrorBundle {..} =
               <> pointer
               <> "\n"
 
-data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression
+data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression | Infix Expression String Expression
   deriving (Ord, Eq)
 data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Import String String | Test Expression Expression | ContextualInstruction Instruction String
   deriving (Show)
@@ -99,6 +99,8 @@ instance Show Expression where
   show (Abstraction e  ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
   show (Application exp1 exp2) =
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
+  show (Infix le i re) =
+    show le <> "\ESC[95m(" <> i <> ")" <> "\ESC[0m" <> show re
 
 type EnvDef = (String, Expression)
 -- TODO: Add EvalConf to EnvState?

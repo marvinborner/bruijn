@@ -35,11 +35,12 @@ step (Abstraction e) = Abstraction (step e)
 step _ = error "invalid"
 
 reduceable :: Expression -> Bool
-reduceable (Bruijn   _                    ) = False
-reduceable (Variable _                    ) = True
-reduceable (Application (Abstraction _) _ ) = True
-reduceable (Application e1              e2) = reduceable e1 || reduceable e2
-reduceable (Abstraction e                 ) = reduceable e
+reduceable (Bruijn _) = False
+reduceable (Variable _) = True
+reduceable (Application (Abstraction _) _) = True
+reduceable (Application e1 e2) = reduceable e1 || reduceable e2
+reduceable (Abstraction e) = reduceable e
+reduceable _ = error "invalid"
 
 -- alpha conversion is not needed with de bruijn indexing
 reduce :: Expression -> Expression

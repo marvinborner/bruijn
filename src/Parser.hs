@@ -17,14 +17,14 @@ type Parser = Parsec Void String
 sc :: Parser ()
 sc = void $ char ' '
 
--- zero or more spaces
--- scs :: Parser ()
--- scs = void $ takeWhileP (Just "white space") (== ' ')
+infixOperator :: Parser String
+infixOperator = some $ oneOf "!?*@+$%^&<>/|="
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
   ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
+    <|> parens infixOperator
     <?> "defining identifier"
 
 -- TODO: write as extension to defIdentifier
@@ -53,7 +53,7 @@ parseAbstraction = do
 -- one or more singletons wrapped in coupled application
 parseApplication :: Parser Expression
 parseApplication = do
-  s <- sepEndBy1 parseSingleton sc -- TODO: Fix consuming space at end (re. test =)
+  s <- sepEndBy1 parseSingleton sc
   pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
@@ -95,19 +95,29 @@ parseVariable = do
   var <- identifier
   pure $ Variable var
 
+parseInfix :: Parser Expression
+parseInfix = do
+  e1 <- parseSingleton
+  sc
+  i <- infixOperator
+  sc
+  e2 <- parseSingleton
+  pure $ Infix e1 i e2
+
 parseSingleton :: Parser Expression
 parseSingleton =
   parseBruijn
-    <|> parseNumeral
+    <|> try parseNumeral
     <|> parseString
     <|> parseChar
     <|> parseAbstraction
+    <|> try (parens parseInfix <?> "enclosed infix expr")
     <|> (parens parseApplication <?> "enclosed application")
     <|> parseVariable
 
 parseExpression :: Parser Expression
 parseExpression = do
-  e <- parseApplication
+  e <- try parseInfix <|> parseApplication
   pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
@@ -160,9 +170,9 @@ parseTest :: Parser Instruction
 parseTest = do
   inp <- getInput
   _   <- string ":test " <?> "test"
-  e1  <- parseExpression
-  _   <- string "= " -- TODO: Disallow missing space (non-trivial)
-  e2  <- parseExpression
+  e1  <- (parens parseExpression <?> "first expression")
+  sc
+  e2 <- (parens parseExpression <?> "second expression")
   pure $ ContextualInstruction (Test e1 e2) inp
 
 parseCommentBlock :: Parser Instruction

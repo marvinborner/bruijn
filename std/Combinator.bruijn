@@ -28,14 +28,14 @@ Z [[1 [1 1 0]] [1 [1 1 0]]]
 
 i [0 S K]
 
-:test I = i i
+:test (I) (i i)
 
-:test K = i (i (i i))
+:test (K) (i (i (i i)))
 
-:test S = i (i (i (i i)))
+:test (S) (i (i (i (i i))))
 
-:test B = S (K S) K
+:test (B) (S (K S) K)
 
-:test C = S (S (K (S (K S) K)) S) (K K)
+:test (C) (S (S (K (S (K S) K)) S) (K K))
 
-:test W = S S (S K)
+:test (W) (S S (S K))

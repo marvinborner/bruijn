@@ -10,30 +10,30 @@ some [[[0 2]]]
 
 # checks whether option is none
 none? [0 T [F]]
-:test none? none = T
-:test none? (some [[0]]) = F
+:test (none? none) (T)
+:test (none? (some [[0]])) (F)
 
 # checks whether option is some
 some? [0 F [T]]
-:test some? none = F
-:test some? (some [[0]]) = T
+:test (some? none) (F)
+:test (some? (some [[0]])) (T)
 
 # applies a function to the value in option
 map [[0 none [some (2 0)]]]
-:test map [[1]] (some [[0]]) = some [[[0]]]
-:test map [[1]] none = none
+:test (map [[1]] (some [[0]])) (some [[[0]]])
+:test (map [[1]] none) (none)
 
 # applies a function to the value in option or returns first arg if none
 map-or [[[0 2 1]]]
-:test map-or [[[2]]] [[1]] (some [[0]]) = [[[0]]]
-:test map-or [[[2]]] [[1]] none = [[[2]]]
+:test (map-or [[[2]]] [[1]] (some [[0]])) ([[[0]]])
+:test (map-or [[[2]]] [[1]] none) ([[[2]]])
 
 # extracts value from option or returns first argument if none
 unwrap-or [[0 1 I]]
-:test unwrap-or F (some T) = T
-:test unwrap-or F none = F
+:test (unwrap-or F (some T)) (T)
+:test (unwrap-or F none) (F)
 
 # applies encapsulated value to given function
 apply [[1 none 0]]
-:test apply none [some ([[1]] 0)] = none
-:test apply (some [[0]]) [some ([[1]] 0)] = some [[[0]]]
+:test (apply none [some ([[1]] 0)]) (none)
+:test (apply (some [[0]]) [some ([[1]] 0)]) (some [[[0]]])

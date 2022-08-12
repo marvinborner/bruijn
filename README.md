@@ -65,7 +65,7 @@ form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form).
     <singleton>   ::= <bruijn> | <numeral> | <abstraction> | "(" <application> ")" | [namespace.]<identifier>
     <application> ::= <singleton> <singleton>
     <expression>  ::= <application> | <singleton>
-    <test>        ::= ":test " <expression> = <expression>
+    <test>        ::= ":test " "(" <expression> ") (" <expression> ")"
     <import>      ::= ":import " <path> [namespace]
     <comment>     ::= "# " <letter>*
 
@@ -122,19 +122,19 @@ Plain execution without any predefined functions:
 
     # we can use the function in all functions below its definition
     get-one2 get-one
-    :test get-one2 = +1
+    :test (get-one2) (+1)
 
     # equivalent of λx.x
     id [0]
 
     # equivalent of (λx.x) (λx.λy.x) = λx.λy.x
-    :test id [[1]] = [[1]]
+    :test (id [[1]]) ([[1]])
 
     # multiple arguments
     set-of-three [[[[0 1 2 3]]]]
     number-set set-of-three +1 +2 +3
     access-first [0 [[[0]]]]
-    :test access-first number-set = +1
+    :test (access-first number-set) (+1)
 
     # endless loop using omega combinator
     om [0 0]
@@ -157,23 +157,23 @@ Using standard library:
     me [[[1]]]
     you [[[2]]]
     love pair me you
-    :test fst love = me
-    :test snd love = you
+    :test (fst love) (me)
+    :test (snd love) (you)
 
     # options
-    :test map inc (some +1) = some +2
-    :test apply (some +1) [some (inc 0)] = some +2
+    :test (map inc (some +1)) (some +2)
+    :test (apply (some +1) [some (inc 0)]) (some +2)
 
     # numerical operations
     five dec (sub (add +8 -4) -2)
     not-five? [if (eq? 0 +5) F T]
-    :test not-five? five = F
+    :test (not-five? five) (F)
 
-    :test eq? (uncurry mul (pair +3 +2)) = +6
+    :test (eq? (uncurry mul (pair +3 +2))) (+6)
 
     # boolean
     main not (or (and F T) T)
-    :test main = F
+    :test (main) (F)
 
     # read the files in std/ for an overview of all functions/libraries
 

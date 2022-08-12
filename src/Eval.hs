@@ -66,11 +66,15 @@ evalApp f g sub =
           Right f' -> fmap (Application f') <$> evalExp g sub
         )
 
+evalInfix :: Expression -> String -> Expression -> Environment -> Program (Failable Expression)
+evalInfix le i re = evalExp $ Application (Application (Variable i) le) re
+
 evalExp :: Expression -> Environment -> Program (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
 evalExp (    Variable    var) = evalVar var
 evalExp (    Abstraction e) = evalAbs e
 evalExp (    Application f g) = evalApp f g
+evalExp (Infix le i re) = evalInfix le i re
 
 evalDefine
   :: String -> Expression -> Environment -> Program (Failable Expression)
