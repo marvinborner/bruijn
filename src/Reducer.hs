@@ -34,14 +34,10 @@ step (Application e1 e2) = Application (step e1) (step e2)
 step (Abstraction e) = Abstraction (step e)
 step _ = error "invalid"
 
-reduceable :: Expression -> Bool
-reduceable (Bruijn _) = False
-reduceable (Variable _) = True
-reduceable (Application (Abstraction _) _) = True
-reduceable (Application e1 e2) = reduceable e1 || reduceable e2
-reduceable (Abstraction e) = reduceable e
-reduceable _ = error "invalid"
+-- until eq
+converge :: Eq a => (a -> a) -> a -> a
+converge = until =<< ((==) =<<)
 
 -- alpha conversion is not needed with de bruijn indexing
 reduce :: Expression -> Expression
-reduce = until (not . reduceable) step
+reduce = converge step

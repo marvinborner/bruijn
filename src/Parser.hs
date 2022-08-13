@@ -18,15 +18,15 @@ sc :: Parser ()
 sc = void $ char ' '
 
 infixOperator :: Parser String
-infixOperator = some $ oneOf "!?*@:+-#$%^&<>/|~="
+infixOperator = some $ oneOf "!?*@.:+-#$%^&<>/|~="
 
 prefixOperator :: Parser String
-prefixOperator = some $ oneOf "!?*@:+-#$%^&<>/|~="
+prefixOperator = some $ oneOf "!?*@.:+-#$%^&<>/|~="
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-"))
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-*"))
     <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
         )
     <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
@@ -35,7 +35,8 @@ defIdentifier =
 -- TODO: write as extension to defIdentifier
 identifier :: Parser String
 identifier =
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-."))
+  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-*.")
+    )
     <?> "identifier"
 
 namespace :: Parser String
@@ -84,16 +85,20 @@ specialEscape =
 
 parseString :: Parser Expression
 parseString = do
-  str <- between
-    (char '\"')
-    (char '\"')
-    (some $ (char '\\' *> specialEscape) <|> (satisfy (`notElem` "\"\\")))
-  pure (stringToExpression str) <?> "string"
+  str <-
+    between
+        (char '\"')
+        (char '\"')
+        (some $ (char '\\' *> specialEscape) <|> (satisfy (`notElem` "\"\\")))
+      <?> "quoted string"
+  pure $ stringToExpression str
 
 parseChar :: Parser Expression
 parseChar = do
-  ch <- between (char '\'') (char '\'') (satisfy (`notElem` "\"\\"))
-  pure (charToExpression ch) <?> "char"
+  ch <-
+    between (char '\'') (char '\'') (satisfy (`notElem` "\"\\"))
+      <?> "quoted char"
+  pure $ charToExpression ch
 
 parseVariable :: Parser Expression
 parseVariable = do
