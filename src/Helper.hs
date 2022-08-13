@@ -178,6 +178,15 @@ decodeStdout e = do
 
 ---
 
+lookupValues :: (Eq b) => b -> [(a, b)] -> [a]
+lookupValues _ [] = []
+lookupValues key ((x, y) : xys) | key == y  = x : lookupValues key xys
+                                | otherwise = lookupValues key xys
+
+matchingFunctions :: Expression -> Environment -> String
+matchingFunctions e (Environment env) =
+  intercalate ", " $ nub $ lookupValues e (map fst env)
+
 -- TODO: Expression -> Maybe Char is missing
 maybeHumanifyExpression :: Expression -> Maybe String
 maybeHumanifyExpression e = ternaryToDecimal e <|> decodeStdout e

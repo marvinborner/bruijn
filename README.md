@@ -115,7 +115,7 @@ You can try these by experimenting in the REPL or by running them as a
 file. Note, however, that you need an equal sign between the function
 name and its definition if you’re using the REPL.
 
-Plain execution without any predefined functions:
+#### Plain execution without any predefined functions
 
     # this is a comment
     # we now define a function returning a ternary 1
@@ -123,31 +123,61 @@ Plain execution without any predefined functions:
 
     # we can use the function in all functions below its definition
     get-one2 get-one
-    :test (get-one2 =? (+1)) (T)
+
+    :test (get-one2) (+1)
+
+    # indenting acts similar to Haskell's where statement
+    get-one3 foo
+        bar (+1)
+        foo bar
 
     # equivalent of λx.x
     id [0]
 
-    # equivalent of (λx.x) (λx.λy.x) = λx.λy.x
+    # testing equivalent of (λx.x) (λx.λy.x) = λx.λy.x
     :test (id [[1]]) ([[1]])
 
+    # prefix function definition
+    !( [[1]]
+
+    # use prefix function !
+    :test (![0]) ([[0]])
+
+    # infix function definition
+    (<>) [[0 1]]
+
+    # use infix function <>
+    :test ([[0]] <> [[1]]) ([[1]] [[0]])
+
     # multiple arguments
-    set-of-three [[[[0 1 2 3]]]]
     number-set set-of-three (+1) (+2) (+3)
+        set-of-three [[[[0 1 2 3]]]]
+
     access-first [0 [[[0]]]]
 
-    :test ((access-first number-set) =? (+1)) (T)
+    :test (access-first number-set) (+1)
 
     # endless loop using omega combinator
-    om [0 0]
-    nom om
     main om nom
+        om [0 0]
+        nom om
 
     # you may have realized you can't easily operate with numbers
     # or anything else really without writing crazy functions
     # -> luckily the standard library defines many standard operations!
 
-Using standard library:
+#### Using standard library
+
+“Hello world” program using IO:
+
+    :import std/List .
+
+    main [("Hello " ++ 0) ++ "!\n"]
+
+You can then use `printf "world" | bruijn file.bruijn` to get “Hello
+world!”
+
+Some other great functions:
 
     :import std/Logic .
     :import std/Combinator .
@@ -156,11 +186,12 @@ Using standard library:
     :import std/Pair .
 
     # pairs with some values
-    me [[[1]]]
-    you [[[2]]]
     love pair me you
-    :test (fst love) (me)
-    :test (snd love) (you)
+        me [[[1]]]
+        you [[[2]]]
+
+    :test (fst love) ([[[1]]])
+    :test (snd love) ([[[2]]])
 
     # options
     :test (map inc (some (+1))) (some (+2))
@@ -168,6 +199,7 @@ Using standard library:
 
     # numerical operations
     five --(((+8) + (-4)) - (-2))
+
     not-five? [if (0 =? (+5)) F T]
 
     :test (not-five? five) (F)
@@ -179,7 +211,7 @@ Using standard library:
 
     :test (main) (F)
 
-    # read the files in std/ for an overview of all functions/libraries
+Read the files in std/ for an overview of all functions/libraries.
 
 ### Compilation to BLC
 

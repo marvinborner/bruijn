@@ -41,7 +41,7 @@ loadFile path conf = do
   f <- try $ readFile path :: IO (Either IOError String)
   case f of
     Left exception ->
-      print (ContextualError (ImportError $ show (exception :: IOError)) (Context "" (nicePath conf))) >> pure (EnvState $ Environment [])
+      print (ContextualError (ImportError $ show (exception :: IOError)) (Context "" $ nicePath conf)) >> pure (EnvState $ Environment [])
     Right f' -> eval (filter (not . null) $ split "\n\n" f')
                        (EnvState $ Environment [])
                        (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
@@ -117,7 +117,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
     let
       (res, env') = evalDefine name e subEnv `runState` env
      in  case res of
-          Left  err -> print (ContextualError err (Context inp (nicePath conf))) >> pure s -- don't continue
+          Left  err -> print (ContextualError err $ Context inp $ nicePath conf) >> pure s -- don't continue
           Right _   -> if isRepl conf
             then (putStrLn $ name <> " = " <> show e)
               >> return (EnvState env')
@@ -127,7 +127,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
     lib           <- getDataFileName path -- TODO: Use actual lib directory
     exists        <- doesFileExist lib
     actual        <- pure $ if exists then lib else path
-    if (actual `elem` evalPaths conf) then (print (ContextualError (ImportError path) (Context inp (nicePath conf))) >> pure s) else do
+    if actual `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
       EnvState env' <- loadFile actual (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
       let prefix | null namespace   = takeBaseName path ++ "."
                  | namespace == "." = ""
@@ -147,6 +147,8 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
                   <> (show reduced)
                   <> " "
                   <> (humanifyExpression reduced)
+                  <> " "
+                  <> (matchingFunctions reduced env)
                 where reduced = reduce e'
             )
           >> rec s conf
@@ -173,7 +175,7 @@ eval [""] s _ = return s
 eval (block : bs) s conf =
   handleInterrupt (putStrLn "<aborted>" >> return s)
     $ case parse blockParser "" block of
-        Left  err   -> print (ContextualError (SyntaxError $ printBundle err) (Context "" (nicePath conf))) >> eval bs s conf
+        Left  err   -> print (ContextualError (SyntaxError $ printBundle err) (Context "" $ nicePath conf)) >> eval bs s conf
         Right instr -> evalInstruction instr s (eval bs) conf
   where blockParser = if isRepl conf then parseReplLine else parseBlock 0
 
