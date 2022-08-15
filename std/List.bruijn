@@ -6,7 +6,7 @@
 
 :import std/Logic .
 
-:import std/Number N
+:import std/Number .
 
 # empty list element
 empty false
@@ -38,7 +38,7 @@ tail P.snd
 # returns the length of a list in balanced ternary
 length Z [[[case-some]]] case-empty
 	case-some empty? 0 case-end case-inc
-		case-inc 2 (N.inc 1) (tail 0)
+		case-inc 2 (++1) (tail 0)
 		case-end 1
 	case-empty (+0)
 
@@ -48,10 +48,17 @@ length Z [[[case-some]]] case-empty
 :test (#empty) ((+0))
 
 # returns the element at index in list
-# TODO: fix for balanced ternary
-index [[head (1 tail 0)]]
+index Z [[[case-some]]]
+	case-some empty? 0 case-end case-index
+		case-index =?1 (head 0) (2 (--1) (tail 0))
+		case-end empty
 
-(!!) [[index 0 1]]
+(!!) C index
+
+:test (((+1) : ((+2) : ((+3) : empty))) !! (+0)) ((+1))
+:test (((+1) : ((+2) : ((+3) : empty))) !! (+2)) ((+3))
+:test (((+1) : ((+2) : ((+3) : empty))) !! (-1)) (empty)
+:test (((+1) : ((+2) : ((+3) : empty))) !! (+3)) (empty)
 
 # reverses a list
 reverse Z [[[case-some]]] case-empty
@@ -60,7 +67,9 @@ reverse Z [[[case-some]]] case-empty
 		case-end 1
 	case-empty empty
 
-:test (reverse ((+1) : ((+2) : ((+3) : empty)))) ((+3) : ((+2) : ((+1) : empty)))
+<~>( reverse
+
+:test (<~>((+1) : ((+2) : ((+3) : empty)))) ((+3) : ((+2) : ((+1) : empty)))
 
 # creates list out of n terms
 # TODO: fix for balanced ternary
@@ -84,7 +93,7 @@ map Z [[[case-some]]]
 
 (<$>) map
 
-:test (N.inc <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
+:test (inc <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
 
 # applies a left fold on a list
 foldl Z [[[[case-some]]]]
@@ -92,8 +101,8 @@ foldl Z [[[[case-some]]]]
 		case-fold 3 2 (2 1 (head 0)) (tail 0)
 		case-end 1
 
-:test (N.eq? (foldl N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
-:test (N.eq? (foldl N.sub (+6) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
+:test ((foldl add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldl sub (+6) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
 
 # applies a right fold on a list
 foldr [[[Z [[case-some]] case-empty]]]
@@ -102,8 +111,8 @@ foldr [[[Z [[case-some]] case-empty]]]
 		case-end 3
 	case-empty 0
 
-:test (N.eq? (foldr N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
-:test (N.eq? (foldr N.sub (+2) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
+:test ((foldr add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldr sub (+2) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
 
 # filters a list based on a predicate
 filter Z [[[case-some]]]
@@ -111,7 +120,7 @@ filter Z [[[case-some]]]
 		case-filter 1 (head 0) (cons (head 0)) I (2 1 (tail 0))
 		case-end empty
 
-:test (filter N.zero? ((+1) : ((+0) : ((+3) : empty)))) ((+0) : empty)
+:test (filter zero? ((+1) : ((+0) : ((+3) : empty)))) ((+0) : empty)
 
 # returns the last element of a list
 last Z [[case-some]]
@@ -143,12 +152,12 @@ zip-with Z [[[[case-some]]]]
 		case-zip empty? 0 empty ((2 (head 1) (head 0)) : (3 2 (tail 1) (tail 0)))
 		case-end empty
 
-:test (zip-with N.add ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((+3) : ((+3) : empty))
+:test (zip-with add ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((+3) : ((+3) : empty))
 
 # returns first n elements of a list
 take Z [[[case-some]]]
 	case-some empty? 0 case-end case-take
-		case-take N.zero? 1 empty ((head 0) : (2 (N.dec 1) (tail 0)))
+		case-take =?1 empty ((head 0) : (2 (--1) (tail 0)))
 		case-end empty
 
 :test (take (+2) ((+1) : ((+2) : ((+3) : empty)))) ((+1) : ((+2) : empty))
@@ -159,12 +168,12 @@ take-while Z [[[case-some]]]
 		case-take 1 (head 0) ((head 0) : (2 1 (tail 0))) empty
 		case-end empty
 
-:test (take-while N.zero? ((+0) : ((+0) : ((+1) : empty)))) ((+0) : ((+0) : empty))
+:test (take-while zero? ((+0) : ((+0) : ((+1) : empty)))) ((+0) : ((+0) : empty))
 
 # removes first n elements of a list
 drop Z [[[case-some]]]
 	case-some empty? 0 case-end case-drop
-		case-drop N.zero? 1 0 (2 (N.dec 1) (tail 0))
+		case-drop =?1 0 (2 (--1) (tail 0))
 		case-end empty
 
 :test (drop (+2) ((+1) : ((+2) : ((+3) : empty)))) ((+3) : empty)
@@ -175,12 +184,12 @@ drop-while Z [[[case-some]]]
 		case-drop 1 (head 0) (2 1 (tail 0)) 0
 		case-end empty
 
-:test (drop-while N.zero? ((+0) : ((+0) : ((+1) : empty)))) ((+1) : empty)
+:test (drop-while zero? ((+0) : ((+0) : ((+1) : empty)))) ((+1) : empty)
 
 # returns a list with n-times a element
 repeat Z [[[case-some]]]
-	case-some N.zero? 1 case-end case-repeat
-		case-repeat 0 : (2 (N.dec 1) 0)
+	case-some =?1 case-end case-repeat
+		case-repeat 0 : (2 (--1) 0)
 		case-end empty
 
 :test (repeat (+5) (+4)) (((+4) : ((+4) : ((+4) : ((+4) : ((+4) : empty))))))
