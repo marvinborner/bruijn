@@ -87,10 +87,10 @@ negate [[[[[4 3 1 2 0]]]]]
 
 # converts a balanced ternary number to a list of trits
 list! [0 z neg pos zero]
-	z true
-	neg [[trit-neg : 1]]
-	pos [[trit-pos : 1]]
-	zero [[trit-zero : 1]]
+	z [[0]]
+	neg [trit-neg : 0]
+	pos [trit-pos : 0]
+	zero [trit-zero : 0]
 
 # TODO: Tests!
 
@@ -116,12 +116,11 @@ lst [0 trit-zero [trit-neg] [trit-pos] [trit-zero]]
 :test (lst (+42)) (trit-zero)
 
 # extracts most significant trit from balanced ternary numbers
-# TODO: Find a more elegant way to do this
-# mst [fix (List.last (list! (strip 0)))]
-# fix [if (or (trit-neg? 0) (or (trit-pos? 0) (trit-zero? 0))) 0 [[0]]]
-
-# TODO: Fix list import loop
-mst [trit-zero]
+# TODO: Find a more elegant way to do this (and resolve list import loop?)
+mst [fix (last (list! (~0)))]
+	last Z [[empty? 0 [false] [empty? (snd 1) (fst 1) (2 (snd 1))] I]]
+		empty? [0 [[[false]]] true]
+	fix [((trit-neg? 0) || ((trit-pos? 0) || (trit-zero? 0))) 0 trit-zero]
 
 :test (mst (+0)) (trit-zero)
 :test (mst (-1)) (trit-neg)
@@ -180,6 +179,7 @@ normal! ω rec
 :test (normal! (abstract! (-42))) ((-42))
 
 # checks whether two balanced ternary numbers are equal
+# constants should be second argument (performance)
 # -> ignores leading 0s!
 eq? [[abs 1 (abstract! 0)]]
 	z [zero? (normal! 0)]
@@ -241,6 +241,7 @@ sdec strip . dec
 :test ((--(+42)) =? (+41)) (true)
 
 # adds two balanced ternary numbers (can introduce leading 0s)
+# constants should be second argument (performance)
 add [[abs 1 (abstract! 0)]]
 	c [[1 0 trit-zero]]
 	b-neg2 [1 (^=(3 0 trit-neg)) (^<(3 0 trit-zero)) (^>(3 0 trit-neg))]
@@ -267,6 +268,7 @@ sadd strip ... add
 :test (((+42) + (+1)) =? (+43)) (true)
 
 # subs two balanced ternary numbers (can introduce leading 0s)
+# constants should be second argument (performance)
 sub [[1 + -0]]
 
 (-) sub
@@ -282,14 +284,44 @@ ssub strip ... sub
 :test (((+42) - (+1)) =? (+41)) (true)
 
 # returns whether number is greater than other number
-gre? [[negative? (sub 0 1)]]
+# constants should be second argument (performance)
+gre? [[positive? (sub 1 0)]]
 
 (>?) gre?
 
+:test ((+1) >? (+2)) (false)
+:test ((+2) >? (+2)) (false)
+:test ((+3) >? (+2)) (true)
+
+# returns whether number is less than other number
+# constants should be second argument (performance)
+les? [[negative? (sub 1 0)]]
+
+(<?) les?
+
+:test ((+1) <? (+2)) (true)
+:test ((+2) <? (+2)) (false)
+:test ((+3) <? (+2)) (false)
+
 # returns whether number is less than or equal to other number
+# constants should be second argument (performance)
 leq? [[not (gre? 1 0)]]
 
 (<=?) leq?
+
+:test ((+1) <=? (+2)) (true)
+:test ((+2) <=? (+2)) (true)
+:test ((+3) <=? (+2)) (false)
+
+# returns whether number is greater than or equal to other number
+# constants should be second argument (performance)
+geq? [[not (les? 1 0)]]
+
+(>=?) geq?
+
+:test ((+1) >=? (+2)) (false)
+:test ((+2) >=? (+2)) (true)
+:test ((+3) >=? (+2)) (true)
 
 # muls two balanced ternary numbers (can introduce leading 0s)
 mul [[1 (+0) neg pos zero]]
@@ -305,3 +337,13 @@ smul strip ... mul
 :test (((-1) * (+42)) =? (-42)) (true)
 :test (((+3) * (+11)) =? (+33)) (true)
 :test (((+42) * (-4)) =? (-168)) (true)
+
+# factorial function
+fac Z [[(0 <? (+2)) (+1) (0 * (1 --0))]]
+
+:test ((fac (+3)) =? (+6)) (true)
+
+# fibonacci sequence
+fib Z [[(0 <? (+2)) 0 ((1 (0 - (+1))) + (1 (0 - (+2))))]]
+
+# tests too slow but works :P
