@@ -112,10 +112,20 @@ directory.
 ### Examples
 
 You can try these by experimenting in the REPL or by running them as a
-file. Note, however, that you need an equal sign between the function
-name and its definition if you’re using the REPL.
+file. You should pipe something into the stdin to receive stdout:
+`cat /dev/null | bruijn test.bruijn` should work for now.
+
+**Remember** that you need an equal sign between the function name and
+its definition if you’re using the REPL.
 
 #### Plain execution without any predefined functions
+
+Without using its standard library bruijn is basically unmodified, pure
+lambda calculus with syntactically sugared balanced ternary numerals,
+string and chars. Bruijn doesn’t support any numerical operations or any
+other infix/prefix functions by default. Using it without its standard
+library can be quite fun, though - especially for exploring and
+understanding the logic of lambda calculus:
 
     # this is a comment
     # we now define a function returning a ternary 1
@@ -126,7 +136,7 @@ name and its definition if you’re using the REPL.
 
     :test (get-one2) (+1)
 
-    # indenting acts similar to Haskell's where statement
+    # indenting acts similarly to Haskell's where statement
     get-one3 foo
         bar (+1)
         foo bar
@@ -140,13 +150,15 @@ name and its definition if you’re using the REPL.
     # prefix function definition
     !( [[1]]
 
-    # use prefix function !
+    # use prefix function '!'
+    # ![0] becomes ([[1]] [0]) which in turn becomes [[0]]
     :test (![0]) ([[0]])
 
-    # infix function definition
+    # infix function definition: flip and apply arguments
     (<>) [[0 1]]
 
-    # use infix function <>
+    # use infix function '<>'
+    # [[0]] <> [[1]] becomes (([[0 1]] [[0]]) [[1]])
     :test ([[0]] <> [[1]]) ([[1]] [[0]])
 
     # multiple arguments
@@ -157,18 +169,12 @@ name and its definition if you’re using the REPL.
 
     :test (access-first number-set) (+1)
 
-    # endless loop using omega combinator
-    main om nom
-        om [0 0]
-        nom om
-
-    # you may have realized you can't easily operate with numbers
-    # or anything else really without writing crazy functions
-    # -> luckily the standard library defines many standard operations!
+    # ignore args and return string 
+    main ["Hello world!\n"]
 
 #### Using standard library
 
-“Hello world” program using IO:
+Concatenating “Hello world” program using IO:
 
     :import std/List .
 
@@ -200,16 +206,16 @@ Some other great functions:
     # numerical operations
     five --(((+8) + (-4)) - (-2))
 
-    not-five? [if (0 =? (+5)) F T]
+    not-five? [if (0 =? (+5)) false true]
 
-    :test (not-five? five) (F)
+    :test (not-five? five) (false)
 
-    :test ((uncurry mul (pair (+3) (+2))) =? (+6)) (T)
+    :test ((uncurry mul (pair (+3) (+2))) =? (+6)) (true)
 
     # boolean
-    main not (or (and F T) T)
+    main not ((false && true) || true)
 
-    :test (main) (F)
+    :test (main) (false)
 
 Read the files in std/ for an overview of all functions/libraries.
 
