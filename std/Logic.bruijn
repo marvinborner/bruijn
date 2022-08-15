@@ -55,6 +55,8 @@ xnor [[1 0 (not 0)]]
 :test (xnor false true) (false)
 :test (xnor false false) (true)
 
+# this function is generally redundant
+# I personally just write (exp? case-T case-F) directly
 if [[[2 1 0]]]
 
 (?!) if

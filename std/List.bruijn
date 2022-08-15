@@ -36,7 +36,11 @@ tail P.snd
 :test (tail ((+1) : ((+2) : empty))) ((+2) : empty)
 
 # returns the length of a list in balanced ternary
-length Z [[[empty? 0 [2] [3 (N.inc 2) (tail 1)] I]]] (+0)
+length Z [[[case-some]]] case-empty
+	case-some empty? 0 case-end case-inc
+		case-inc 2 (N.inc 1) (tail 0)
+		case-end 1
+	case-empty (+0)
 
 #( length
 
@@ -50,7 +54,11 @@ index [[head (1 tail 0)]]
 (!!) [[index 0 1]]
 
 # reverses a list
-reverse Z [[[empty? 0 [2] [3 ((head 1) : 2) (tail 1)] I]]] empty
+reverse Z [[[case-some]]] case-empty
+	case-some empty? 0 case-end case-rev
+		case-rev 2 ((head 0) : 1) (tail 0)
+		case-end 1
+	case-empty empty
 
 :test (reverse ((+1) : ((+2) : ((+3) : empty)))) ((+3) : ((+2) : ((+1) : empty)))
 
@@ -58,79 +66,122 @@ reverse Z [[[empty? 0 [2] [3 ((head 1) : 2) (tail 1)] I]]] empty
 # TODO: fix for balanced ternary
 list [0 [[[2 (0 : 1)]]] reverse empty]
 
-# merges two lists
-merge Z [[[empty? 1 [1] [(head 2) : (3 (tail 2) 1)] I]]]
+# appends two lists
+append Z [[[case-some]]]
+	case-some empty? 1 case-end case-merge
+		case-merge (head 1) : (2 (tail 1) 0)
+		case-end 0
 
-(++) merge
+(++) append
 
 :test (((+1) : ((+2) : ((+3) : empty))) ++ ((+4) : empty)) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
 
 # maps each element to a function
-map Z [[[empty? 0 [empty] [(2 (head 1)) : (3 2 (tail 1))] I]]]
+map Z [[[case-some]]]
+	case-some empty? 0 case-end case-map
+		case-map (1 (head 0)) : (2 1 (tail 0))
+		case-end empty
 
 (<$>) map
 
 :test (N.inc <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
 
 # applies a left fold on a list
-foldl Z [[[[empty? 0 [2] [4 3 (3 2 (head 1)) (tail 1)] I]]]]
+foldl Z [[[[case-some]]]]
+	case-some empty? 0 case-end case-fold
+		case-fold 3 2 (2 1 (head 0)) (tail 0)
+		case-end 1
 
 :test (N.eq? (foldl N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
 :test (N.eq? (foldl N.sub (+6) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
 
 # applies a right fold on a list
-foldr [[[Z [[empty? 0 [4] [5 (head 1) (2 (tail 1))] I]] 0]]]
+foldr [[[Z [[case-some]] case-empty]]]
+	case-some empty? 0 case-end case-fold
+		case-fold 4 (head 0) (1 (tail 0))
+		case-end 3
+	case-empty 0
 
 :test (N.eq? (foldr N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
 :test (N.eq? (foldr N.sub (+2) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
 
 # filters a list based on a predicate
-filter Z [[[empty? 0 [empty] [2 (head 1) (cons (head 1)) I (3 2 (tail 1))] I]]]
+filter Z [[[case-some]]]
+	case-some empty? 0 case-end case-filter
+		case-filter 1 (head 0) (cons (head 0)) I (2 1 (tail 0))
+		case-end empty
 
 :test (filter N.zero? ((+1) : ((+0) : ((+3) : empty)))) ((+0) : empty)
 
 # returns the last element of a list
-last Z [[empty? 0 [empty] [empty? (tail 1) (head 1) (2 (tail 1))] I]]
+last Z [[case-some]]
+	case-some empty? 0 case-end case-last
+		case-last empty? (tail 0) (head 0) (1 (tail 0))
+		case-end empty
 
 :test (last ((+1) : ((+2) : ((+3) : empty)))) ((+3))
 
 # returns everything but the last element of a list
-init Z [[empty? 0 [empty] [empty? (tail 1) empty ((head 1) : (2 (tail 1)))] I]]
+init Z [[case-some]]
+	case-some empty? 0 case-end case-init
+		case-init empty? (tail 0) empty ((head 0) : (1 (tail 0)))
+		case-end empty
 
 :test (init ((+1) : ((+2) : ((+3) : empty)))) ((+1) : ((+2) : empty))
 
 # zips two lists discarding excess elements
-zip Z [[[empty? 1 [empty] [empty? 1 empty (((head 2) : (head 1)) : (3 (tail 2) (tail 1)))] I]]]
+zip Z [[[case-some]]]
+	case-some empty? 1 case-end case-zip
+		case-zip empty? 0 empty (((head 1) : (head 0)) : (2 (tail 1) (tail 0)))
+		case-end empty
 
-:test (zip ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((P.pair (+1) (+2)) : ((P.pair (+2) (+1)) : empty))
+:test (zip ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) (((+1) : (+2)) : (((+2) : (+1)) : empty))
 
 # applies pairs of the zipped list as arguments to a function
-zip-with Z [[[[empty? 1 [empty] [empty? 1 empty ((3 (head 2) (head 1)) : (4 3 (tail 2) (tail 1)))] I]]]]
+zip-with Z [[[[case-some]]]]
+	case-some empty? 1 case-end case-zip
+		case-zip empty? 0 empty ((2 (head 1) (head 0)) : (3 2 (tail 1) (tail 0)))
+		case-end empty
 
 :test (zip-with N.add ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((+3) : ((+3) : empty))
 
 # returns first n elements of a list
-take Z [[[empty? 0 [empty] [N.zero? 2 empty ((head 1) : (3 (N.dec 2) (tail 1)))] I]]]
+take Z [[[case-some]]]
+	case-some empty? 0 case-end case-take
+		case-take N.zero? 1 empty ((head 0) : (2 (N.dec 1) (tail 0)))
+		case-end empty
 
 :test (take (+2) ((+1) : ((+2) : ((+3) : empty)))) ((+1) : ((+2) : empty))
 
 # takes elements while a predicate is satisfied
-take-while Z [[[empty? 0 [empty] [2 (head 1) ((head 1) : (3 2 (tail 1))) empty] I]]]
+take-while Z [[[case-some]]]
+	case-some empty? 0 case-end case-take
+		case-take 1 (head 0) ((head 0) : (2 1 (tail 0))) empty
+		case-end empty
 
 :test (take-while N.zero? ((+0) : ((+0) : ((+1) : empty)))) ((+0) : ((+0) : empty))
 
 # removes first n elements of a list
-drop Z [[[empty? 0 [empty] [N.zero? 2 1 (3 (N.dec 2) (tail 1))] I]]]
+drop Z [[[case-some]]]
+	case-some empty? 0 case-end case-drop
+		case-drop N.zero? 1 0 (2 (N.dec 1) (tail 0))
+		case-end empty
 
 :test (drop (+2) ((+1) : ((+2) : ((+3) : empty)))) ((+3) : empty)
 
 # removes elements while a predicate is satisfied
-drop-while Z [[[empty? 0 [empty] [2 (head 1) (3 2 (tail 1)) 1] I]]]
+drop-while Z [[[case-some]]]
+	case-some empty? 0 case-end case-drop
+		case-drop 1 (head 0) (2 1 (tail 0)) 0
+		case-end empty
 
 :test (drop-while N.zero? ((+0) : ((+0) : ((+1) : empty)))) ((+1) : empty)
 
 # returns a list with n-times a element
-repeat Z [[[N.zero? 1 [empty] [P.pair 1 (3 (N.dec 2) 1)] I]]]
+repeat Z [[[case-some]]]
+	case-some N.zero? 1 case-end case-repeat
+		case-repeat 0 : (2 (N.dec 1) 0)
+		case-end empty
 
 :test (repeat (+5) (+4)) (((+4) : ((+4) : ((+4) : ((+4) : ((+4) : empty))))))
 :test (repeat (+1) (+4)) (((+4) : empty))

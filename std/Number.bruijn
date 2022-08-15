@@ -179,14 +179,14 @@ normal! ω rec
 :test (normal! (abstract! (-42))) ((-42))
 
 # checks whether two balanced ternary numbers are equal
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 # -> ignores leading 0s!
 eq? [[abs 1 (abstract! 0)]]
-	z [zero? (normal! 0)]
-	neg [[0 false [2 0] [false] [false]]]
-	pos [[0 false [false] [2 0] [false]]]
-	zero [[0 (1 0) [false] [false] [2 0]]]
 	abs [0 z neg pos zero]
+		z [zero? (normal! 0)]
+		neg [[0 false [2 0] [false] [false]]]
+		pos [[0 false [false] [2 0] [false]]]
+		zero [[0 (1 0) [false] [false] [2 0]]]
 
 (=?) eq?
 
@@ -241,19 +241,19 @@ sdec strip . dec
 :test ((--(+42)) =? (+41)) (true)
 
 # adds two balanced ternary numbers (can introduce leading 0s)
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 add [[abs 1 (abstract! 0)]]
-	c [[1 0 trit-zero]]
-	b-neg2 [1 (^=(3 0 trit-neg)) (^<(3 0 trit-zero)) (^>(3 0 trit-neg))]
-	b-neg [1 (^>(3 0 trit-neg)) (^=(3 0 trit-zero)) (^<(3 0 trit-zero))]
-	b-zero [up 1 (3 0 trit-zero)]
-	b-pos [1 (^=(3 0 trit-zero)) (^<(3 0 trit-pos)) (^>(3 0 trit-zero))]
-	b-pos2 [1 (^>(3 0 trit-zero)) (^=(3 0 trit-pos)) (^<(3 0 trit-pos))]
-	a-neg [[[1 (b-neg 1) b-neg2 b-zero b-neg]]]
-	a-pos [[[1 (b-pos 1) b-zero b-pos2 b-pos]]]
-	a-zero [[[1 (b-zero 1) b-neg b-pos b-zero]]]
-	z [[0 (--(normal! 1)) (++(normal! 1)) (normal! 1)]]
 	abs [c (0 z a-neg a-pos a-zero)]
+		b-neg [1 (^>(3 0 trit-neg)) (^=(3 0 trit-zero)) (^<(3 0 trit-zero))]
+		b-zero [up 1 (3 0 trit-zero)]
+		b-pos [1 (^=(3 0 trit-zero)) (^<(3 0 trit-pos)) (^>(3 0 trit-zero))]
+		a-neg [[[1 (b-neg 1) b-neg' b-zero b-neg]]]
+			b-neg' [1 (^=(3 0 trit-neg)) (^<(3 0 trit-zero)) (^>(3 0 trit-neg))]
+		a-pos [[[1 (b-pos 1) b-zero b-pos' b-pos]]]
+			b-pos' [1 (^>(3 0 trit-zero)) (^=(3 0 trit-pos)) (^<(3 0 trit-pos))]
+		a-zero [[[1 (b-zero 1) b-neg b-pos b-zero]]]
+		z [[0 (--(normal! 1)) (++(normal! 1)) (normal! 1)]]
+		c [[1 0 trit-zero]]
 
 (+) add
 
@@ -268,7 +268,7 @@ sadd strip ... add
 :test (((+42) + (+1)) =? (+43)) (true)
 
 # subs two balanced ternary numbers (can introduce leading 0s)
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 sub [[1 + -0]]
 
 (-) sub
@@ -284,7 +284,7 @@ ssub strip ... sub
 :test (((+42) - (+1)) =? (+41)) (true)
 
 # returns whether number is greater than other number
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 gre? [[positive? (sub 1 0)]]
 
 (>?) gre?
@@ -294,7 +294,7 @@ gre? [[positive? (sub 1 0)]]
 :test ((+3) >? (+2)) (true)
 
 # returns whether number is less than other number
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 les? [[negative? (sub 1 0)]]
 
 (<?) les?
@@ -304,7 +304,7 @@ les? [[negative? (sub 1 0)]]
 :test ((+3) <? (+2)) (false)
 
 # returns whether number is less than or equal to other number
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 leq? [[not (gre? 1 0)]]
 
 (<=?) leq?
@@ -314,7 +314,7 @@ leq? [[not (gre? 1 0)]]
 :test ((+3) <=? (+2)) (false)
 
 # returns whether number is greater than or equal to other number
-# constants should be second argument (performance)
+# smaller numbers should be second argument (performance)
 geq? [[not (les? 1 0)]]
 
 (>=?) geq?
