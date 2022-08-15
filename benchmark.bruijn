@@ -3,30 +3,46 @@
 # From Lambda-n-ways
 # ==================
 
-true [[0]]
-false [[1]]
-if [[[2 0 1]]]
-zero [[1]]
-succ [[[0 2]]]
-one succ zero
-two succ one
-three succ two
-const [[1]]
-pair [[[0 2 1]]]
-fst [[1 0 [[1]]]]
-snd [[1 0 [[0]]]]
 fix [[1 (0 0)] [1 (0 0)]]
+
+zero [[1]]
+
+succ [[[0 2]]]
+
 add fix [[[1 0 [succ (3 0 1)]]]]
-mul fix [[[1 zero [add 1 (3 0 1)]]]]
-fac fix [[0 one [mul 1 (2 0)]]]
-eqnat fix [[[1 (0 true (const false)) [1 false [4 1 0]]]]]
+
 sumto fix [[0 zero [add 1 (2 0)]]]
-n5 add two three
+
+mul fix [[[1 zero [add 1 (3 0 1)]]]]
+
+one succ zero
+
+two succ one
+
+three succ two
+
 n6 add three three
-n17 add n6 (add n6 n5)
-n37 succ (mul n6 n6)
+
 n703 sumto n37
+	n37 succ (mul n6 n6)
+
+n17 add n6 (add n6 n5)
+	n5 add two three
+
+true [[0]]
+
+false [[1]]
+
+const [[1]]
+
+eqnat fix [[[1 (0 true (const false)) [1 false [4 1 0]]]]]
+
 n720 fac n6
+	if [[[2 0 1]]]
+	pair [[[0 2 1]]]
+	fst [[1 0 [[1]]]]
+	snd [[1 0 [[0]]]]
+	fac fix [[0 one [mul 1 (2 0)]]]
 
 # this can take some time..
 # - should return true
@@ -37,10 +53,10 @@ n720 fac n6
 # From AIT
 # =========
 
-two [[1 (1 0)]]
-omega [0 0]
-ackify [[0 1 0]]
-ackerlike [0 ackify omega 0]
+# ackerlike [0 ackify omega 0]
+# 	two [[1 (1 0)]]
+# 	omega [0 0]
+# 	ackify [[0 1 0]]
 
 # this can take a VERY long while
 # maybe even too long for benchmarking
