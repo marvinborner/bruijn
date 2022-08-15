@@ -3,20 +3,20 @@
 :import std/Combinator .
 
 # empty option
-none T
+none true
 
 # encapsulates value in option
 some [[[0 2]]]
 
 # checks whether option is none
-none? [0 T [F]]
-:test (none? none) (T)
-:test (none? (some [[0]])) (F)
+none? [0 true [false]]
+:test (none? none) (true)
+:test (none? (some [[0]])) (false)
 
 # checks whether option is some
-some? [0 F [T]]
-:test (some? none) (F)
-:test (some? (some [[0]])) (T)
+some? [0 false [true]]
+:test (some? none) (false)
+:test (some? (some [[0]])) (true)
 
 # applies a function to the value in option
 map [[0 none [some (2 0)]]]
@@ -30,8 +30,8 @@ map-or [[[0 2 1]]]
 
 # extracts value from option or returns first argument if none
 unwrap-or [[0 1 I]]
-:test (unwrap-or F (some T)) (T)
-:test (unwrap-or F none) (F)
+:test (unwrap-or false (some true)) (true)
+:test (unwrap-or false none) (false)
 
 # applies encapsulated value to given function
 apply [[1 none 0]]

@@ -2,82 +2,82 @@
 
 :import std/Combinator .
 
-not [0 F T]
+not [0 false true]
 
 !( not
 
-:test (!T) (F)
-:test (!F) (T)
+:test (!true) (false)
+:test (!false) (true)
 
-and [[1 0 F]]
+and [[1 0 false]]
 
 (&&) and
 
-:test (T && T) (T)
-:test (T && F) (F)
-:test (F && T) (F)
-:test (F && F) (F)
+:test (true && true) (true)
+:test (true && false) (false)
+:test (false && true) (false)
+:test (false && false) (false)
 
-nand [[1 0 1 F T]]
+nand [[1 0 1 false true]]
 
-:test (nand T T) (F)
-:test (nand T F) (T)
-:test (nand F T) (T)
-:test (nand F F) (T)
+:test (nand true true) (false)
+:test (nand true false) (true)
+:test (nand false true) (true)
+:test (nand false false) (true)
 
-or [[1 T 0]]
+or [[1 true 0]]
 
 (||) or
 
-:test (T || T) (T)
-:test (T || F) (T)
-:test (F || T) (T)
-:test (F || F) (F)
+:test (true || true) (true)
+:test (true || false) (true)
+:test (false || true) (true)
+:test (false || false) (false)
 
-nor [[1 1 0 F T]]
+nor [[1 1 0 false true]]
 
-:test (nor T T) (F)
-:test (nor T F) (F)
-:test (nor F T) (F)
-:test (nor F F) (T)
+:test (nor true true) (false)
+:test (nor true false) (false)
+:test (nor false true) (false)
+:test (nor false false) (true)
 
 xor [[1 (not 0) 0]]
 
-:test (xor T T) (F)
-:test (xor T F) (T)
-:test (xor F T) (T)
-:test (xor F F) (F)
+:test (xor true true) (false)
+:test (xor true false) (true)
+:test (xor false true) (true)
+:test (xor false false) (false)
 
 xnor [[1 0 (not 0)]]
 
-:test (xnor T T) (T)
-:test (xnor T F) (F)
-:test (xnor F T) (F)
-:test (xnor F F) (T)
+:test (xnor true true) (true)
+:test (xnor true false) (false)
+:test (xnor false true) (false)
+:test (xnor false false) (true)
 
 if [[[2 1 0]]]
 
 (?!) if
 
-:test (if T T F) (T)
-:test ((T ?! T) F) (T)
-:test (if F T F) (F)
-:test ((F ?! T) F) (F)
+:test (if true true false) (true)
+:test ((true ?! true) false) (true)
+:test (if false true false) (false)
+:test ((false ?! true) false) (false)
 
 implies [[or (not 1) 0]]
 
 (=>?) implies
 
-:test (T =>? T) (T)
-:test (T =>? F) (F)
-:test (F =>? T) (T)
-:test (F =>? F) (T)
+:test (true =>? true) (true)
+:test (true =>? false) (false)
+:test (false =>? true) (true)
+:test (false =>? false) (true)
 
 iff [[and (implies 1 0) (implies 0 1)]]
 
 (<=>?) iff
 
-:test (T <=>? T) (T)
-:test (T <=>? F) (F)
-:test (F <=>? T) (F)
-:test (F <=>? F) (T)
+:test (true <=>? true) (true)
+:test (true <=>? false) (false)
+:test (false <=>? true) (false)
+:test (false <=>? false) (true)

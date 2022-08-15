@@ -9,13 +9,13 @@
 :import std/Number N
 
 # empty list element
-empty F
+empty false
 
 # returns whether a list is empty
-empty? [0 [[[F]]] T]
+empty? [0 [[[false]]] true]
 
-:test (empty? empty) (T)
-:test (empty? (cons (+2) empty)) (F)
+:test (empty? empty) (true)
+:test (empty? (cons (+2) empty)) (false)
 
 # appends an element to a list
 cons P.pair
@@ -75,14 +75,14 @@ map Z [[[empty? 0 [empty] [(2 (head 1)) : (3 2 (tail 1))] I]]]
 # applies a left fold on a list
 foldl Z [[[[empty? 0 [2] [4 3 (3 2 (head 1)) (tail 1)] I]]]]
 
-:test (N.eq? (foldl N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (T)
-:test (N.eq? (foldl N.sub (+6) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (T)
+:test (N.eq? (foldl N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
+:test (N.eq? (foldl N.sub (+6) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
 
 # applies a right fold on a list
 foldr [[[Z [[empty? 0 [4] [5 (head 1) (2 (tail 1))] I]] 0]]]
 
-:test (N.eq? (foldr N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (T)
-:test (N.eq? (foldr N.sub (+2) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (T)
+:test (N.eq? (foldr N.add (+0) ((+1) : ((+2) : ((+3) : empty)))) (+6)) (true)
+:test (N.eq? (foldr N.sub (+2) ((+1) : ((+2) : ((+3) : empty)))) (+0)) (true)
 
 # filters a list based on a predicate
 filter Z [[[empty? 0 [empty] [2 (head 1) (cons (head 1)) I (3 2 (tail 1))] I]]]

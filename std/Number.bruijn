@@ -1,5 +1,5 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# According to works of T.Æ. Mogensen
+# Heavily inspired by the works of T.Æ. Mogensen (see refs in README)
 
 :import std/Combinator .
 
@@ -11,29 +11,29 @@
 trit-neg [[[2]]]
 
 # returns whether a trit is negative
-trit-neg? [0 T F F]
+trit-neg? [0 true false false]
 
 # positive trit indicating coeffecient of (+1)
 trit-pos [[[1]]]
 
 # returns whether a trit is positive
-trit-pos? [0 F T F]
+trit-pos? [0 false true false]
 
 # zero trit indicating coeffecient of 0
 trit-zero [[[0]]]
 
 # returns whether a trit is zero
-trit-zero? [0 F F T]
+trit-zero? [0 false false true]
 
-:test (trit-neg? trit-neg) (T)
-:test (trit-neg? trit-pos) (F)
-:test (trit-neg? trit-zero) (F)
-:test (trit-pos? trit-neg) (F)
-:test (trit-pos? trit-pos) (T)
-:test (trit-pos? trit-zero) (F)
-:test (trit-zero? trit-neg) (F)
-:test (trit-zero? trit-pos) (F)
-:test (trit-zero? trit-zero) (T)
+:test (trit-neg? trit-neg) (true)
+:test (trit-neg? trit-pos) (false)
+:test (trit-neg? trit-zero) (false)
+:test (trit-pos? trit-neg) (false)
+:test (trit-pos? trit-pos) (true)
+:test (trit-pos? trit-zero) (false)
+:test (trit-zero? trit-neg) (false)
+:test (trit-zero? trit-pos) (false)
+:test (trit-zero? trit-zero) (true)
 
 # shifts a negative trit into a balanced ternary number
 up-neg [[[[[2 (4 3 2 1 0)]]]]]
@@ -71,10 +71,10 @@ up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
 
 # shifts the least significant trit out - basically div by 3
 down [snd (0 z neg pos zero)]
-	z pair (+0) (+0)
-	neg [0 [[pair (^<1) 1]]]
-	pos [0 [[pair (^>1) 1]]]
-	zero [0 [[pair (^=1) 1]]]
+	z (+0) : (+0)
+	neg [0 [[(^<1) : 1]]]
+	pos [0 [[(^>1) : 1]]]
+	zero [0 [[(^=1) : 1]]]
 
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
@@ -87,19 +87,19 @@ negate [[[[[4 3 1 2 0]]]]]
 
 # converts a balanced ternary number to a list of trits
 list! [0 z neg pos zero]
-	z F
-	neg [[pair trit-neg 1]]
-	pos [[pair trit-pos 1]]
-	zero [[pair trit-zero 1]]
+	z true
+	neg [[trit-neg : 1]]
+	pos [[trit-pos : 1]]
+	zero [[trit-zero : 1]]
 
 # TODO: Tests!
 
 # strips leading 0s from balanced ternary number
 strip [fst (0 z neg pos zero)]
-	z pair (+0) T
-	neg [0 [[pair (^<1) F]]]
-	pos [0 [[pair (^>1) F]]]
-	zero [0 [[pair (0 (+0) (^=1)) 0]]]
+	z (+0) : true
+	neg [0 [[(^<1) : false]]]
+	pos [0 [[(^>1) : false]]]
+	zero [0 [[(0 (+0) (^=1)) : 0]]]
 
 ~( strip
 
@@ -133,30 +133,30 @@ negative? [trit-neg? (mst 0)]
 
 <?( negative?
 
-:test (<?(+0)) (F)
-:test (<?(-1)) (T)
-:test (<?(+1)) (F)
-:test (<?(+42)) (F)
+:test (<?(+0)) (false)
+:test (<?(-1)) (true)
+:test (<?(+1)) (false)
+:test (<?(+42)) (false)
 
 # returns whether balanced ternary number is positive
 positive? [trit-pos? (mst 0)]
 
 >?( positive?
 
-:test (>?(+0)) (F)
-:test (>?(-1)) (F)
-:test (>?(+1)) (T)
-:test (>?(+42)) (T)
+:test (>?(+0)) (false)
+:test (>?(-1)) (false)
+:test (>?(+1)) (true)
+:test (>?(+42)) (true)
 
 # checks whether balanced ternary number is zero
-zero? [0 T [F] [F] I]
+zero? [0 true [false] [false] I]
 
 =?( zero?
 
-:test (=?(+0)) (T)
-:test (=?(-1)) (F)
-:test (=?(+1)) (F)
-:test (=?(+42)) (F)
+:test (=?(+0)) (true)
+:test (=?(-1)) (false)
+:test (=?(+1)) (false)
+:test (=?(+42)) (false)
 
 # converts the normal balanced ternary representation into abstract
 # -> the abstract representation is used in add/sub/mul
@@ -183,21 +183,21 @@ normal! ω rec
 # -> ignores leading 0s!
 eq? [[abs 1 (abstract! 0)]]
 	z [zero? (normal! 0)]
-	neg [[0 F [2 0] [F] [F]]]
-	pos [[0 F [F] [2 0] [F]]]
-	zero [[0 (1 0) [F] [F] [2 0]]]
+	neg [[0 false [2 0] [false] [false]]]
+	pos [[0 false [false] [2 0] [false]]]
+	zero [[0 (1 0) [false] [false] [2 0]]]
 	abs [0 z neg pos zero]
 
 (=?) eq?
 
-:test ((-42) =? (-42)) (T)
-:test ((-1) =? (-1)) (T)
-:test ((-1) =? (+0)) (F)
-:test ((+0) =? (+0)) (T)
-:test ((+1) =? (+0)) (F)
-:test ((+1) =? (+1)) (T)
-:test ((+42) =? (+42)) (T)
-:test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (T)
+:test ((-42) =? (-42)) (true)
+:test ((-1) =? (-1)) (true)
+:test ((-1) =? (+0)) (false)
+:test ((+0) =? (+0)) (true)
+:test ((+1) =? (+0)) (false)
+:test ((+1) =? (+1)) (true)
+:test ((+42) =? (+42)) (true)
+:test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (true)
 
 # I believe Mogensen's Paper has an error in its inc/dec/add/mul/eq definitions.
 # They use 3 instead of 2 abstractions in the functions, also we use switched
@@ -206,39 +206,39 @@ eq? [[abs 1 (abstract! 0)]]
 
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
 inc [snd (0 z neg pos zero)]
-	z pair (+0) (+1)
-	neg [0 [[pair (^<1) (^=1)]]]
-	zero [0 [[pair (^=1) (^>1)]]]
-	pos [0 [[pair (^>1) (^<0)]]]
+	z (+0) : (+1)
+	neg [0 [[(^<1) : (^=1)]]]
+	zero [0 [[(^=1) : (^>1)]]]
+	pos [0 [[(^>1) : (^<0)]]]
 
 ++( inc
 
 # adds (+1) to a balanced ternary number and strips leading 0s
-ssinc [~(++0)]
+ssinc strip . inc
 
-:test ((++(-42)) =? (-41)) (T)
-:test ((++(-1)) =? (+0)) (T)
-:test ((++(+0)) =? (+1)) (T)
-:test ((++(++(++(++(++(+0)))))) =? (+5)) (T)
-:test ((++(+42)) =? (+43)) (T)
+:test ((++(-42)) =? (-41)) (true)
+:test ((++(-1)) =? (+0)) (true)
+:test ((++(+0)) =? (+1)) (true)
+:test ((++(++(++(++(++(+0)))))) =? (+5)) (true)
+:test ((++(+42)) =? (+43)) (true)
 
 # subs (+1) from a balanced ternary number (can introduce leading 0s)
 dec [snd (0 dec-z dec-neg dec-pos dec-zero)]
-	dec-z pair (+0) (-1)
-	dec-neg [0 [[pair (^<1) (^>0)]]]
-	dec-zero [0 [[pair (^=1) (^<1)]]]
-	dec-pos [0 [[pair (^>1) (^=1)]]]
+	dec-z (+0) : (-1)
+	dec-neg [0 [[(^<1) : (^>0)]]]
+	dec-zero [0 [[(^=1) : (^<1)]]]
+	dec-pos [0 [[(^>1) : (^=1)]]]
 
 --( dec
 
 # subs (+1) from a balanced ternary number and strips leading 0s
-ssub [~(--0)]
+sdec strip . dec
 
-:test ((--(-42)) =? (-43)) (T)
-:test ((--(+0)) =? (-1)) (T)
-:test ((--(--(--(--(--(+5)))))) =? (+0)) (T)
-:test ((--(+1)) =? (+0)) (T)
-:test ((--(+42)) =? (+41)) (T)
+:test ((--(-42)) =? (-43)) (true)
+:test ((--(+0)) =? (-1)) (true)
+:test ((--(--(--(--(--(+5)))))) =? (+0)) (true)
+:test ((--(+1)) =? (+0)) (true)
+:test ((--(+42)) =? (+41)) (true)
 
 # adds two balanced ternary numbers (can introduce leading 0s)
 add [[abs 1 (abstract! 0)]]
@@ -257,14 +257,14 @@ add [[abs 1 (abstract! 0)]]
 (+) add
 
 # adds two balanced ternary numbers and strips leading 0s
-sadd [[~(1 + 0)]]
+sadd strip ... add
 
-:test (((-42) + (-1)) =? (-43)) (T)
-:test (((-5) + (+6)) =? (+1)) (T)
-:test (((-1) + (+0)) =? (-1)) (T)
-:test (((+0) + (+0)) =? (+0)) (T)
-:test (((+1) + (+2)) =? (+3)) (T)
-:test (((+42) + (+1)) =? (+43)) (T)
+:test (((-42) + (-1)) =? (-43)) (true)
+:test (((-5) + (+6)) =? (+1)) (true)
+:test (((-1) + (+0)) =? (-1)) (true)
+:test (((+0) + (+0)) =? (+0)) (true)
+:test (((+1) + (+2)) =? (+3)) (true)
+:test (((+42) + (+1)) =? (+43)) (true)
 
 # subs two balanced ternary numbers (can introduce leading 0s)
 sub [[1 + -0]]
@@ -272,14 +272,14 @@ sub [[1 + -0]]
 (-) sub
 
 # subs two balanced ternary numbers and strips leading 0s
-ssub [[~(1 - 0)]]
+ssub strip ... sub
 
-:test (((-42) - (-1)) =? (-41)) (T)
-:test (((-5) - (+6)) =? (-11)) (T)
-:test (((-1) - (+0)) =? (-1)) (T)
-:test (((+0) - (+0)) =? (+0)) (T)
-:test (((+1) - (+2)) =? (-1)) (T)
-:test (((+42) - (+1)) =? (+41)) (T)
+:test (((-42) - (-1)) =? (-41)) (true)
+:test (((-5) - (+6)) =? (-11)) (true)
+:test (((-1) - (+0)) =? (-1)) (true)
+:test (((+0) - (+0)) =? (+0)) (true)
+:test (((+1) - (+2)) =? (-1)) (true)
+:test (((+42) - (+1)) =? (+41)) (true)
 
 # returns whether number is greater than other number
 gre? [[negative? (sub 0 1)]]
@@ -299,9 +299,9 @@ mul [[1 (+0) neg pos zero]]
 
 (*) mul
 
-smul [[strip (mul 1 0)]]
+smul strip ... mul
 
-:test (((+42) * (+0)) =? (+0)) (T)
-:test (((-1) * (+42)) =? (-42)) (T)
-:test (((+3) * (+11)) =? (+33)) (T)
-:test (((+42) * (-4)) =? (-168)) (T)
+:test (((+42) * (+0)) =? (+0)) (true)
+:test (((-1) * (+42)) =? (-42)) (true)
+:test (((+3) * (+11)) =? (+33)) (true)
+:test (((+42) * (-4)) =? (-168)) (true)

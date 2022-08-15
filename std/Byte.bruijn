@@ -5,10 +5,10 @@
 :import std/List .
 
 # bit 0
-b0 F
+b0 false
 
 # bit 1
-b1 T
+b1 true
 
 # generates a byte with correct endianness
-byte [[[[[[[[cons 0 (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (cons 6 (cons 7 empty)))))))]]]]]]]]
+byte [[[[[[[[0 : (1 : (2 : (3 : (4 : (5 : (6 : (7 : empty)))))))]]]]]]]]

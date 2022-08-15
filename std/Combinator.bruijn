@@ -48,13 +48,13 @@ E [[[[[4 3 (2 1 0)]]]]]
 E' [[[[[[[6 (5 4 3) (2 1 0)]]]]]]]
 
 # Finch combinator
-Fi [[[0 1 2]]]
+F [[[0 1 2]]]
 
 # Finch once removed combinator
-Fi* [[[[3 0 1 2]]]]
+F* [[[[3 0 1 2]]]]
 
 # Finch twice removed combinator
-Fi** [[[[[4 3 0 1 2]]]]]
+F** [[[[[4 3 0 1 2]]]]]
 
 # Goldfinch combinator
 G [[[[3 0 (2 1)]]]]
@@ -138,10 +138,10 @@ R** [[[[[4 3 1 0 2]]]]]
 # Starling combinator: <*>
 S [[[2 0 (1 0)]]]
 
-# Thrush combinator
-Th [[0 1]]
+# Thrush combinator: Flipped $
+T [[0 1]]
 
-(&) Th
+(&) T
 
 # Turing combinator
 U [[0 (1 1 0)]]
@@ -180,10 +180,10 @@ Z [[1 [1 1 0]] [1 [1 1 0]]]
 i [0 S K]
 
 # True
-T K
+true K
 
 # False
-F KI
+false KI
 
 # -- combinator equivalency tests --
 
@@ -200,9 +200,9 @@ F KI
 :test (D'') (B B (B B))
 :test (E) (B (B B B))
 :test (E') (B (B B B) (B (B B B)))
-:test (Fi) (E Th Th E Th)
-:test (Fi*) (B C* R*)
-:test (Fi**) (B Fi*)
+:test (F) (E T T E T)
+:test (F*) (B C* R*)
+:test (F**) (B F*)
 :test (G) (B B C)
 :test (H) (B W (B C))
 :test (I) (S K K)
@@ -216,15 +216,15 @@ F KI
 :test (Q) (C B)
 :test (Q') (B C B)
 :test (Q'') (C (B C B))
-:test (Q''') (B Th)
-:test (Q'''') (Fi* B)
-:test (R) (B B Th)
+:test (Q''') (B T)
+:test (Q'''') (F* B)
+:test (R) (B B T)
 :test (R*) (C* C*)
 :test (R**) (B R*)
-:test (Th) (C I)
+:test (T) (C I)
 :test (U) (L O)
-:test (V) (B C Th)
-:test (V*) (C* Fi*)
+:test (V) (B C T)
+:test (V*) (C* F*)
 :test (V**) (B V*)
 :test (W) (C (B M R))
 :test (W*) (B W)
