@@ -15,10 +15,12 @@ B [[[2 (1 0)]]]
 # Blackbird combinator
 B' [[[[3 (2 1 0)]]]]
 
-(...) B'
+(..) B'
 
 # Bunting combinator
 B'' [[[[[4 (3 2 1 0)]]]]]
+
+(...) B''
 
 # Becard combinator
 B''' [[[[3 (2 (1 0))]]]]
@@ -178,12 +180,6 @@ Z [[1 [1 1 0]] [1 [1 1 0]]]
 
 # iota combinator
 i [0 S K]
-
-# True
-true K
-
-# False
-false KI
 
 # -- combinator equivalency tests --
 

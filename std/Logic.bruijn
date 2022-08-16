@@ -2,6 +2,13 @@
 
 :import std/Combinator .
 
+# true
+true K
+
+# false
+false KI
+
+# inverts boolean value
 not [0 false true]
 
 !( not
@@ -9,6 +16,7 @@ not [0 false true]
 :test (!true) (false)
 :test (!false) (true)
 
+# true if both args are true
 and [[1 0 false]]
 
 (&&) and
@@ -18,6 +26,7 @@ and [[1 0 false]]
 :test (false && true) (false)
 :test (false && false) (false)
 
+# true if not both args are true
 nand [[1 0 1 false true]]
 
 :test (nand true true) (false)
@@ -25,6 +34,7 @@ nand [[1 0 1 false true]]
 :test (nand false true) (true)
 :test (nand false false) (true)
 
+# true if one of the args is true
 or [[1 true 0]]
 
 (||) or
@@ -34,6 +44,7 @@ or [[1 true 0]]
 :test (false || true) (true)
 :test (false || false) (false)
 
+# true if both args are false
 nor [[1 1 0 false true]]
 
 :test (nor true true) (false)
@@ -41,6 +52,7 @@ nor [[1 1 0 false true]]
 :test (nor false true) (false)
 :test (nor false false) (true)
 
+# true if args are not same bools
 xor [[1 (not 0) 0]]
 
 :test (xor true true) (false)
@@ -48,6 +60,7 @@ xor [[1 (not 0) 0]]
 :test (xor false true) (true)
 :test (xor false false) (false)
 
+# true if both args are same bools
 xnor [[1 0 (not 0)]]
 
 :test (xnor true true) (true)
@@ -55,6 +68,7 @@ xnor [[1 0 (not 0)]]
 :test (xnor false true) (false)
 :test (xnor false false) (true)
 
+# if first arg is true, exec first exp; else second exp
 # this function is generally redundant
 # I personally just write (exp? case-T case-F) directly
 if [[[2 1 0]]]
@@ -66,6 +80,7 @@ if [[[2 1 0]]]
 :test (if false true false) (false)
 :test ((false ?! true) false) (false)
 
+# mathematical implies definition
 implies [[or (not 1) 0]]
 
 (=>?) implies
@@ -75,6 +90,7 @@ implies [[or (not 1) 0]]
 :test (false =>? true) (true)
 :test (false =>? false) (true)
 
+# mathematical iff (if and only if) definition
 iff [[and (implies 1 0) (implies 0 1)]]
 
 (<=>?) iff
