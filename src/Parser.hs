@@ -17,16 +17,19 @@ type Parser = Parsec Void String
 sc :: Parser ()
 sc = void $ char ' '
 
+specialChar :: Parser Char
+specialChar = oneOf "!?*@.:;+-_#$%^&<>/|~='"
+
 infixOperator :: Parser String
-infixOperator = some $ oneOf "!?*@.:+-#$%^&<>/|~="
+infixOperator = some specialChar
 
 prefixOperator :: Parser String
-prefixOperator = some $ oneOf "!?*@.:+-#$%^&<>/|~="
+prefixOperator = some specialChar
 
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-*"))
+  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar))
     <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
         )
     <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
@@ -35,8 +38,7 @@ defIdentifier =
 -- TODO: write as extension to defIdentifier
 identifier :: Parser String
 identifier =
-  ((:) <$> (letterChar <|> char '_') <*> many (alphaNumChar <|> oneOf "?!'_-*.")
-    )
+  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> char '.'))
     <?> "identifier"
 
 namespace :: Parser String
