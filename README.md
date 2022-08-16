@@ -134,6 +134,8 @@ understanding the logic of lambda calculus:
     # we can use the function in all functions below its definition
     get-one2 get-one
 
+    # tests are similar to assertions in other languages
+    # in this example they're used to show the reduced expressions
     :test (get-one2) (+1)
 
     # indenting acts similarly to Haskell's where statement
@@ -190,6 +192,7 @@ Some other great functions:
     :import std/Number .
     :import std/Option .
     :import std/Pair .
+    :import std/List .
 
     # pairs with some values
     love pair me you
@@ -199,10 +202,6 @@ Some other great functions:
     :test (fst love) ([[[1]]])
     :test (snd love) ([[[2]]])
 
-    # options
-    :test (map inc (some (+1))) (some (+2))
-    :test (apply (some (+1)) [some (inc 0)]) (some (+2))
-
     # numerical operations
     five --(((+8) + (-4)) - (-2))
 
@@ -211,6 +210,15 @@ Some other great functions:
     :test (not-five? five) (false)
 
     :test ((uncurry mul (pair (+3) (+2))) =? (+6)) (true)
+
+    # lazy evaluation using infinite lists and indexing
+    pow2 [(iterate (mul (+2)) (+1)) !! 0]
+
+    :test (pow2 (+5)) (+32)
+
+    # options
+    :test (map inc (some (+1))) (some (+2))
+    :test (apply (some (+1)) [some (inc 0)]) (some (+2))
 
     # boolean
     main not ((false && true) || true)
