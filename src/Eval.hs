@@ -122,6 +122,13 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
             then (putStrLn $ name <> " = " <> show e)
               >> return (EnvState env')
             else rec (EnvState env') conf
+  Input path -> do
+    lib           <- getDataFileName path -- TODO: Use actual lib directory
+    exists        <- doesFileExist lib
+    actual        <- pure $ if exists then lib else path
+    if actual `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
+      EnvState env' <- loadFile actual (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
+      rec (EnvState $ env' <> env) (conf { isRepl = False, evalPaths = evalPaths conf }) -- import => isRepl = False
   -- TODO: Don't import subimports into main env
   Import path namespace -> do
     lib           <- getDataFileName path -- TODO: Use actual lib directory

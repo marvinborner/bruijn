@@ -91,7 +91,7 @@ printBundle ParseErrorBundle {..} =
 
 data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression | Infix Expression String Expression | Prefix String Expression
   deriving (Ord, Eq)
-data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Import String String | Test Expression Expression | ContextualInstruction Instruction String
+data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Input String | Import String String | Test Expression Expression | ContextualInstruction Instruction String
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x  ) = "\ESC[91m" <> show x <> "\ESC[0m"

@@ -18,7 +18,7 @@ sc :: Parser ()
 sc = void $ char ' '
 
 specialChar :: Parser Char
-specialChar = oneOf "!?*@.:;+-_#$%^&<>/\\|~='"
+specialChar = oneOf "!?*@.:;+-_#$%^&<>/\\|~="
 
 infixOperator :: Parser String
 infixOperator = some specialChar
@@ -29,7 +29,7 @@ prefixOperator = some specialChar
 -- def identifier disallows the import prefix dots
 defIdentifier :: Parser String
 defIdentifier =
-  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar))
+  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> char '\''))
     <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
         )
     <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
@@ -38,7 +38,10 @@ defIdentifier =
 -- TODO: write as extension to defIdentifier
 identifier :: Parser String
 identifier =
-  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> char '.'))
+  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> oneOf ".\'"))
+    <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
+        )
+    <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
     <?> "identifier"
 
 namespace :: Parser String
@@ -129,9 +132,9 @@ parseSingleton =
     <|> parseString
     <|> parseChar
     <|> parseAbstraction
+    <|> try parseVariable
     <|> try (parens parseInfix <?> "enclosed infix expr")
     <|> (parens parseApplication <?> "enclosed application")
-    <|> parseVariable
     <|> parsePrefix
 
 parseExpression :: Parser Expression
@@ -173,15 +176,22 @@ parseComment = do
 parseImport :: Parser Instruction
 parseImport = do
   inp  <- getInput
-  _    <- string ":import " <?> "import"
+  _    <- string ":import " <?> "import instruction"
   path <- importPath
   ns   <- (try $ sc *> namespace) <|> (eof >> return "")
   pure $ ContextualInstruction (Import (path ++ ".bruijn") ns) inp
 
+parseInput :: Parser Instruction
+parseInput = do
+  inp  <- getInput
+  _    <- string ":input " <?> "input instruction"
+  path <- importPath
+  pure $ ContextualInstruction (Input $ path ++ ".bruijn") inp
+
 parsePrint :: Parser Instruction
 parsePrint = do
   inp <- getInput
-  _   <- string ":print " <?> "print"
+  _   <- string ":print " <?> "print instruction"
   e   <- parseExpression
   pure $ ContextualInstruction (Evaluate e) inp
 
@@ -209,6 +219,7 @@ parseDefBlock lvl =
     *> (   try (parseDefine lvl)
        <|> try parsePrint
        <|> try parseImport
+       <|> try parseInput
        <|> try parseTest
        )
 
