@@ -18,7 +18,7 @@ sc :: Parser ()
 sc = void $ char ' '
 
 specialChar :: Parser Char
-specialChar = oneOf "!?*@.:;+-_#$%^&<>/|~='"
+specialChar = oneOf "!?*@.:;+-_#$%^&<>/\\|~='"
 
 infixOperator :: Parser String
 infixOperator = some specialChar

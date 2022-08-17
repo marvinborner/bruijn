@@ -60,19 +60,82 @@ index Z [[[case-some]]]
 		case-index =?1 ^0 (2 --1 ~0)
 		case-end empty
 
-(!!) C index
+(!!) \index
 
 :test (((+1) : ((+2) : ((+3) : empty))) !! (+0)) ((+1))
 :test (((+1) : ((+2) : ((+3) : empty))) !! (+2)) ((+3))
 :test (((+1) : ((+2) : ((+3) : empty))) !! (-1)) (empty)
 :test (((+1) : ((+2) : ((+3) : empty))) !! (+3)) (empty)
 
-# reverses a list
-reverse Z [[[case-some]]] case-empty
-	case-some <>?0 case-end case-rev
-		case-rev 2 (^0 : 1) ~0
+# applies a left fold on a list
+foldl Z [[[[case-some]]]]
+	case-some <>?0 case-end case-fold
+		case-fold 3 2 (2 1 ^0) ~0
 		case-end 1
-	case-empty empty
+
+:test ((foldl add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldl sub (+6) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
+
+# foldl without starting value
+foldl1 [[foldl 1 ^0 ~0]]
+
+# applies a right fold on a list
+foldr [[[Z [[case-some]] case-empty]]]
+	case-some <>?0 case-end case-fold
+		case-fold 4 ^0 (1 ~0)
+		case-end 3
+	case-empty 0
+
+:test ((foldr add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldr sub (+2) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
+
+# foldr without starting value
+foldr1 [[foldl 1 ^0 ~0]]
+
+# applies or to all list elements
+lor? foldr or? false
+
+||( lor?
+
+:test (||(true : (true : empty))) (true)
+:test (||(true : (false : empty))) (true)
+:test (||(false : (false : empty))) (false)
+
+# applies and to all list elements
+land? foldr and? true
+
+&&( land?
+
+:test (&&(true : (true : empty))) (true)
+:test (&&(true : (false : empty))) (false)
+:test (&&(false : (false : empty))) (false)
+
+# multiplies all values in list
+product foldl mul (+1)
+
+Π product
+
+:test (Π ((+1) : ((+2) : ((+3) : empty)))) ((+6))
+
+# adds all values in list
+sum foldl add (+0)
+
+Σ sum
+
+:test (Σ ((+1) : ((+2) : ((+3) : empty)))) ((+6))
+
+# returns max value of list
+lmax foldl1 max
+
+:test (lmax ((+1) : ((+3) : ((+2) : empty)))) ((+3))
+
+# returns min value of list
+lmin foldl1 min
+
+:test (lmin ((+2) : ((+1) : ((+0) : empty)))) ((+0))
+
+# reverses a list
+reverse foldl \cons empty
 
 <~>( reverse
 
@@ -110,32 +173,13 @@ map Z [[[case-some]]]
 
 :test (inc <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
 
-# applies a left fold on a list
-foldl Z [[[[case-some]]]]
-	case-some <>?0 case-end case-fold
-		case-fold 3 2 (2 1 ^0) ~0
-		case-end 1
-
-:test ((foldl add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
-:test ((foldl sub (+6) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
-
-# applies a right fold on a list
-foldr [[[Z [[case-some]] case-empty]]]
-	case-some <>?0 case-end case-fold
-		case-fold 4 ^0 (1 ~0)
-		case-end 3
-	case-empty 0
-
-:test ((foldr add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
-:test ((foldr sub (+2) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
-
 # filters a list based on a predicate
 filter Z [[[case-some]]]
 	case-some <>?0 case-end case-filter
 		case-filter 1 ^0 (cons ^0) I (2 1 ~0)
 		case-end empty
 
-(<#>) C filter
+(<#>) \filter
 
 :test (((+1) : ((+0) : ((+3) : empty))) <#> zero?) ((+0) : empty)
 
@@ -156,6 +200,18 @@ init Z [[case-some]]
 		case-end empty
 
 :test (init ((+1) : ((+2) : ((+3) : empty)))) ((+1) : ((+2) : empty))
+
+# concatenates a list of lists to one list
+concat foldr append empty
+
+# TODO: ?
+# :test (concat ((((+1) : ((+2) : empty)) : ((+3) : ((+4) : empty))) : empty)) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
+:test (concat ("a" : ("b" : empty))) ("ab")
+
+# maps a function returning list of list and concatenates
+concat-map [foldr (append . 0) empty]
+
+:test (concat-map [-0 : (0 : empty)] ((+1) : ((+2) : empty))) ((-1) : ((+1) : ((-2) : ((+2) : empty))))
 
 # zips two lists discarding excess elements
 zip Z [[[case-some]]]
@@ -197,7 +253,7 @@ drop Z [[[case-some]]]
 
 :test (drop (+2) ((+1) : ((+2) : ((+3) : empty)))) ((+3) : empty)
 
-# removes elements while a predicate is satisfied
+# removes elements from list while a predicate is satisfied
 drop-while Z [[[case-some]]]
 	case-some <>?0 case-end case-drop
 		case-drop 1 ^0 (2 1 ~0) 0
@@ -205,7 +261,41 @@ drop-while Z [[[case-some]]]
 
 :test (drop-while zero? ((+0) : ((+0) : ((+1) : empty)))) ((+1) : empty)
 
-# removes duplicates from list based on eq predicate (keeps only first occurrence)
+# returns true if any element in a list matches a predicate
+any? [lor? . (map 0)]
+
+:test (any? (\gre? (+2)) ((+1) : ((+2) : ((+3) : empty)))) (true)
+:test (any? (\gre? (+2)) ((+1) : ((+2) : ((+2) : empty)))) (false)
+
+# returns true if all elements in a list match a predicate
+all? [land? . (map 0)]
+
+:test (all? (\gre? (+2)) ((+3) : ((+4) : ((+5) : empty)))) (true)
+:test (all? (\gre? (+2)) ((+4) : ((+3) : ((+2) : empty)))) (false)
+
+# returns true if element is part of a list based on eq predicate
+in? [[any? (\1 0)]]
+
+:test (in? eq? (+3) ((+1) : ((+2) : ((+3) : empty)))) (true)
+:test (in? eq? (+0) ((+1) : ((+2) : ((+3) : empty)))) (false)
+
+# returns true if all elements of one list are equal to corresponding elements of other list
+# TODO: Better name
+leq? [[[land? (zip-with 2 1 0)]]]
+
+:test (leq? eq? ((+1) : ((+2) : empty)) ((+1) : ((+2) : empty))) (true)
+:test (leq? eq? ((+1) : ((+2) : empty)) ((+2) : ((+2) : empty))) (false)
+:test (leq? eq? empty empty) (true)
+
+# removes first element that match an eq predicate
+remove Z [[[[case-some]]]]
+	case-some <>?0 case-end case-remove
+		case-remove (2 ^0 1) ~0 (^0 : (3 2 1 ~0))
+		case-end empty
+
+:test (remove eq? (+2) ((+1) : ((+2) : ((+3) : ((+2) : empty))))) ((+1) : ((+3) : ((+2) : empty)))
+
+# removes duplicates from list based on eq predicate (keeps first occurrence)
 nub Z [[[case-some]]]
 	case-some <>?0 case-end case-nub
 		case-nub ^0 : (2 1 (~0 <#> [!(2 0 ^1)]))
@@ -214,20 +304,26 @@ nub Z [[[case-some]]]
 :test (nub eq? ((+1) : ((+2) : ((+3) : empty)))) (((+1) : ((+2) : ((+3) : empty))))
 :test (nub eq? ((+1) : ((+2) : ((+1) : empty)))) (((+1) : ((+2) : empty)))
 
-# returns a list with n-times a element
-repeat Z [[[case-some]]]
-	case-some =?1 case-end case-repeat
-		case-repeat 0 : (2 --1 0)
-		case-end empty
+# returns a list with infinite-times a element
+repeat Z [[case-some]]
+	case-some 0 : (1 0)
 
-:test (repeat (+5) (+4)) (((+4) : ((+4) : ((+4) : ((+4) : ((+4) : empty))))))
-:test (repeat (+1) (+4)) (((+4) : empty))
-:test (repeat (+0) (+4)) (empty)
+:test (take (+3) (repeat (+4))) ((+4) : ((+4) : ((+4) : empty)))
+
+# returns a list with n-times a element
+replicate [[take 1 (repeat 0)]]
+
+:test (replicate (+3) (+4)) ((+4) : ((+4) : ((+4) : empty)))
+
+# returns an infinite list repeating a finite list
+cycle Z [[case-some]]
+	case-some 0 ++ (1 0)
+
+:test (take (+6) (cycle "ab")) ("ababab")
 
 # returns a list with infinite-times previous (or start) value applied to a function
 iterate Z [[[case-some]]]
-	case-some case-iterate
-		case-iterate 0 : (2 1 (1 0))
+	case-some 0 : (2 1 (1 0))
 
 :test (take (+5) (iterate inc (+0))) (((+0) : ((+1) : ((+2) : ((+3) : ((+4) : empty))))))
 :test (take (+2) (iterate dec (+5))) (((+5) : ((+4) : empty)))

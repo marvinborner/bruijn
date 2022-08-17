@@ -28,6 +28,8 @@ B''' [[[[3 (2 (1 0))]]]]
 # Cardinal combinator: Reverse arguments
 C [[[2 0 1]]]
 
+\( C
+
 # Cardinal once removed combinator
 C* [[[[3 2 0 1]]]]
 

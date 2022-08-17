@@ -299,7 +299,7 @@ gre? [[>?(1 - 0)]]
 
 # returns whether number is less than other number
 # smaller numbers should be second argument (performance)
-les? [[<?(1 - 0)]]
+les? \gre?
 
 (<?) les?
 
@@ -319,13 +319,19 @@ leq? [[!(1 >? 0)]]
 
 # returns whether number is greater than or equal to other number
 # smaller numbers should be second argument (performance)
-geq? [[!(1 <? 0)]]
+geq? \leq?
 
 (>=?) geq?
 
 :test ((+1) >=? (+2)) (false)
 :test ((+2) >=? (+2)) (true)
 :test ((+3) >=? (+2)) (true)
+
+# returns max number of two
+max [[(1 <=? 0) 0 1]]
+
+# returns min number of two
+min [[(1 <=? 0) 1 0]]
 
 # muls two balanced ternary numbers (can introduce leading 0s)
 mul [[1 (+0) a< a> a=]]
