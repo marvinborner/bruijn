@@ -10,7 +10,7 @@ import           Data.Binary                    ( decode
                                                 )
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString.Lazy          as Byte
-import           Data.Int                       ( Int8 )
+import           Data.Word                      ( Word8 )
 import           Helper
 
 toBinary :: Expression -> String
@@ -27,7 +27,7 @@ fromBinary' inp = case inp of
         (exp2, rst2) = fromBinary' rst1
     in  (Application exp1 exp2, rst2)
   '1' : _ : rst -> binaryBruijn rst
-  _             -> error "invalid"
+  e             -> error $ "invalid: " <> e
  where
   binaryBruijn rst =
     let idx = (length $ takeWhile (== '1') $ inp) - 1
@@ -39,11 +39,11 @@ fromBinary :: String -> Expression
 fromBinary = fst . fromBinary'
 
 -- 1 byte indicating bit-padding at end + n bytes filled with bits
--- TODO: technically only 1 nibble is needed (versioning/sth?)
+-- TODO: technically only 1 nibble is needed (use other nibble for versioning/sth?)
 toBitString :: String -> Bit.BitString
 toBitString str = Bit.concat
   [ Bit.bitString $ Byte.toStrict $ encode
-    (fromIntegral $ length str `mod` 8 :: Int8)
+    (fromIntegral $ length str `mod` 8 :: Word8)
   , Bit.fromList $ map
     (\case
       '0' -> False
@@ -53,7 +53,6 @@ toBitString str = Bit.concat
     str
   ]
 
--- TODO: Fix this
 fromBitString :: Bit.BitString -> String
 fromBitString bits =
   map
@@ -62,6 +61,8 @@ fromBitString bits =
         True  -> '1'
       )
     $ Bit.toList
-    $ Bit.take (Bit.length bits - pad bits)
+    $ Bit.take (Bit.length bits - (fromIntegral $ pad bits))
     $ Bit.drop 8 bits
-  where pad = decode . Bit.realizeBitStringLazy . Bit.take 8
+ where
+  pad :: Bit.BitString -> Word8
+  pad = decode . Bit.realizeBitStringLazy . Bit.take 8

@@ -193,27 +193,37 @@ evalMainFunc (Environment env) arg = do
   e <- lookup "main" (map fst env)
   pure $ reduce $ Application e arg
 
-evalFileConf :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> IO ()
-evalFileConf path wr conv conf = do
-  EnvState env _ <- loadFile path conf
+evalFileConf :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> ExpCache -> IO ()
+evalFileConf path wr conv conf cache = do
+  EnvState env _ _ <- loadFile path conf cache
   arg          <- encodeStdin
   case evalMainFunc env arg of
     Nothing  -> print $ ContextualError (UndeclaredFunction "main") (Context "" path)
     Just e -> wr $ conv e
 
+defaultConf :: String -> EvalConf
+defaultConf path = EvalConf { isRepl = False, evalTests = True, nicePath = path, tested = [], evalPaths = [] }
+
+reduceFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
+reduceFile path wr conv = do
+  EnvState (Environment env) _ _ <- loadFile path (defaultConf path) H.empty
+  case lookup "main" (map fst env) of
+    Nothing  -> print $ ContextualError (UndeclaredFunction "main") (Context "" path)
+    Just e -> wr $ conv e
+
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalFile path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = True, nicePath = path, tested = [], evalPaths = [] })
+evalFile path wr conv = evalFileConf path wr conv (defaultConf path) H.empty
 
 -- TODO: Merge with evalFile
 evalYolo :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalYolo path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = False, nicePath = path, tested = [], evalPaths = [] })
+evalYolo path wr conv = evalFileConf path wr conv (defaultConf path) { evalTests = False } H.empty
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path rd conv = do
   f <- rd path
   case f of
     Left  exception -> print (exception :: IOError)
-    Right f'      -> print $ reduce $ fromBinary $ conv f'
+    Right f'      -> putStr $ humanifyExpression $ reduce' $ Application (fromBinary $ conv f') arg
 
 repl :: EnvState -> InputT M ()
 repl (EnvState env conf) =
@@ -252,8 +262,8 @@ runRepl = do
     looper = runInputTWithPrefs
         prefs
         (completionSettings history)
-        (withInterrupt $ repl $ EnvState (Environment []) conf)
-  code <- StrictState.evalStateT looper (EnvState (Environment []) conf)
+        (withInterrupt $ repl $ EnvState (Environment []) conf H.empty)
+  code <- StrictState.evalStateT looper (EnvState (Environment []) conf H.empty)
   return code
 
 usage :: IO ()
@@ -276,10 +286,10 @@ evalMain = do
   args <- getArgs
   case args of
     []           -> runRepl
-    ["-b", path] -> evalFile path
+    ["-b", path] -> reduceFile path
                              (Byte.putStr . Bit.realizeBitStringStrict)
                              (toBitString . toBinary)
-    ["-B", path] -> evalFile path putStrLn toBinary
+    ["-B", path] -> reduceFile path putStrLn toBinary
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
