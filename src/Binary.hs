@@ -17,24 +17,23 @@ toBinary :: Expression -> String
 toBinary (Bruijn      x        ) = (replicate (x + 1) '1') ++ "0"
 toBinary (Abstraction e        ) = "00" ++ toBinary e
 toBinary (Application exp1 exp2) = "01" ++ (toBinary exp1) ++ (toBinary exp2)
-toBinary _                       = "" -- shouldn't happen
+toBinary _                       = error "invalid"
 
 fromBinary' :: String -> (Expression, String)
-fromBinary' = \case
+fromBinary' inp = case inp of
   '0' : '0' : rst -> let (e, es) = fromBinary' rst in (Abstraction e, es)
   '0' : '1' : rst ->
     let (exp1, rst1) = fromBinary' rst
         (exp2, rst2) = fromBinary' rst1
     in  (Application exp1 exp2, rst2)
-  '1' : '0' : rst -> binaryBruijn rst
-  '1' : '1' : rst -> binaryBruijn rst
-  _               -> (Bruijn (-1), "")
+  '1' : _ : rst -> binaryBruijn rst
+  _             -> error "invalid"
  where
   binaryBruijn rst =
-    let idx = length . takeWhile (== '1')
-    in  case length rst of
-          0 -> (Bruijn $ idx rst, "")
-          _ -> (Bruijn $ idx rst, drop ((idx rst) + 1) rst)
+    let idx = (length $ takeWhile (== '1') $ inp) - 1
+    in  case rst of
+          "" -> (Bruijn $ idx, "")
+          _  -> (Bruijn $ idx, drop idx rst)
 
 fromBinary :: String -> Expression
 fromBinary = fst . fromBinary'
