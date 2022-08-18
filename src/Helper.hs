@@ -104,12 +104,12 @@ instance Show Expression where
   show (Prefix p e) = "\ESC[95m" <> p <> show e <> "\ESC[0m"
 
 type EnvDef = (String, Expression)
--- TODO: Add EvalConf to EnvState?
 data EvalConf = EvalConf
   { isRepl    :: Bool
   , evalTests :: Bool
   , nicePath  :: String
   , evalPaths :: [String]
+  , tested    :: [String]
   }
 data Environment = Environment [(EnvDef, Environment)]
 type Program = S.State Environment

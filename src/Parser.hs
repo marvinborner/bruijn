@@ -101,7 +101,9 @@ parseString = do
 parseChar :: Parser Expression
 parseChar = do
   ch <-
-    between (char '\'') (char '\'') (satisfy (`notElem` "\"\\"))
+    between (char '\'')
+            (char '\'')
+            ((char '\\' *> specialEscape) <|> satisfy (`notElem` "\"\\"))
       <?> "quoted char"
   pure $ charToExpression ch
 

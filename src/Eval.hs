@@ -22,7 +22,8 @@ import           Text.Megaparsec         hiding ( State
                                                 )
 
 data EnvState = EnvState
-  { _env :: Environment
+  { _env  :: Environment
+  , _conf :: EvalConf
   }
 type M = StrictState.StateT EnvState IO
 
@@ -41,10 +42,9 @@ loadFile path conf = do
   f <- try $ readFile path :: IO (Either IOError String)
   case f of
     Left exception ->
-      print (ContextualError (ImportError $ show (exception :: IOError)) (Context "" $ nicePath conf)) >> pure (EnvState $ Environment [])
+      print (ContextualError (ImportError $ show (exception :: IOError)) (Context "" $ nicePath conf)) >> pure (EnvState (Environment []) conf)
     Right f' -> eval (filter (not . null) $ split "\n\n" f')
-                       (EnvState $ Environment [])
-                       (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
+                       (EnvState (Environment []) (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) }))
 
 evalVar :: String -> Environment -> Program (Failable Expression)
 evalVar var (Environment sub) = state $ \env@(Environment e) ->
@@ -99,49 +99,51 @@ evalTest e1 e2 sub =
           Right e1' -> fmap (Test e1') <$> evalExp e2 sub
         )
 
-evalSubEnv :: [Instruction] -> EnvState -> EvalConf -> IO EnvState
-evalSubEnv [] s _ = return s
-evalSubEnv (instr : is) s conf =
-  handleInterrupt (putStrLn "<aborted>" >> return s)
-    $ evalInstruction instr s (evalSubEnv is) conf
+evalSubEnv :: [Instruction] -> EnvState -> IO EnvState
+evalSubEnv [] s = return s
+evalSubEnv (instr : is) s =
+  handleInterrupt (putStrLn "<aborted>" >> return s) $ evalInstruction instr s (evalSubEnv is)
+
+fullPath :: String -> IO String
+fullPath path = do
+  lib    <- getDataFileName path -- TODO: Use actual lib directory
+  exists <- doesFileExist lib
+  pure $ if exists then lib else path
 
 evalInstruction
   :: Instruction
   -> EnvState
-  -> (EnvState -> EvalConf -> IO EnvState)
-  -> EvalConf
+  -> (EnvState -> IO EnvState)
   -> IO EnvState
-evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = case instr of
+evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec = case instr of
   Define name e sub -> do
-    EnvState subEnv <- evalSubEnv sub s conf
+    EnvState subEnv _ <- evalSubEnv sub s
     let
       (res, env') = evalDefine name e subEnv `runState` env
      in  case res of
           Left  err -> print (ContextualError err $ Context inp $ nicePath conf) >> pure s -- don't continue
           Right _   -> if isRepl conf
             then (putStrLn $ name <> " = " <> show e)
-              >> return (EnvState env')
-            else rec (EnvState env') conf
+              >> return (EnvState env' conf)
+            else rec (EnvState env' conf)
   Input path -> do
-    lib           <- getDataFileName path -- TODO: Use actual lib directory
-    exists        <- doesFileExist lib
-    actual        <- pure $ if exists then lib else path
-    if actual `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
-      EnvState env' <- loadFile actual (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
-      rec (EnvState $ env' <> env) (conf { isRepl = False, evalPaths = evalPaths conf }) -- import => isRepl = False
+    full <- fullPath path
+    if full `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
+      EnvState env' conf' <- loadFile full (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
+      conf'' <- pure $ conf { tested = path : (tested conf' <> tested conf) }
+      rec (EnvState (env' <> env) conf'') -- import => isRepl = False
   -- TODO: Don't import subimports into main env
   Import path namespace -> do
-    lib           <- getDataFileName path -- TODO: Use actual lib directory
-    exists        <- doesFileExist lib
-    actual        <- pure $ if exists then lib else path
-    if actual `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
-      EnvState env' <- loadFile actual (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
+    full <- fullPath path
+    if full `elem` evalPaths conf then print (ContextualError (ImportError path) (Context inp $ nicePath conf)) >> pure s else do
+      EnvState env' conf' <- loadFile full (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
+      conf'' <- pure $ conf { tested = path : (tested conf') }
       let prefix | null namespace   = takeBaseName path ++ "."
                  | namespace == "." = ""
                  | otherwise        = namespace ++ "."
       env'' <- pure $ Environment $ map (\((n, e), o) -> ((prefix ++ n, e), o))
                                        ((\(Environment e) -> e) env') -- TODO: Improve
-      rec (EnvState $ env'' <> env) (conf { isRepl = False, evalPaths = evalPaths conf }) -- import => isRepl = False
+      rec (EnvState (env'' <> env) conf'') -- import => isRepl = False
   Evaluate e ->
     let (res, _) = evalExp e (Environment []) `runState` env
     in  putStrLn
@@ -158,32 +160,32 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env) rec conf = ca
                   <> (matchingFunctions reduced env)
                 where reduced = reduce e'
             )
-          >> rec s conf
-  Test e1 e2 -> if (evalTests conf) then
+          >> rec s
+  Test e1 e2 -> if evalTests conf && (nicePath conf) `notElem` (tested conf) then
     let (res, _) = evalTest e1 e2 (Environment []) `runState` env
     in  case res of
-          Left err -> print (ContextualError err (Context inp (nicePath conf))) >> pure s
+          Left err -> print (ContextualError err $ Context inp $ nicePath conf) >> pure s
           Right (Test e1' e2') ->
             when
                 (lhs /= rhs)
                 (print $ FailedTest e1 e2 lhs rhs)
-              >> rec s conf
+              >> print (nicePath conf) >> print (e1) >> rec s
             where
               lhs = reduce e1'
               rhs = reduce e2'
-          _ -> rec s conf
-    else rec s conf
-  _ -> rec s conf
-evalInstruction instr s rec conf = evalInstruction (ContextualInstruction instr "<unknown>") s rec conf
+          _ -> rec s
+    else rec s
+  _ -> rec s
+evalInstruction instr s rec = evalInstruction (ContextualInstruction instr "<unknown>") s rec
 
-eval :: [String] -> EnvState -> EvalConf -> IO EnvState
-eval []   s _ = return s
-eval [""] s _ = return s
-eval (block : bs) s conf =
+eval :: [String] -> EnvState -> IO EnvState
+eval []   s = return s
+eval [""] s = return s
+eval (block : bs) s@(EnvState _ conf) =
   handleInterrupt (putStrLn "<aborted>" >> return s)
     $ case parse blockParser "" block of
-        Left  err   -> print (ContextualError (SyntaxError $ printBundle err) (Context "" $ nicePath conf)) >> eval bs s conf
-        Right instr -> evalInstruction instr s (eval bs) conf
+        Left  err   -> print (ContextualError (SyntaxError $ printBundle err) (Context "" $ nicePath conf)) >> eval bs s
+        Right instr -> evalInstruction instr s (eval bs)
   where blockParser = if isRepl conf then parseReplLine else parseBlock 0
 
 evalMainFunc :: Environment -> Expression -> Maybe Expression
@@ -193,17 +195,18 @@ evalMainFunc (Environment env) arg = do
 
 evalFileConf :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> IO ()
 evalFileConf path wr conv conf = do
-  EnvState env <- loadFile path conf
+  EnvState env _ <- loadFile path conf
   arg          <- encodeStdin
   case evalMainFunc env arg of
     Nothing  -> print $ ContextualError (UndeclaredFunction "main") (Context "" path)
     Just e -> wr $ conv e
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalFile path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = True, nicePath = path, evalPaths = [] })
+evalFile path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = True, nicePath = path, tested = [], evalPaths = [] })
 
+-- TODO: Merge with evalFile
 evalYolo :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalYolo path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = False, nicePath = path, evalPaths = [] })
+evalYolo path wr conv = evalFileConf path wr conv (EvalConf { isRepl = False, evalTests = False, nicePath = path, tested = [], evalPaths = [] })
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path rd conv = do
@@ -213,21 +216,21 @@ exec path rd conv = do
     Right f'      -> print $ reduce $ fromBinary $ conv f'
 
 repl :: EnvState -> InputT M ()
-repl s =
+repl (EnvState env conf) =
   (handleInterrupt (return $ Just "") $ withInterrupt $ getInputLine
       "\ESC[36mλ\ESC[0m "
     )
     >>= (\case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
-          Just line -> do -- TODO: Use -y in repl for YOLO lifestyle
-            s' <- (liftIO $ eval [line] s (EvalConf { isRepl = True, evalTests = True, nicePath = "<repl>", evalPaths = [] }))
-            lift (StrictState.put s')
+          Just line -> do -- setting tested [] for better debugging
+            s' <- liftIO $ eval [line] (EnvState env (conf { tested = [] }))
+            lift $ StrictState.put s'
             repl s'
         )
 
 lookupCompletion :: String -> M [Completion]
 lookupCompletion str = do
-  (EnvState (Environment env)) <- StrictState.get
+  (EnvState (Environment env) _) <- StrictState.get
   return $ map (\((s, _), _) -> Completion s s False) $ filter
     (\((s, _), _) -> str `isPrefixOf` s)
     env
@@ -244,11 +247,13 @@ runRepl = do
   config  <- getDataFileName "config"
   history <- getDataFileName "history"
   prefs   <- readPrefs config
-  let looper = runInputTWithPrefs
+  let -- TODO: Use -y in repl for YOLO lifestyle
+    conf = EvalConf { isRepl = True, evalTests = True, nicePath = "<repl>", tested = [], evalPaths = [] }
+    looper = runInputTWithPrefs
         prefs
         (completionSettings history)
-        (withInterrupt $ repl $ EnvState $ Environment [])
-  code <- StrictState.evalStateT looper (EnvState $ Environment [])
+        (withInterrupt $ repl $ EnvState (Environment []) conf)
+  code <- StrictState.evalStateT looper (EnvState (Environment []) conf)
   return code
 
 usage :: IO ()
