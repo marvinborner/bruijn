@@ -24,7 +24,7 @@ import           Helper
 bind :: Expression -> Expression -> Int -> Expression
 bind e (Bruijn x         ) n = if x == n then e else Bruijn x
 bind e (Application e1 e2) n = Application (bind e e1 n) (bind e e2 n)
-bind e (Abstraction exp' ) n = Abstraction (bind (e <-> (-1)) exp' (succ n))
+bind e (Abstraction exp' ) n = Abstraction $ bind (e <-> (-1)) exp' (succ n)
 bind _ _                   _ = error "invalid"
 
 step :: Expression -> Expression

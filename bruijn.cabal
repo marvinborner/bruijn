@@ -28,6 +28,7 @@ data-files:
     std/Option.bruijn
     std/Pair.bruijn
     std/Result.bruijn
+    std/String.bruijn
 
 source-repository head
   type: git
@@ -46,7 +47,7 @@ library
       src
   default-extensions:
       LambdaCase
-  ghc-options: -Wall -Wextra -Werror -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
+  ghc-options: -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , binary

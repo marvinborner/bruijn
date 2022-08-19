@@ -10,17 +10,21 @@ pair [[[0 2 1]]]
 # extracts first expression from pair
 fst [0 K]
 
+^( fst
+
 # test fst with example pair of [[0]] and [[1]]
-:test (fst ([[0]] : [[1]])) ([[0]])
+:test (^([[0]] : [[1]])) ([[0]])
 
 # extracts second expression from pair
 snd [0 KI]
 
+~( snd
+
 # test snd with example pair of [[0]] and [[1]]
-:test (snd ([[0]] : [[1]])) ([[1]])
+:test (~([[0]] : [[1]])) ([[1]])
 
 # applies both elements of a pair to a function
-uncurry [[1 (fst 0) (snd 0)]]
+uncurry [[1 ^0 ~0]]
 
 # test uncurry with example pair of [[0]] and [[1]] and some combinator
 :test (uncurry W ([[0]] : [[1]])) ([[1]])
@@ -32,7 +36,7 @@ curry [[[2 (1 : 0)]]]
 :test (curry fst [[0]] [[1]]) ([[0]])
 
 # swaps the values of a pair
-swap [(snd 0) : (fst 0)]
+swap [~0 : ^0]
 
 # test swap with example pair of [[0]] and [[1]]
 :test (swap ([[0]] : [[1]])) ([[1]] : [[0]])

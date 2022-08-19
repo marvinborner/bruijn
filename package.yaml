@@ -42,7 +42,6 @@ library:
   ghc-options:
   - -Wall
   - -Wextra
-  - -Werror
   - -Wincomplete-uni-patterns
   - -Wincomplete-record-updates
   - -Widentities

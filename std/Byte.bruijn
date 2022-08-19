@@ -1,6 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
-:import std/Combinator .
+:import std/Logic .
 
 :import std/List .
 
@@ -10,5 +10,15 @@ b0 false
 # bit 1
 b1 true
 
+# returns true if two bytes are equal
+eq? &&( .. (zip-with xnor?)
+
+(=?) eq?
+
+:test ('a' =? 'a') (true)
+:test ('a' =? 'b') (false)
+
 # generates a byte with correct endianness
 byte [[[[[[[[0 : (1 : (2 : (3 : (4 : (5 : (6 : (7 : empty)))))))]]]]]]]]
+
+:test (byte b0 b1 b1 b0 b0 b0 b0 b1) ('a')

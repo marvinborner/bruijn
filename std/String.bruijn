@@ -1,0 +1,29 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+:import std/Byte B
+
+:input std/List
+
+# returns true if two strings are the same
+eq? eq? B.eq?
+
+(=?) eq?
+
+:test ("ab" =? "ab") (true)
+:test ("ab" =? "aa") (false)
+
+# splits string by newline character
+lines Z [[rec]]
+	rec <>?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
+		broken break (B.eq? '\n') 0
+
+:test (lines "ab\ncd") ("ab" : ("cd" : empty))
+
+# :test (lines "ab\ncd\n") ("ab" : ("cd" : empty))
+
+# concats list of strings with newline character
+unlines concat-map (\(;) '\n')
+
+:test (unlines ("ab" : ("cd" : empty))) ("ab\ncd\n")
+
+main lines "ab\ncd"

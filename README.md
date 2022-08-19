@@ -26,7 +26,7 @@ Bruijn indices written in Haskell.
     turing-completeness isn’t a trivial
     [problem](https://cstheory.stackexchange.com/a/31321) in LC
 -   Strongly opinionated parser with strict syntax rules
--   Recursion can be implemented using combinators such as Y or ω
+-   Recursion can be implemented using combinators such as Y, Z or ω
 -   Included standard library featuring many useful functions (see
     `std/`)
 
@@ -135,15 +135,20 @@ understanding the logic of lambda calculus:
     get-one2 get-one
 
     # tests are similar to assertions in other languages
+    # they test equality using α-equivalence of reduced expressions
     # in this example they're used to show the reduced expressions
-    :test (get-one2) (+1)
+    :test (get-one2) ((+1))
+
+    # remember that numbers always need to be written in parenthesis
+    # therefore two braces are needed in tests because testing exprs
+    # must always be in parenthesis as well
 
     # indenting acts similarly to Haskell's where statement
     get-one3 foo
         bar (+1)
         foo bar
 
-    # equivalent of λx.x
+    # equivalent of λx.x or Haskell's id x = x
     id [0]
 
     # testing equivalent of (λx.x) (λx.λy.x) = λx.λy.x
@@ -169,7 +174,7 @@ understanding the logic of lambda calculus:
 
     access-first [0 [[[0]]]]
 
-    :test (access-first number-set) (+1)
+    :test (access-first number-set) ((+1))
 
     # ignore args and return string 
     main ["Hello world!\n"]
@@ -202,6 +207,9 @@ Some other great functions:
     :test (fst love) ([[[1]]])
     :test (snd love) ([[[2]]])
 
+    # you can also write (me : you) instead of (pair me you)
+    # also (^love) and (~love) instead of (fst love) and (snd love)
+
     # numerical operations
     five --(((+8) + (-4)) - (-2))
 
@@ -214,7 +222,7 @@ Some other great functions:
     # lazy evaluation using infinite lists and indexing
     pow2 [(iterate (mul (+2)) (+1)) !! 0]
 
-    :test (pow2 (+5)) (+32)
+    :test (pow2 (+5)) ((+32))
 
     # options
     :test (map inc (some (+1))) (some (+2))

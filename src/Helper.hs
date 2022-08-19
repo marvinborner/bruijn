@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards #-}
--- these extensions are only used because of printBundle from megaparsec
+-- extensions above are only used because of printBundle from megaparsec
 
 module Helper where
 
