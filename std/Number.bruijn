@@ -1,4 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
+# This file specifies the most basic mathematical operations
+# -> refer to std/Math for more advanced functions
 # Heavily inspired by the works of T.Æ. Mogensen (see refs in README)
 
 :import std/Combinator .
@@ -118,7 +120,7 @@ lst [0 t= [t<] [t>] [t=]]
 # extracts most significant trit from balanced ternary numbers
 # TODO: Find a more elegant way to do this (and resolve list import loop?)
 mst [fix (last (list! %0))]
-	last Z [[<>?0 [false] [<>?(snd 1) (fst 1) (2 (snd 1))] I]]
+	last z [[<>?0 [false] [<>?(snd 1) (fst 1) (2 (snd 1))] i]]
 		<>?( [0 [[[false]]] true]
 	fix [((t<? 0) || ((t>? 0) || (t=? 0))) 0 t=]
 
@@ -148,7 +150,7 @@ positive? [t>? (mst 0)]
 :test (>?(+42)) (true)
 
 # checks true if balanced ternary number is zero
-zero? [0 true [false] [false] I]
+zero? [0 true [false] [false] i]
 
 =?( zero?
 
@@ -194,6 +196,8 @@ eq? [[abs 1 ->^0]]
 
 (=?) eq?
 
+(/=?) not! .. eq?
+
 :test ((-42) =? (-42)) (true)
 :test ((-1) =? (-1)) (true)
 :test ((-1) =? (+0)) (false)
@@ -202,6 +206,8 @@ eq? [[abs 1 ->^0]]
 :test ((+1) =? (+1)) (true)
 :test ((+42) =? (+42)) (true)
 :test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (true)
+:test ((+1) /=? (+0)) (true)
+:test ((-42) /=? (+42)) (true)
 
 # I believe Mogensen's Paper has an error in its inc/dec/add/mul/eq definitions.
 # They use 3 instead of 2 abstractions in the functions, also we use switched
@@ -347,23 +353,3 @@ smul strip .. mul
 :test (((-1) * (+42)) =? (-42)) (true)
 :test (((+3) * (+11)) =? (+33)) (true)
 :test (((+42) * (-4)) =? (-168)) (true)
-
-# greatest common divisor
-gcd Z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
-	case-eq 1
-	case-gre 2 (1 - 0) 0
-	case-les 2 1 (0 - 1)
-
-:test ((gcd (+2) (+4)) =? ((+2))) (true)
-:test ((gcd (+10) (+5)) =? ((+5))) (true)
-:test ((gcd (+3) (+8)) =? ((+1))) (true)
-
-# factorial function
-fac Z [[(0 <? (+2)) (+1) (0 * (1 --0))]]
-
-:test ((fac (+3)) =? (+6)) (true)
-
-# fibonacci sequence
-fib Z [[(0 <? (+2)) 0 ((1 (0 - (+1))) + (1 (0 - (+2))))]]
-
-# tests too slow but works :P

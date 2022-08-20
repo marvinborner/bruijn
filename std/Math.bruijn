@@ -1,0 +1,36 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+
+:import std/List .
+
+:input std/Number .
+
+# greatest common divisor
+gcd Z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
+	case-eq 1
+	case-gre 2 (1 - 0) 0
+	case-les 2 1 (0 - 1)
+
+:test ((gcd (+2) (+4)) =? ((+2))) (true)
+:test ((gcd (+10) (+5)) =? ((+5))) (true)
+:test ((gcd (+3) (+8)) =? ((+1))) (true)
+
+# power function
+pow [(!!) (iterate ((*) 0) (+1))]
+
+(**) pow
+
+:test (((+2) ** (+3)) =? ((+8))) (true)
+
+# factorial function
+# fac Z [[(0 <? (+2)) (+1) (0 * (1 --0))]]
+fac [Π (take 0 (iterate ++( (+1)))]
+
+:test ((fac (+3)) =? (+6)) (true)
+
+# fibonacci sequence
+# fibs Z [(+1) : ((+1) : (zip-with (+) 0 ~0))]
+fibs fst <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1)))
+
+fib [fibs !! ++0]
+
+:test (fib (+5)) ((+8))
