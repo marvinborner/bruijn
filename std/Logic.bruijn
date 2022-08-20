@@ -3,10 +3,10 @@
 :import std/Combinator .
 
 # true
-true K
+true k
 
 # false
-false KI
+false ki
 
 # inverts boolean value
 not! [0 false true]

@@ -55,14 +55,17 @@ loadFile path conf = do
         (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
       )
 
-evalVar :: String -> Environment -> Program (Failable Expression)
-evalVar var (Environment sub) = state $ \env@(Environment e) ->
+evalIdent :: String -> Environment -> Program (Failable Expression)
+evalIdent ident (Environment sub) = state $ \env@(Environment e) ->
   let lookup' name env' = case lookup name env' of
-        Nothing -> Left $ UndeclaredFunction var
+        Nothing -> Left $ UndeclaredIdentifier name
         Just x  -> Right x
-  in  case lookup' var (map fst sub) of -- search in sub env
+  in  case lookup' ident (map fst sub) of -- search in sub env
         s@(Right _) -> (s, env)
-        _           -> (lookup' var (map fst e), env) -- search in global env
+        _           -> (lookup' ident (map fst e), env) -- search in global env
+
+evalFun :: Identifier -> Environment -> Program (Failable Expression)
+evalFun = evalIdent . functionName
 
 evalAbs :: Expression -> Environment -> Program (Failable Expression)
 evalAbs e sub = evalExp e sub >>= pure . fmap Abstraction
@@ -78,28 +81,27 @@ evalApp f g sub =
 
 evalInfix
   :: Expression
-  -> String
+  -> Identifier
   -> Expression
   -> Environment
   -> Program (Failable Expression)
-evalInfix le i re =
-  evalExp $ Application (Application (Variable $ "(" ++ i ++ ")") le) re
+evalInfix le i re = evalExp $ Application (Application (Function i) le) re
 
 evalPrefix
-  :: String -> Expression -> Environment -> Program (Failable Expression)
-evalPrefix p e = evalExp $ Application (Variable $ p ++ "(") e
+  :: Identifier -> Expression -> Environment -> Program (Failable Expression)
+evalPrefix p e = evalExp $ Application (Function p) e
 
 evalExp :: Expression -> Environment -> Program (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
-evalExp (    Variable    var) = evalVar var
+evalExp (    Function    fun) = evalFun fun
 evalExp (    Abstraction e  ) = evalAbs e
 evalExp (    Application f g) = evalApp f g
 evalExp (    Infix le i re  ) = evalInfix le i re
 evalExp (    Prefix p e     ) = evalPrefix p e
 
 evalDefine
-  :: String -> Expression -> Environment -> Program (Failable Expression)
-evalDefine name e sub =
+  :: Identifier -> Expression -> Environment -> Program (Failable Expression)
+evalDefine i e sub =
   evalExp e sub
     >>= (\case
           Left e' -> pure $ Left e'
@@ -110,6 +112,7 @@ evalDefine name e sub =
                 )
               >> pure (Right f)
         )
+  where name = functionName i
 
 evalTest
   :: Expression -> Expression -> Environment -> Program (Failable Instruction)
@@ -136,14 +139,14 @@ evalInstruction
   :: Instruction -> EnvState -> (EnvState -> IO EnvState) -> IO EnvState
 evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec =
   case instr of
-    Define name e sub -> do
+    Define i e sub -> do
       EnvState subEnv _ <- evalSubEnv sub s
-      (res, env')       <- pure $ evalDefine name e subEnv `runState` env
+      (res, env')       <- pure $ evalDefine i e subEnv `runState` env
       case res of
         Left err ->
           print (ContextualError err $ Context inp $ nicePath conf) >> pure s -- don't continue
         Right _
-          | isRepl conf -> (putStrLn $ name <> " = " <> show e)
+          | isRepl conf -> (putStrLn $ show i <> " = " <> show e)
           >> return (EnvState env' conf)
           | otherwise -> rec $ EnvState env' conf
     Input path -> do
@@ -186,9 +189,9 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec =
                     <> (show e')
                     <> "\n*> "
                     <> (show reduced)
-                    <> " "
+                    <> "\n?> "
                     <> (humanifyExpression reduced)
-                    <> " "
+                    <> "\n#> "
                     <> (matchingFunctions reduced env)
                   where reduced = reduce e'
               )
@@ -242,7 +245,7 @@ evalFileConf path wr conv conf = do
   arg            <- encodeStdin
   case evalMainFunc env arg of
     Nothing ->
-      print $ ContextualError (UndeclaredFunction "main") (Context "" path)
+      print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
     Just e -> wr $ conv e
 
 defaultConf :: String -> EvalConf
@@ -253,12 +256,12 @@ defaultConf path = EvalConf { isRepl    = False
                             , evalPaths = []
                             }
 
-reduceFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-reduceFile path wr conv = do
+dumpFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
+dumpFile path wr conv = do
   EnvState (Environment env) _ <- loadFile path (defaultConf path)
   case lookup "main" (map fst env) of
     Nothing ->
-      print $ ContextualError (UndeclaredFunction "main") (Context "" path)
+      print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
     Just e -> wr $ conv e
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
@@ -345,10 +348,10 @@ evalMain = do
   args <- getArgs
   case args of
     []           -> runRepl
-    ["-b", path] -> reduceFile path
-                               (Byte.putStr . Bit.realizeBitStringStrict)
-                               (toBitString . toBinary)
-    ["-B", path] -> reduceFile path putStrLn toBinary
+    ["-b", path] -> dumpFile path
+                             (Byte.putStr . Bit.realizeBitStringStrict)
+                             (toBitString . toBinary)
+    ["-B", path] -> dumpFile path putStrLn toBinary
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id

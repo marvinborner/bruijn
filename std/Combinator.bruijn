@@ -2,238 +2,238 @@
 # Inspired by Raymond Smullyan: To Mock a Mockingbird
 # -> bird monickered combinators (they're still quite useful though!)
 
-# Apply combinator
-A [[1 0]]
+# apply combinator
+a [[1 0]]
 
-($) A
+($) a
 
-# Bluebird combinator: 1 <- 1 composition
-B [[[2 (1 0)]]]
+# bluebird combinator: 1 <- 1 composition
+b [[[2 (1 0)]]]
 
-(.) B
+(.) b
 
-# Blackbird combinator
-B' [[[[3 (2 1 0)]]]]
+# blackbird combinator
+b' [[[[3 (2 1 0)]]]]
 
-(..) B'
+(..) b'
 
-# Bunting combinator
-B'' [[[[[4 (3 2 1 0)]]]]]
+# bunting combinator
+b'' [[[[[4 (3 2 1 0)]]]]]
 
-(...) B''
+(...) b''
 
-# Becard combinator
-B''' [[[[3 (2 (1 0))]]]]
+# becard combinator
+b''' [[[[3 (2 (1 0))]]]]
 
-# Cardinal combinator: Reverse arguments
-C [[[2 0 1]]]
+# cardinal combinator: reverse arguments
+c [[[2 0 1]]]
 
-\( C
+\( c
 
-# Cardinal once removed combinator
-C* [[[[3 2 0 1]]]]
+# cardinal once removed combinator
+c* [[[[3 2 0 1]]]]
 
-# Cardinal twice removed combinator
-C** [[[[[4 3 2 0 1]]]]]
+# cardinal twice removed combinator
+c** [[[[[4 3 2 0 1]]]]]
 
-# Dove combinator
-D [[[[3 2 (1 0)]]]]
+# dove combinator
+d [[[[3 2 (1 0)]]]]
 
-# Dickcissel combinator
-D' [[[[[4 3 2 (1 0)]]]]]
+# dickcissel combinator
+d' [[[[[4 3 2 (1 0)]]]]]
 
-# Dovekies combinator
-D'' [[[[[4 (3 2) (1 0)]]]]]
+# dovekies combinator
+d'' [[[[[4 (3 2) (1 0)]]]]]
 
-# Eagle combinator
-E [[[[[4 3 (2 1 0)]]]]]
+# eagle combinator
+e [[[[[4 3 (2 1 0)]]]]]
 
-# Bald eagle combinator
-E' [[[[[[[6 (5 4 3) (2 1 0)]]]]]]]
+# bald eagle combinator
+e' [[[[[[[6 (5 4 3) (2 1 0)]]]]]]]
 
-# Finch combinator
-F [[[0 1 2]]]
+# finch combinator
+f [[[0 1 2]]]
 
-# Finch once removed combinator
-F* [[[[3 0 1 2]]]]
+# finch once removed combinator
+f* [[[[3 0 1 2]]]]
 
-# Finch twice removed combinator
-F** [[[[[4 3 0 1 2]]]]]
+# finch twice removed combinator
+f** [[[[[4 3 0 1 2]]]]]
 
-# Goldfinch combinator
-G [[[[3 0 (2 1)]]]]
+# goldfinch combinator
+g [[[[3 0 (2 1)]]]]
 
-# Hummingbird combinator
-H [[[2 1 0 1]]]
+# hummingbird combinator
+h [[[2 1 0 1]]]
 
-# Idiot combinator: Identity
-I [0]
+# idiot combinator: identity
+i [0]
 
-# Idiot once removed combinator
-I* [[1 0]]
+# idiot once removed combinator
+i* [[1 0]]
 
-# Idiot twice removed combinator
-I** [[[2 1 0]]]
+# idiot twice removed combinator
+i** [[[2 1 0]]]
 
-# Jay combinator
-J [[[[3 2 (3 0 1)]]]]
+# jay combinator
+j [[[[3 2 (3 0 1)]]]]
 
-# Kestrel combinator: Const, True
-K [[1]]
+# kestrel combinator: const, true
+k [[1]]
 
-# Kite combinator: Const id, False
-KI [[0]]
+# kite combinator: const id, false
+ki [[0]]
 
-# Konstant mocker combinator
-KM [[0 0]]
+# konstant mocker combinator
+km [[0 0]]
 
-# Crossed konstant mocker combinator
-KM' [[1 1]]
+# crossed konstant mocker combinator
+km' [[1 1]]
 
-# Lark combinator
-L [[1 (0 0)]]
+# lark combinator
+l [[1 (0 0)]]
 
-# Mockingbird/omega combinator
-M [0 0]
+# mockingbird/omega combinator
+m [0 0]
 
-ω M
+ω m
 
-# Double mockingbird combinator
-M' [[1 0 (1 0)]]
+# double mockingbird combinator
+m' [[1 0 (1 0)]]
 
-# Owl combinator
-O [[0 (1 0)]]
+# owl combinator
+o [[0 (1 0)]]
 
-# Omega combinator
+# omega combinator
 Ω ω ω
 
-# Phoenix combinator
-Φ [[[[3 (2 0) (1 0)]]]]
+# phoenix combinator
+φ [[[[3 (2 0) (1 0)]]]]
 
-# Psi combinator: On
-Ψ [[[[3 (2 1) (2 0)]]]]
+# psi combinator: on
+ψ [[[[3 (2 1) (2 0)]]]]
 
-# Queer combinator
-Q [[[1 (2 0)]]]
+# queer combinator
+q [[[1 (2 0)]]]
 
-(>>>) Q
+(>>>) q
 
-# Quixotic bird combinator
-Q' [[[2 (0 1)]]]
+# quixotic bird combinator
+q' [[[2 (0 1)]]]
 
-# Quizzical bird combinator
-Q'' [[[1 (0 2)]]]
+# quizzical bird combinator
+q'' [[[1 (0 2)]]]
 
-# Quirky bird combinator
-Q''' [[[0 (2 1)]]]
+# quirky bird combinator
+q''' [[[0 (2 1)]]]
 
-# Quacky bird combinator
-Q'''' [[[0 (1 2)]]]
+# quacky bird combinator
+q'''' [[[0 (1 2)]]]
 
-# Robin combinator
-R [[[1 0 2]]]
+# robin combinator
+r [[[1 0 2]]]
 
-# Robin once removed combinator
-R* [[[[3 1 0 2]]]]
+# robin once removed combinator
+r* [[[[3 1 0 2]]]]
 
-# Robin twice removed combinator
-R** [[[[[4 3 1 0 2]]]]]
+# robin twice removed combinator
+r** [[[[[4 3 1 0 2]]]]]
 
-# Starling combinator: <*>
-S [[[2 0 (1 0)]]]
+# starling combinator: <*>
+s [[[2 0 (1 0)]]]
 
-# Thrush combinator: Flipped $
-T [[0 1]]
+# thrush combinator: flipped $
+t [[0 1]]
 
-(&) T
+(&) t
 
-# Turing combinator
-U [[0 (1 1 0)]]
+# turing combinator
+u [[0 (1 1 0)]]
 
-# Vireo combinator
-V [[[0 2 1]]]
+# vireo combinator
+v [[[0 2 1]]]
 
-# Vireo once removed combinator
-V* [[[[3 0 2 1]]]]
+# vireo once removed combinator
+v* [[[[3 0 2 1]]]]
 
-# Vireo twice removed combinator
-V** [[[[[4 3 0 2 1]]]]]
+# vireo twice removed combinator
+v** [[[[[4 3 0 2 1]]]]]
 
-# Warbler combinator
-W [[1 0 0]]
+# warbler combinator
+w [[1 0 0]]
 
-# Warbler once removed combinator
-W* [[[2 1 0 0]]]
+# warbler once removed combinator
+w* [[[2 1 0 0]]]
 
-# Warbler twice removed combinator
-W** [[[[3 2 1 0 0]]]]
+# warbler twice removed combinator
+w** [[[[3 2 1 0 0]]]]
 
-# Converse warbler combinator
-W' [[0 1 1]]
+# converse warbler combinator
+w' [[0 1 1]]
 
-# Sage bird combinator
-Y [[1 (0 0)] [1 (0 0)]]
+# sage bird combinator
+y [[1 (0 0)] [1 (0 0)]]
 
-# Z fixed point combinator
-Z [[1 [1 1 0]] [1 [1 1 0]]]
+# z fixed point combinator
+z [[1 [1 1 0]] [1 [1 1 0]]]
 
-# Theta combinator
-Θ [[0 (1 1 0)]] [[0 (1 1 0)]]
+# theta combinator
+θ [[0 (1 1 0)]] [[0 (1 1 0)]]
 
 # iota combinator
-i [0 S K]
+ι [0 s k]
 
 # -- combinator equivalency tests --
 
-:test (A) (S (S K))
-:test (B) (S (K S) K)
-:test (B') (B B B)
-:test (B'') (B (B B B) B)
-:test (B''') (B (B B) B)
-:test (C) (S (B B S) (K K))
-:test (C*) (B C)
-:test (C**) (B C*)
-:test (D) (B B)
-:test (D') (B (B B))
-:test (D'') (B B (B B))
-:test (E) (B (B B B))
-:test (E') (B (B B B) (B (B B B)))
-:test (F) (E T T E T)
-:test (F*) (B C* R*)
-:test (F**) (B F*)
-:test (G) (B B C)
-:test (H) (B W (B C))
-:test (I) (S K K)
-:test (I*) (S (S K))
-:test (J) (B (B C) (W (B C E)))
-:test (KI) (K I)
-:test (L) (C B M)
-:test (M) (S I I)
-:test (M') (B M)
-:test (O) (S I)
-:test (Q) (C B)
-:test (Q') (B C B)
-:test (Q'') (C (B C B))
-:test (Q''') (B T)
-:test (Q'''') (F* B)
-:test (R) (B B T)
-:test (R*) (C* C*)
-:test (R**) (B R*)
-:test (T) (C I)
-:test (U) (L O)
-:test (V) (B C T)
-:test (V*) (C* F*)
-:test (V**) (B V*)
-:test (W) (C (B M R))
-:test (W*) (B W)
-:test (W**) (B (B W))
-:test (W') (C W)
+:test (a) (s (s k))
+:test (b) (s (k s) k)
+:test (b') (b b b)
+:test (b'') (b (b b b) b)
+:test (b''') (b (b b) b)
+:test (c) (s (b b s) (k k))
+:test (c*) (b c)
+:test (c**) (b c*)
+:test (d) (b b)
+:test (d') (b (b b))
+:test (d'') (b b (b b))
+:test (e) (b (b b b))
+:test (e') (b (b b b) (b (b b b)))
+:test (f) (e t t e t)
+:test (f*) (b c* r*)
+:test (f**) (b f*)
+:test (g) (b b c)
+:test (h) (b w (b c))
+:test (i) (s k k)
+:test (i*) (s (s k))
+:test (j) (b (b c) (w (b c e)))
+:test (ki) (k i)
+:test (l) (c b m)
+:test (m) (s i i)
+:test (m') (b m)
+:test (o) (s i)
+:test (q) (c b)
+:test (q') (b c b)
+:test (q'') (c (b c b))
+:test (q''') (b t)
+:test (q'''') (f* b)
+:test (r) (b b t)
+:test (r*) (c* c*)
+:test (r**) (b r*)
+:test (t) (c i)
+:test (u) (l o)
+:test (v) (b c t)
+:test (v*) (c* f*)
+:test (v**) (b v*)
+:test (w) (c (b m r))
+:test (w*) (b w)
+:test (w**) (b (b w))
+:test (w') (c w)
 
 # -- iota and SKI tests --
 
-:test (I) (i i)
-:test (K) (i (i (i i)))
-:test (S) (i (i (i (i i))))
-:test (B) (S (K S) K)
-:test (C) (S (S (K (S (K S) K)) S) (K K))
-:test (W) (S S (S K))
+:test (i) (ι ι)
+:test (k) (ι (ι (ι ι)))
+:test (s) (ι (ι (ι (ι ι))))
+:test (b) (s (k s) k)
+:test (c) (s (s (k (s (k s) k)) s) (k k))
+:test (w) (s s (s k))

@@ -17,36 +17,44 @@ type Parser = Parsec Void String
 sc :: Parser ()
 sc = void $ char ' '
 
+-- "'" can't be in special chars because of 'c' char notation and prefixation
 specialChar :: Parser Char
 specialChar = oneOf "!?*@.:;+-_#$%^&<>/\\|~="
 
+-- lower or upper
+greekLetter :: Parser Char
+greekLetter = satisfy isGreek
+  where isGreek c = ('Α' <= c && c <= 'Ω') || ('α' <= c && c <= 'ω')
+
 infixOperator :: Parser String
-infixOperator = some specialChar
+infixOperator =
+  some specialChar <|> ((++) <$> dottedNamespace <*> infixOperator)
 
 prefixOperator :: Parser String
-prefixOperator = some specialChar
+prefixOperator = infixOperator
 
--- def identifier disallows the import prefix dots
-defIdentifier :: Parser String
+defIdentifier :: Parser Identifier
 defIdentifier =
-  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> char '\''))
-    <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
+  (   NormalFunction
+    <$> ((:) <$> (lowerChar <|> greekLetter) <*> many
+          (alphaNumChar <|> specialChar <|> char '\'')
         )
-    <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
+    )
+    <|> (InfixFunction <$> (char '(' *> infixOperator <* char ')'))
+    <|> (PrefixFunction <$> (prefixOperator <* char '('))
     <?> "defining identifier"
 
--- TODO: write as extension to defIdentifier
-identifier :: Parser String
+identifier :: Parser Identifier
 identifier =
-  ((:) <$> letterChar <*> many (alphaNumChar <|> specialChar <|> oneOf ".\'"))
-    <|> ((\l i r -> [l] ++ i ++ [r]) <$> char '(' <*> infixOperator <*> char ')'
-        )
-    <|> ((\p i -> p ++ [i]) <$> prefixOperator <*> char '(')
+  try (NamespacedFunction <$> dottedNamespace <*> defIdentifier)
+    <|> defIdentifier
     <?> "identifier"
 
 namespace :: Parser String
-namespace =
-  ((:) <$> upperChar <*> many letterChar) <|> string "." <?> "namespace"
+namespace = (:) <$> upperChar <*> many letterChar <?> "namespace"
+
+dottedNamespace :: Parser String
+dottedNamespace = (\n d -> n ++ [d]) <$> namespace <*> char '.'
 
 parens :: Parser a -> Parser a
 parens = between (string "(") (string ")")
@@ -107,10 +115,10 @@ parseChar = do
       <?> "quoted char"
   pure $ charToExpression ch
 
-parseVariable :: Parser Expression
-parseVariable = do
+parseFunction :: Parser Expression
+parseFunction = do
   var <- identifier
-  pure $ Variable var
+  pure $ Function var
 
 parseInfix :: Parser Expression
 parseInfix = do
@@ -119,13 +127,13 @@ parseInfix = do
   i <- infixOperator
   sc
   e2 <- parseSingleton
-  pure $ Infix e1 i e2
+  pure $ Infix e1 (InfixFunction i) e2
 
 parsePrefix :: Parser Expression
 parsePrefix = do
   p <- prefixOperator
   e <- parseSingleton
-  pure $ Prefix p e
+  pure $ Prefix (PrefixFunction p) e
 
 parseSingleton :: Parser Expression
 parseSingleton =
@@ -134,7 +142,7 @@ parseSingleton =
     <|> parseString
     <|> parseChar
     <|> parseAbstraction
-    <|> try parseVariable
+    <|> try parseFunction
     <|> try (parens parseInfix <?> "enclosed infix expr")
     <|> (parens parseApplication <?> "enclosed application")
     <|> parsePrefix
@@ -180,7 +188,7 @@ parseImport = do
   inp  <- getInput
   _    <- string ":import " <?> "import instruction"
   path <- importPath
-  ns   <- (try $ sc *> namespace) <|> (eof >> return "")
+  ns   <- (try $ (sc *> (namespace <|> string "."))) <|> (eof >> return "")
   pure $ ContextualInstruction (Import (path ++ ".bruijn") ns) inp
 
 parseInput :: Parser Instruction

@@ -34,13 +34,13 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndeclaredFunction String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
+data Error = SyntaxError String | UndeclaredIdentifier String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SyntaxError err) =
     errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
-  show (UndeclaredFunction func) =
-    errPrefix <> "undeclared function " <> show func
+  show (UndeclaredIdentifier ident) =
+    errPrefix <> "undeclared identifier " <> ident
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
@@ -89,19 +89,35 @@ printBundle ParseErrorBundle {..} =
               <> pointer
               <> "\n"
 
-data Expression = Bruijn Int | Variable String | Abstraction Expression | Application Expression Expression | Infix Expression String Expression | Prefix String Expression
+data Identifier = NormalFunction String | InfixFunction String | PrefixFunction String | NamespacedFunction String Identifier
   deriving (Ord, Eq)
-data Instruction = Define String Expression [Instruction] | Evaluate Expression | Comment | Input String | Import String String | Test Expression Expression | ContextualInstruction Instruction String
+functionName :: Identifier -> String
+functionName = \case
+  NormalFunction f       -> f
+  InfixFunction  i       -> "(" <> i <> ")"
+  PrefixFunction p       -> p <> "("
+  NamespacedFunction n f -> n <> functionName f
+instance Show Identifier where
+  show ident = "\ESC[95m" <> functionName ident <> "\ESC[0m"
+data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | Infix Expression Identifier Expression | Prefix Identifier Expression
+  deriving (Ord, Eq)
+data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Input String | Import String String | Test Expression Expression | ContextualInstruction Instruction String
   deriving (Show)
 instance Show Expression where
-  show (Bruijn      x  ) = "\ESC[91m" <> show x <> "\ESC[0m"
-  show (Variable    var) = "\ESC[95m" <> var <> "\ESC[0m"
-  show (Abstraction e  ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
+  show (Bruijn      x    ) = "\ESC[91m" <> show x <> "\ESC[0m"
+  show (Function    ident) = "\ESC[95m" <> show ident <> "\ESC[0m"
+  show (Abstraction e    ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
   show (Application exp1 exp2) =
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
   show (Infix le i re) =
-    show le <> " \ESC[95m(" <> i <> ")" <> "\ESC[0m " <> show re
-  show (Prefix p e) = "\ESC[95m" <> p <> show e <> "\ESC[0m"
+    "\ESC[33m(\ESC[0m"
+      <> show i
+      <> " "
+      <> show le
+      <> " "
+      <> show re
+      <> "\ESC[33m)\ESC[0m"
+  show (Prefix p e) = show p <> " " <> show e
 
 type EnvDef = (String, Expression)
 data EvalConf = EvalConf
@@ -193,7 +209,7 @@ maybeHumanifyExpression e = ternaryToDecimal e <|> decodeStdout e
 
 humanifyExpression :: Expression -> String
 humanifyExpression e = case maybeHumanifyExpression e of
-  Nothing -> ""
+  Nothing -> show e
   Just h  -> h
 
 ---
