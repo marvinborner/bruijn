@@ -7,27 +7,29 @@ Bruijn indices written in Haskell.
 
 ## Features
 
--   De Bruijn indices[\[0\]](#References) eliminate the complexity of
-    α-equivalence and α-conversion
--   Unique bracket-style representation for lambda abstractions enables
-    improved human-readability and faster syntactic perception
--   Balanced ternary allows negative numbers while having a reasonably
-    compact representation, operator and time complexity (in comparison
-    to unary/binary church numerals)[\[1\]](#References)
--   Arbitrary-precision floating-point artihmetic using balanced ternary
-    numerals
--   Highly space-efficient compilation to binary lambda calculus
-    (BLC)[\[2\]](#References)[\[3\]](#References) additionally to normal
-    interpretation and REPL
+-   **De Bruijn indices[\[0\]](#References)** eliminate the complexity
+    of α-equivalence and α-conversion
+-   Unique **bracket-style representation** for lambda abstractions
+    enables improved human-readability and faster syntactic perception
+-   **Balanced ternary** allows negative numbers while having a
+    reasonably compact representation, operator and time complexity (in
+    comparison to unary/binary church numerals)[\[1\]](#References)
+-   **No primitive functions** - every function is implemented in Bruijn
+    itself
+-   **Arbitrary-precision floating-point artihmetic** using balanced
+    ternary numerals
+-   Highly space-efficient compilation to **binary lambda calculus
+    (BLC)[\[2\]](#References)[\[3\]](#References)** additionally to
+    normal interpretation and REPL
 -   Use BLC compilation in combination with generative asymmetric
-    numeral systems (ANS/FSE)[\[4\]](#References) as incredibly
-    effective compressor
--   Contracts as a form of typing because typing while guaranteeing
+    numeral systems (ANS/FSE)[\[4\]](#References) as **incredibly
+    effective compressor**
+-   **Contracts** as a form of typing because typing while guaranteeing
     turing-completeness isn’t a trivial
     [problem](https://cstheory.stackexchange.com/a/31321) in LC
--   Strongly opinionated parser with strict syntax rules
--   Recursion can be implemented using combinators such as Y, Z or ω
--   Included standard library featuring many useful functions (see
+-   Strongly **opinionated parser** with strict syntax rules
+-   **Recursion** can be implemented using combinators such as Y, Z or ω
+-   Included **standard library** featuring many useful functions (see
     `std/`)
 
 ## Basics
@@ -220,9 +222,9 @@ Some other great functions:
     :test ((uncurry mul (pair (+3) (+2))) =? (+6)) (true)
 
     # lazy evaluation using infinite lists and indexing
-    pow2 [(iterate (mul (+2)) (+1)) !! 0]
+    pow2 (!!) (iterate ((*) (+2)) (+1))
 
-    :test (pow2 (+5)) ((+32))
+    :test ((pow2 (+5)) =? ((+32))) (true)
 
     # options
     :test (map inc (some (+1))) (some (+2))
