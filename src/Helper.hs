@@ -120,26 +120,18 @@ instance Show Expression where
       <> "\ESC[33m)\ESC[0m"
   show (Prefix p e) = show p <> " " <> show e
 
-type EnvDef = (String, Expression)
 data EvalConf = EvalConf
   { isRepl    :: Bool
   , evalTests :: Bool
   , nicePath  :: String
   , evalPaths :: [String]
   }
-data Environment = Environment [(EnvDef, Environment)]
+-- data Environment = Environment [(EnvDef, Environment)]
+data Environment = Environment (M.Map String (Expression, Environment))
 data EnvCache = EnvCache
   { _imported :: M.Map String Environment
   }
 type Program = S.State Environment
-
-instance Semigroup Environment where
-  (Environment e1) <> (Environment e2) = Environment $ e1 <> e2
-
-instance Show Environment where
-  show (Environment env) = intercalate "\n" $ map
-    (\((n, f), s) -> "\t" <> show n <> ": " <> show f <> " - " <> show s)
-    env
 
 ---
 
@@ -197,14 +189,10 @@ decodeStdout e = do
 
 ---
 
-lookupValues :: (Eq b) => b -> [(a, b)] -> [a]
-lookupValues _ [] = []
-lookupValues key ((x, y) : xys) | key == y  = x : lookupValues key xys
-                                | otherwise = lookupValues key xys
-
+-- TODO: Performanize
 matchingFunctions :: Expression -> Environment -> String
 matchingFunctions e (Environment env) =
-  intercalate ", " $ nub $ lookupValues e (map fst env)
+  intercalate ", " $ map fst $ M.toList $ M.filter (\(e', _) -> e == e') env
 
 -- TODO: Expression -> Maybe Char is missing
 maybeHumanifyExpression :: Expression -> Maybe String
