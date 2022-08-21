@@ -10,6 +10,7 @@ import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
 import qualified Data.ByteString.Char8         as C
 import           Data.List
+import qualified Data.Map                      as M
 import           Text.Megaparsec
 
 data Context = Context
@@ -125,9 +126,11 @@ data EvalConf = EvalConf
   , evalTests :: Bool
   , nicePath  :: String
   , evalPaths :: [String]
-  , tested    :: [String]
   }
 data Environment = Environment [(EnvDef, Environment)]
+data EnvCache = EnvCache
+  { _imported :: M.Map String Environment
+  }
 type Program = S.State Environment
 
 instance Semigroup Environment where

@@ -9,6 +9,8 @@ import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
 import           Data.List
+import qualified Data.Map                      as M
+import           Data.Maybe
 import           Helper
 import           Parser
 import           Paths_bruijn
@@ -22,8 +24,9 @@ import           Text.Megaparsec         hiding ( State
                                                 )
 
 data EnvState = EnvState
-  { _env  :: Environment
-  , _conf :: EvalConf
+  { _env   :: Environment
+  , _conf  :: EvalConf
+  , _cache :: EnvCache
   }
 type M = StrictState.StateT EnvState IO
 
@@ -38,8 +41,8 @@ split a@(_ : _) b@(c : _)
   where rest = split a $ tail b
 
 -- TODO: Force naming convention for namespaces/files
-loadFile :: String -> EvalConf -> IO EnvState
-loadFile path conf = do
+loadFile :: String -> EvalConf -> EnvCache -> IO EnvState
+loadFile path conf cache = do
   f <- try $ readFile path :: IO (Either IOError String)
   case f of
     Left exception ->
@@ -47,12 +50,13 @@ loadFile path conf = do
           (ContextualError (ImportError $ show (exception :: IOError))
                            (Context "" $ nicePath conf)
           )
-        >> pure (EnvState (Environment []) conf)
+        >> pure (EnvState (Environment []) conf cache)
     Right f' -> eval
       (filter (not . null) $ split "\n\n" f')
       (EnvState
         (Environment [])
         (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
+        cache
       )
 
 evalIdent :: String -> Environment -> Program (Failable Expression)
@@ -137,18 +141,19 @@ fullPath path = do
 
 evalInstruction
   :: Instruction -> EnvState -> (EnvState -> IO EnvState) -> IO EnvState
-evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec =
-  case instr of
+evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf cache) rec
+  = case instr of
     Define i e sub -> do
-      EnvState subEnv _ <- evalSubEnv sub s
-      (res, env')       <- pure $ evalDefine i e subEnv `runState` env
+      EnvState subEnv _ _ <- evalSubEnv sub s
+      print i
+      (res, env') <- pure $ evalDefine i e subEnv `runState` env
       case res of
         Left err ->
           print (ContextualError err $ Context inp $ nicePath conf) >> pure s -- don't continue
         Right _
           | isRepl conf -> (putStrLn $ show i <> " = " <> show e)
-          >> return (EnvState env' conf)
-          | otherwise -> rec $ EnvState env' conf
+          >> return s { _env = env' }
+          | otherwise -> rec s { _env = env' }
     Input path -> do
       full <- fullPath path
       if full `elem` evalPaths conf
@@ -156,29 +161,52 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec =
           print
               (ContextualError (ImportError path) (Context inp $ nicePath conf))
             >> pure s
-        else do
-          EnvState env' conf' <- loadFile full (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
-          conf''              <- pure
-            $ conf { tested = path : (tested conf' <> tested conf) }
-          rec $ EnvState (env' <> env) conf'' -- import => isRepl = False
+        else if M.member path (_imported cache)
+          then
+            let env' = fromJust $ M.lookup path (_imported cache)
+            in  rec s { _env = env' <> env }
+          else do
+            EnvState env' _ cache' <- loadFile full
+                                               (conf { nicePath = path })
+                                               cache -- TODO: Fix wrong `within` in import error
+            cache'' <- pure $ cache
+              { _imported = M.insert path env'
+                              $ M.union (_imported cache) (_imported cache')
+              }
+            rec $ EnvState (env' <> env) conf cache'' -- import => isRepl = False
     -- TODO: Don't import subimports into main env
-    Import path namespace -> do
+    Import path namespace -> do -- TODO: Merge with Input (very similar)
       full <- fullPath path
       if full `elem` evalPaths conf
         then
           print
               (ContextualError (ImportError path) (Context inp $ nicePath conf))
             >> pure s
-        else do
-          EnvState env' conf' <- loadFile full (conf { nicePath = path }) -- TODO: Fix wrong `within` in import error
-          conf''              <- pure $ conf { tested = path : (tested conf') }
-          let prefix | null namespace   = takeBaseName path ++ "."
-                     | namespace == "." = ""
-                     | otherwise        = namespace ++ "."
-          env'' <- pure $ Environment $ map
-            (\((n, e), o) -> ((prefix ++ n, e), o))
-            ((\(Environment e) -> e) env') -- TODO: Improve
-          rec $ EnvState (env'' <> env) conf'' -- import => isRepl = False
+        else if M.member path (_imported cache)
+          then
+            let env' = fromJust $ M.lookup path (_imported cache)
+                prefix | null namespace   = takeBaseName path ++ "."
+                       | namespace == "." = ""
+                       | otherwise        = namespace ++ "."
+                env'' = Environment $ map
+                  (\((n, e), o) -> ((prefix ++ n, e), o))
+                  ((\(Environment e) -> e) env') -- TODO: Improve
+            in  rec s { _env = env'' <> env }
+          else do
+            EnvState env' _ cache' <- loadFile full
+                                               (conf { nicePath = path })
+                                               cache -- TODO: Fix wrong `within` in import error
+            cache'' <- pure $ cache
+              { _imported = M.insert path env'
+                              $ M.union (_imported cache) (_imported cache')
+              }
+            let prefix | null namespace   = takeBaseName path ++ "."
+                       | namespace == "." = ""
+                       | otherwise        = namespace ++ "."
+            env'' <- pure $ Environment $ map
+              (\((n, e), o) -> ((prefix ++ n, e), o))
+              ((\(Environment e) -> e) env') -- TODO: Improve
+            rec $ EnvState (env'' <> env) conf cache'' -- import => isRepl = False
     Evaluate e ->
       let (res, _) = evalExp e (Environment []) `runState` env
       in  putStrLn
@@ -197,7 +225,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf) rec =
               )
             >> rec s
     Test e1 e2
-      | evalTests conf && (nicePath conf) `notElem` (tested conf)
+      | evalTests conf
       -> let (res, _) = evalTest e1 e2 (Environment []) `runState` env
          in
            case res of
@@ -219,7 +247,7 @@ evalInstruction instr s rec =
 eval :: [String] -> EnvState -> IO EnvState
 eval []   s = return s
 eval [""] s = return s
-eval (block : bs) s@(EnvState _ conf) =
+eval (block : bs) s@(EnvState _ conf _) =
   handleInterrupt (putStrLn "<aborted>" >> return s)
     $ case parse blockParser "" block of
         Left err ->
@@ -241,24 +269,22 @@ evalMainFunc (Environment env) arg = do
 evalFileConf
   :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> IO ()
 evalFileConf path wr conv conf = do
-  EnvState env _ <- loadFile path conf
-  arg            <- encodeStdin
+  EnvState env _ _ <- loadFile path conf (EnvCache M.empty)
+  arg              <- encodeStdin
   case evalMainFunc env arg of
     Nothing ->
       print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
     Just e -> wr $ conv e
 
 defaultConf :: String -> EvalConf
-defaultConf path = EvalConf { isRepl    = False
-                            , evalTests = True
-                            , nicePath  = path
-                            , tested    = []
-                            , evalPaths = []
-                            }
+defaultConf path =
+  EvalConf { isRepl = False, evalTests = True, nicePath = path, evalPaths = [] }
 
 dumpFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 dumpFile path wr conv = do
-  EnvState (Environment env) _ <- loadFile path (defaultConf path)
+  EnvState (Environment env) _ _ <- loadFile path
+                                             (defaultConf path)
+                                             (EnvCache M.empty)
   case lookup "main" (map fst env) of
     Nothing ->
       print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
@@ -283,21 +309,22 @@ exec path rd conv = do
       arg
 
 repl :: EnvState -> InputT M ()
-repl (EnvState env conf) =
+repl (EnvState env conf cache) =
   (handleInterrupt (return $ Just "") $ withInterrupt $ getInputLine
       "\ESC[36mλ\ESC[0m "
     )
     >>= (\case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
-          Just line -> do -- setting tested [] for better debugging
-            s' <- liftIO $ eval [line] (EnvState env (conf { tested = [] }))
+          Just line -> do -- setting imported [] for better debugging
+            s' <- liftIO
+              $ eval [line] (EnvState env conf cache { _imported = M.empty })
             lift $ StrictState.put s'
             repl s'
         )
 
 lookupCompletion :: String -> M [Completion]
 lookupCompletion str = do
-  (EnvState (Environment env) _) <- StrictState.get
+  (EnvState (Environment env) _ _) <- StrictState.get
   return $ map (\((s, _), _) -> Completion s s False) $ filter
     (\((s, _), _) -> str `isPrefixOf` s)
     env
@@ -318,14 +345,18 @@ runRepl = do
       conf = EvalConf { isRepl    = True
                       , evalTests = True
                       , nicePath  = "<repl>"
-                      , tested    = []
                       , evalPaths = []
                       }
       looper = runInputTWithPrefs
         prefs
         (completionSettings history)
-        (withInterrupt $ repl $ EnvState (Environment []) conf)
-  code <- StrictState.evalStateT looper (EnvState (Environment []) conf)
+        (withInterrupt $ repl $ EnvState (Environment [])
+                                         conf
+                                         (EnvCache M.empty)
+        )
+  code <- StrictState.evalStateT
+    looper
+    (EnvState (Environment []) conf (EnvCache M.empty))
   return code
 
 usage :: IO ()
