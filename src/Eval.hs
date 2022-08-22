@@ -30,6 +30,9 @@ data EnvState = EnvState
   }
 type M = StrictState.StateT EnvState IO
 
+entryFunction :: Identifier
+entryFunction = NormalFunction "main"
+
 -- why isn't this in Prelude??
 split :: (Eq a) => [a] -> [a] -> [[a]]
 split _  [] = []
@@ -59,43 +62,38 @@ loadFile path conf cache = do
         cache
       )
 
-evalIdent :: String -> Environment -> Program (Failable Expression)
-evalIdent ident (Environment sub) = state $ \env@(Environment e) ->
-  let lookup' name env' = case M.lookup name env' of
+evalFun :: Identifier -> Environment -> EvalState (Failable Expression)
+evalFun fun (Environment sub) = state $ \env@(Environment e) ->
+  let lookup' name env' = case M.lookup fun env' of
         Nothing     -> Left $ UndeclaredIdentifier name
         Just (x, _) -> Right x
-  in  case lookup' ident sub of -- search in sub env
+  in  case lookup' fun sub of -- search in sub env
         s@(Right _) -> (s, env)
-        _           -> (lookup' ident e, env) -- search in global env
+        _           -> (lookup' fun e, env) -- search in global env
 
-evalFun :: Identifier -> Environment -> Program (Failable Expression)
-evalFun = evalIdent . functionName
-
-evalAbs :: Expression -> Environment -> Program (Failable Expression)
+evalAbs :: Expression -> Environment -> EvalState (Failable Expression)
 evalAbs e sub = evalExp e sub >>= pure . fmap Abstraction
 
 evalApp
-  :: Expression -> Expression -> Environment -> Program (Failable Expression)
-evalApp f g sub =
-  evalExp f sub
-    >>= (\case
-          Left  e  -> pure $ Left e
-          Right f' -> fmap (Application f') <$> evalExp g sub
-        )
+  :: Expression -> Expression -> Environment -> EvalState (Failable Expression)
+evalApp f g sub = evalExp f sub >>= \case
+  Left  e  -> pure $ Left e
+  Right f' -> fmap (Application f') <$> evalExp g sub
+
 
 evalInfix
   :: Expression
   -> Identifier
   -> Expression
   -> Environment
-  -> Program (Failable Expression)
+  -> EvalState (Failable Expression)
 evalInfix le i re = evalExp $ Application (Application (Function i) le) re
 
 evalPrefix
-  :: Identifier -> Expression -> Environment -> Program (Failable Expression)
+  :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
 evalPrefix p e = evalExp $ Application (Function p) e
 
-evalExp :: Expression -> Environment -> Program (Failable Expression)
+evalExp :: Expression -> Environment -> EvalState (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
 evalExp (    Function    fun) = evalFun fun
 evalExp (    Abstraction e  ) = evalAbs e
@@ -104,28 +102,20 @@ evalExp (    Infix le i re  ) = evalInfix le i re
 evalExp (    Prefix p e     ) = evalPrefix p e
 
 evalDefine
-  :: Identifier -> Expression -> Environment -> Program (Failable Expression)
-evalDefine i e sub =
-  evalExp e sub
-    >>= (\case
-          Left e' -> pure $ Left e'
-          Right f ->
-            modify
-                (\(Environment s) ->
-                  Environment $ M.insert name (f, Environment M.empty) s
-                )
-              >> pure (Right f)
+  :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
+evalDefine i e sub = evalExp e sub >>= \case
+  Left e' -> pure $ Left e'
+  Right f ->
+    modify
+        (\(Environment s) -> Environment $ M.insert i (f, Environment M.empty) s
         )
-  where name = functionName i
+      >> pure (Right f)
 
 evalTest
-  :: Expression -> Expression -> Environment -> Program (Failable Instruction)
-evalTest e1 e2 sub =
-  evalExp e1 sub
-    >>= (\case
-          Left  err -> pure $ Left err
-          Right e1' -> fmap (Test e1') <$> evalExp e2 sub
-        )
+  :: Expression -> Expression -> Environment -> EvalState (Failable Instruction)
+evalTest e1 e2 sub = evalExp e1 sub >>= \case
+  Left  err -> pure $ Left err
+  Right e1' -> fmap (Test e1') <$> evalExp e2 sub
 
 evalSubEnv :: [Instruction] -> EnvState -> IO EnvState
 evalSubEnv [] s = return s
@@ -188,7 +178,9 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env@(Environment e
                 prefix | null namespace   = takeBaseName path ++ "."
                        | namespace == "." = ""
                        | otherwise        = namespace ++ "."
-                env'' = M.mapKeys (\n -> prefix ++ n) env'
+                rewrite "" e = e
+                rewrite _  e = M.mapKeys (\f -> NamespacedFunction prefix f) e
+                env'' = rewrite prefix env'
             in  rec s { _env = Environment $ M.union env'' envDefs }
           else do
             EnvState (Environment env') _ cache' <- loadFile
@@ -202,7 +194,9 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env@(Environment e
             let prefix | null namespace   = takeBaseName path ++ "."
                        | namespace == "." = ""
                        | otherwise        = namespace ++ "."
-            env'' <- pure $ M.mapKeys (\n -> prefix ++ n) env'
+                rewrite "" e = e
+                rewrite _  e = M.mapKeys (\f -> NamespacedFunction prefix f) e
+            env'' <- pure $ rewrite prefix env'
             rec $ EnvState (Environment $ M.union env'' envDefs) conf cache'' -- import => isRepl = False
     Evaluate e ->
       let (res, _) = evalExp e (Environment M.empty) `runState` env
@@ -260,7 +254,7 @@ eval (block : bs) s@(EnvState _ conf _) =
 
 evalMainFunc :: Environment -> Expression -> Maybe Expression
 evalMainFunc (Environment env) arg = do
-  (e, _) <- M.lookup "main" env
+  (e, _) <- M.lookup entryFunction env
   pure $ reduce $ Application e arg
 
 evalFileConf
@@ -269,8 +263,8 @@ evalFileConf path wr conv conf = do
   EnvState env _ _ <- loadFile path conf (EnvCache M.empty)
   arg              <- encodeStdin
   case evalMainFunc env arg of
-    Nothing ->
-      print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
+    Nothing -> print
+      $ ContextualError (UndeclaredIdentifier entryFunction) (Context "" path)
     Just e -> wr $ conv e
 
 defaultConf :: String -> EvalConf
@@ -282,9 +276,9 @@ dumpFile path wr conv = do
   EnvState (Environment env) _ _ <- loadFile path
                                              (defaultConf path)
                                              (EnvCache M.empty)
-  case M.lookup "main" env of
-    Nothing ->
-      print $ ContextualError (UndeclaredIdentifier "main") (Context "" path)
+  case M.lookup entryFunction env of
+    Nothing -> print
+      $ ContextualError (UndeclaredIdentifier entryFunction) (Context "" path)
     Just (e, _) -> wr $ conv e
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
@@ -310,21 +304,20 @@ repl (EnvState env conf cache) =
   (handleInterrupt (return $ Just "") $ withInterrupt $ getInputLine
       "\ESC[36mλ\ESC[0m "
     )
-    >>= (\case -- TODO: Add non-parser error support for REPL
+    >>= \case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
           Just line -> do -- setting imported [] for better debugging
             s' <- liftIO
               $ eval [line] (EnvState env conf cache { _imported = M.empty })
             lift $ StrictState.put s'
             repl s'
-        )
 
 lookupCompletion :: String -> M [Completion]
 lookupCompletion str = do
   (EnvState (Environment env) _ _) <- StrictState.get
   return $ map (\s -> Completion s s False) $ filter
     (\s -> str `isPrefixOf` s)
-    (M.keys env)
+    (map functionName (M.keys env))
 
 completionSettings :: String -> Settings M
 completionSettings history = Settings

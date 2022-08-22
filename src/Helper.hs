@@ -35,13 +35,13 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndeclaredIdentifier String | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
+data Error = SyntaxError String | UndeclaredIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SyntaxError err) =
     errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
   show (UndeclaredIdentifier ident) =
-    errPrefix <> "undeclared identifier " <> ident
+    errPrefix <> "undeclared identifier " <> show ident
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
@@ -126,12 +126,12 @@ data EvalConf = EvalConf
   , nicePath  :: String
   , evalPaths :: [String]
   }
--- data Environment = Environment [(EnvDef, Environment)]
-data Environment = Environment (M.Map String (Expression, Environment))
+data Environment = Environment (M.Map Identifier (Expression, Environment))
+  deriving Show
 data EnvCache = EnvCache
   { _imported :: M.Map String Environment
   }
-type Program = S.State Environment
+type EvalState = S.State Environment
 
 ---
 
@@ -192,7 +192,9 @@ decodeStdout e = do
 -- TODO: Performanize
 matchingFunctions :: Expression -> Environment -> String
 matchingFunctions e (Environment env) =
-  intercalate ", " $ map fst $ M.toList $ M.filter (\(e', _) -> e == e') env
+  intercalate ", " $ map (functionName . fst) $ M.toList $ M.filter
+    (\(e', _) -> e == e')
+    env
 
 -- TODO: Expression -> Maybe Char is missing
 maybeHumanifyExpression :: Expression -> Maybe String

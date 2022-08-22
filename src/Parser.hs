@@ -26,12 +26,17 @@ greekLetter :: Parser Char
 greekLetter = satisfy isGreek
   where isGreek c = ('Α' <= c && c <= 'Ω') || ('α' <= c && c <= 'ω')
 
-infixOperator :: Parser String
-infixOperator =
-  some specialChar <|> ((++) <$> dottedNamespace <*> infixOperator)
+infixOperator :: Parser Identifier
+infixOperator = normalInfix <|> namespacedInfix
+ where
+  normalInfix     = InfixFunction <$> some specialChar
+  namespacedInfix = NamespacedFunction <$> dottedNamespace <*> infixOperator
 
-prefixOperator :: Parser String
-prefixOperator = infixOperator
+prefixOperator :: Parser Identifier
+prefixOperator = normalPrefix <|> namespacedPrefix
+ where
+  normalPrefix     = PrefixFunction <$> some specialChar
+  namespacedPrefix = NamespacedFunction <$> dottedNamespace <*> prefixOperator
 
 defIdentifier :: Parser Identifier
 defIdentifier =
@@ -40,8 +45,8 @@ defIdentifier =
           (alphaNumChar <|> specialChar <|> char '\'')
         )
     )
-    <|> (InfixFunction <$> (char '(' *> infixOperator <* char ')'))
-    <|> (PrefixFunction <$> (prefixOperator <* char '('))
+    <|> (char '(' *> infixOperator <* char ')')
+    <|> (prefixOperator <* char '(')
     <?> "defining identifier"
 
 identifier :: Parser Identifier
@@ -127,13 +132,13 @@ parseInfix = do
   i <- infixOperator
   sc
   e2 <- parseSingleton
-  pure $ Infix e1 (InfixFunction i) e2
+  pure $ Infix e1 i e2
 
 parsePrefix :: Parser Expression
 parsePrefix = do
   p <- prefixOperator
   e <- parseSingleton
-  pure $ Prefix (PrefixFunction p) e
+  pure $ Prefix p e
 
 parseSingleton :: Parser Expression
 parseSingleton =
