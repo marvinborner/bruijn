@@ -188,36 +188,26 @@ parseComment = do
   _ <- some $ noneOf "\r\n"
   return ()
 
-parseImport :: Parser Instruction
+parseImport :: Parser Command
 parseImport = do
-  inp  <- getInput
   _    <- string ":import " <?> "import instruction"
   path <- importPath
   ns   <- (try $ (sc *> (namespace <|> string "."))) <|> (eof >> return "")
-  pure $ ContextualInstruction (Import (path ++ ".bruijn") ns) inp
+  pure (Import (path ++ ".bruijn") ns)
 
-parseInput :: Parser Instruction
+parseInput :: Parser Command
 parseInput = do
-  inp  <- getInput
   _    <- string ":input " <?> "input instruction"
   path <- importPath
-  pure $ ContextualInstruction (Input $ path ++ ".bruijn") inp
+  pure (Input $ path ++ ".bruijn")
 
-parsePrint :: Parser Instruction
-parsePrint = do
-  inp <- getInput
-  _   <- string ":print " <?> "print instruction"
-  e   <- parseExpression
-  pure $ ContextualInstruction (Evaluate e) inp
-
-parseTest :: Parser Instruction
+parseTest :: Parser Command
 parseTest = do
-  inp <- getInput
-  _   <- string ":test " <?> "test"
-  e1  <- (parens parseExpression <?> "first expression")
+  _  <- string ":test " <?> "test"
+  e1 <- (parens parseExpression <?> "first expression")
   sc
   e2 <- (parens parseExpression <?> "second expression")
-  pure $ ContextualInstruction (Test e1 e2) inp
+  pure (Test e1 e2)
 
 parseCommentBlock :: Parser Instruction
 parseCommentBlock = do
@@ -226,24 +216,28 @@ parseCommentBlock = do
   eof
   return $ ContextualInstruction Comment inp
 
--- TODO: Add comment/test [Instruction] parser and combine with (this) def block?
+parseCommandBlock :: Parser Instruction
+parseCommandBlock = do
+  inp      <- getInput
+  commands <-
+    sepEndBy1 parseTest newline
+    <|> sepEndBy1 parseInput  newline
+    <|> sepEndBy1 parseImport newline
+  return $ ContextualInstruction (Commands commands) inp
+
 parseDefBlock :: Int -> Parser Instruction
 parseDefBlock lvl =
   (sepEndBy parseComment newline)
     *> string (replicate lvl '\t')
-    *> (   try (parseDefine lvl)
-       <|> try parsePrint
-       <|> try parseImport
-       <|> try parseInput
-       <|> try parseTest
-       )
+    *> (try (parseDefine lvl))
 
 parseBlock :: Int -> Parser Instruction
-parseBlock lvl = try parseCommentBlock <|> parseDefBlock lvl
+parseBlock lvl =
+  try parseCommentBlock <|> try (parseDefBlock lvl) <|> parseCommandBlock
 
 parseReplLine :: Parser Instruction
 parseReplLine =
-  try parseReplDefine
-    <|> try parseImport
-    <|> try parseTest
+  try parseReplDefine -- TODO: This is kinda hacky
+    <|> ((Commands . (: [])) <$> (try parseImport))
+    <|> ((Commands . (: [])) <$> (try parseTest))
     <|> try parseEvaluate

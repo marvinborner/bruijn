@@ -35,13 +35,13 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndeclaredIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
+data Error = SyntaxError String | UndefinedIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SyntaxError err) =
     errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
-  show (UndeclaredIdentifier ident) =
-    errPrefix <> "undeclared identifier " <> show ident
+  show (UndefinedIdentifier ident) =
+    errPrefix <> "undefined identifier " <> show ident
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
@@ -102,7 +102,9 @@ instance Show Identifier where
   show ident = "\ESC[95m" <> functionName ident <> "\ESC[0m"
 data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | Infix Expression Identifier Expression | Prefix Identifier Expression
   deriving (Ord, Eq)
-data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Input String | Import String String | Test Expression Expression | ContextualInstruction Instruction String
+data Command = Input String | Import String String | Test Expression Expression
+  deriving (Show)
+data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)
 instance Show Expression where
   show (Bruijn      x    ) = "\ESC[91m" <> show x <> "\ESC[0m"

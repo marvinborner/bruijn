@@ -12,6 +12,14 @@ eq? eq? B.eq?
 :test ("ab" =? "ab") (true)
 :test ("ab" =? "aa") (false)
 
+# returns true if character is part of a string
+in? in? B.eq?
+
+∈ \in?
+
+:test (∈ 'b' "ab") (true)
+:test (∈ 'c' "ab") (false)
+
 # splits string by newline character
 lines Z [[rec]]
 	rec <>?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
