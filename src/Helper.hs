@@ -14,8 +14,8 @@ import qualified Data.Map                      as M
 import           Text.Megaparsec
 
 data Context = Context
-  { ctxInput :: String
-  , ctxPath  :: String
+  { _ctxInput :: String
+  , _ctxPath  :: String
   }
 
 printContext :: Context -> String
@@ -121,17 +121,37 @@ instance Show Expression where
   show (Prefix p e) = show p <> " " <> show e
 
 data EvalConf = EvalConf
-  { isRepl    :: Bool
-  , evalTests :: Bool
-  , nicePath  :: String
-  , evalPaths :: [String]
+  { _isRepl    :: Bool
+  , _evalTests :: Bool
+  , _nicePath  :: String
+  , _evalPaths :: [String]
   }
-data Environment = Environment (M.Map Identifier (Expression, Environment))
+data ExpFlags = ExpFlags
+  { _isImported :: Bool
+  }
+  deriving Show
+data EnvDef = EnvDef
+  { _exp   :: Expression
+  , _sub   :: Environment
+  , _flags :: ExpFlags
+  }
+  deriving Show
+data Environment = Environment (M.Map Identifier EnvDef)
   deriving Show
 data EnvCache = EnvCache
   { _imported :: M.Map String Environment
   }
 type EvalState = S.State Environment
+
+defaultConf :: String -> EvalConf
+defaultConf path = EvalConf { _isRepl    = False
+                            , _evalTests = True
+                            , _nicePath  = path
+                            , _evalPaths = []
+                            }
+
+defaultFlags :: ExpFlags
+defaultFlags = ExpFlags { _isImported = False }
 
 ---
 
@@ -193,7 +213,7 @@ decodeStdout e = do
 matchingFunctions :: Expression -> Environment -> String
 matchingFunctions e (Environment env) =
   intercalate ", " $ map (functionName . fst) $ M.toList $ M.filter
-    (\(e', _) -> e == e')
+    (\EnvDef { _exp = e' } -> e == e')
     env
 
 -- TODO: Expression -> Maybe Char is missing

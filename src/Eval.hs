@@ -51,22 +51,22 @@ loadFile path conf cache = do
     Left exception ->
       print
           (ContextualError (ImportError $ show (exception :: IOError))
-                           (Context "" $ nicePath conf)
+                           (Context "" $ _nicePath conf)
           )
         >> pure (EnvState (Environment M.empty) conf cache)
     Right f' -> eval
       (filter (not . null) $ split "\n\n" f')
       (EnvState
         (Environment M.empty)
-        (conf { isRepl = False, evalPaths = (path : (evalPaths conf)) })
+        (conf { _isRepl = False, _evalPaths = (path : (_evalPaths conf)) })
         cache
       )
 
 evalFun :: Identifier -> Environment -> EvalState (Failable Expression)
 evalFun fun (Environment sub) = state $ \env@(Environment e) ->
   let lookup' name env' = case M.lookup fun env' of
-        Nothing     -> Left $ UndeclaredIdentifier name
-        Just (x, _) -> Right x
+        Nothing                    -> Left $ UndeclaredIdentifier name
+        Just (EnvDef { _exp = x }) -> Right x
   in  case lookup' fun sub of -- search in sub env
         s@(Right _) -> (s, env)
         _           -> (lookup' fun e, env) -- search in global env
@@ -107,7 +107,8 @@ evalDefine i e sub = evalExp e sub >>= \case
   Left e' -> pure $ Left e'
   Right f ->
     modify
-        (\(Environment s) -> Environment $ M.insert i (f, Environment M.empty) s
+        (\(Environment s) -> Environment
+          $ M.insert i (EnvDef f (Environment M.empty) defaultFlags) s
         )
       >> pure (Right f)
 
@@ -138,17 +139,18 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env@(Environment e
       (        res    , env') <- pure $ evalDefine i e subEnv `runState` env
       case res of
         Left err ->
-          print (ContextualError err $ Context inp $ nicePath conf) >> pure s -- don't continue
+          print (ContextualError err $ Context inp $ _nicePath conf) >> pure s -- don't continue
         Right _
-          | isRepl conf -> (putStrLn $ show i <> " = " <> show e)
+          | _isRepl conf -> (putStrLn $ show i <> " = " <> show e)
           >> return s { _env = env' }
           | otherwise -> rec s { _env = env' }
     Input path -> do
       full <- fullPath path
-      if full `elem` evalPaths conf
+      if full `elem` _evalPaths conf
         then
           print
-              (ContextualError (ImportError path) (Context inp $ nicePath conf))
+              (ContextualError (ImportError path) (Context inp $ _nicePath conf)
+              )
             >> pure s
         else if M.member path (_imported cache)
           then
@@ -157,47 +159,59 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env@(Environment e
           else do
             EnvState (Environment env') _ cache' <- loadFile
               full
-              (conf { nicePath = path })
+              (conf { _nicePath = path })
               cache -- TODO: Fix wrong `within` in import error
             cache'' <- pure $ cache
               { _imported = M.insert path (Environment env')
                               $ M.union (_imported cache) (_imported cache')
               }
-            rec $ EnvState (Environment $ M.union env' envDefs) conf cache'' -- import => isRepl = False
-    -- TODO: Don't import subimports into main env
+            rec $ EnvState (Environment $ M.union env' envDefs) conf cache'' -- import => _isRepl = False
     Import path namespace -> do -- TODO: Merge with Input (very similar)
       full <- fullPath path
-      if full `elem` evalPaths conf
+      if full `elem` _evalPaths conf
         then
           print
-              (ContextualError (ImportError path) (Context inp $ nicePath conf))
+              (ContextualError (ImportError path) (Context inp $ _nicePath conf)
+              )
             >> pure s
         else if M.member path (_imported cache)
-          then
-            let (Environment env') = fromJust $ M.lookup path (_imported cache)
-                prefix | null namespace   = takeBaseName path ++ "."
-                       | namespace == "." = ""
-                       | otherwise        = namespace ++ "."
-                rewrite "" e = e
-                rewrite _  e = M.mapKeys (\f -> NamespacedFunction prefix f) e
-                env'' = rewrite prefix env'
-            in  rec s { _env = Environment $ M.union env'' envDefs }
+          then -- load from cache
+            let
+              (Environment env') = fromJust $ M.lookup path (_imported cache)
+              prefix | null namespace   = takeBaseName path ++ "."
+                     | namespace == "." = ""
+                     | otherwise        = namespace ++ "."
+              rewriteKeys "" = id
+              rewriteKeys p  = M.mapKeys $ \f -> NamespacedFunction p f
+              rewriteFuns =
+                M.map $ \d -> d { _flags = (_flags d) { _isImported = True } }
+              filterImported =
+                M.filter $ \(EnvDef { _flags = f }) -> _isImported f == False
+              env'' = rewriteFuns $ rewriteKeys prefix $ filterImported env'
+            in
+              rec s { _env = Environment $ M.union env'' envDefs }
           else do
             EnvState (Environment env') _ cache' <- loadFile
               full
-              (conf { nicePath = path })
+              (conf { _nicePath = path })
               cache -- TODO: Fix wrong `within` in import error
             cache'' <- pure $ cache
               { _imported = M.insert path (Environment env')
                               $ M.union (_imported cache) (_imported cache')
               }
-            let prefix | null namespace   = takeBaseName path ++ "."
-                       | namespace == "." = ""
-                       | otherwise        = namespace ++ "."
-                rewrite "" e = e
-                rewrite _  e = M.mapKeys (\f -> NamespacedFunction prefix f) e
-            env'' <- pure $ rewrite prefix env'
-            rec $ EnvState (Environment $ M.union env'' envDefs) conf cache'' -- import => isRepl = False
+            let
+              prefix | null namespace   = takeBaseName path ++ "."
+                     | namespace == "." = ""
+                     | otherwise        = namespace ++ "."
+              rewriteKeys "" = id
+              rewriteKeys p  = M.mapKeys $ \f -> NamespacedFunction p f
+              rewriteFuns =
+                M.map $ \d -> d { _flags = (_flags d) { _isImported = True } }
+              filterImported =
+                M.filter $ \(EnvDef { _flags = f }) -> _isImported f == False
+            env'' <- pure $ rewriteFuns $ rewriteKeys prefix $ filterImported
+              env'
+            rec $ EnvState (Environment $ M.union env'' envDefs) conf cache'' -- import => _isRepl = False
     Evaluate e ->
       let (res, _) = evalExp e (Environment M.empty) `runState` env
       in  putStrLn
@@ -216,12 +230,12 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env@(Environment e
               )
             >> rec s
     Test e1 e2
-      | evalTests conf
+      | _evalTests conf
       -> let (res, _) = evalTest e1 e2 (Environment M.empty) `runState` env
          in
            case res of
              Left err ->
-               print (ContextualError err $ Context inp $ nicePath conf)
+               print (ContextualError err $ Context inp $ _nicePath conf)
                  >> pure s
              Right (Test e1' e2') ->
                when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs) >> rec s
@@ -244,17 +258,17 @@ eval (block : bs) s@(EnvState _ conf _) =
         Left err ->
           print
               (ContextualError (SyntaxError $ printBundle err)
-                               (Context "" $ nicePath conf)
+                               (Context "" $ _nicePath conf)
               )
             >> eval bs s
         Right instr -> evalInstruction instr s (eval bs)
  where
-  blockParser | isRepl conf = parseReplLine
-              | otherwise   = parseBlock 0
+  blockParser | _isRepl conf = parseReplLine
+              | otherwise    = parseBlock 0
 
 evalMainFunc :: Environment -> Expression -> Maybe Expression
 evalMainFunc (Environment env) arg = do
-  (e, _) <- M.lookup entryFunction env
+  EnvDef { _exp = e } <- M.lookup entryFunction env
   pure $ reduce $ Application e arg
 
 evalFileConf
@@ -267,10 +281,6 @@ evalFileConf path wr conv conf = do
       $ ContextualError (UndeclaredIdentifier entryFunction) (Context "" path)
     Just e -> wr $ conv e
 
-defaultConf :: String -> EvalConf
-defaultConf path =
-  EvalConf { isRepl = False, evalTests = True, nicePath = path, evalPaths = [] }
-
 dumpFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 dumpFile path wr conv = do
   EnvState (Environment env) _ _ <- loadFile path
@@ -279,7 +289,7 @@ dumpFile path wr conv = do
   case M.lookup entryFunction env of
     Nothing -> print
       $ ContextualError (UndeclaredIdentifier entryFunction) (Context "" path)
-    Just (e, _) -> wr $ conv e
+    Just EnvDef { _exp = e } -> wr $ conv e
 
 evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 evalFile path wr conv = evalFileConf path wr conv (defaultConf path)
@@ -287,7 +297,7 @@ evalFile path wr conv = evalFileConf path wr conv (defaultConf path)
 -- TODO: Merge with evalFile
 evalYolo :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 evalYolo path wr conv =
-  evalFileConf path wr conv (defaultConf path) { evalTests = False }
+  evalFileConf path wr conv (defaultConf path) { _evalTests = False }
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path rd conv = do
@@ -332,10 +342,10 @@ runRepl = do
   history <- getDataFileName "history"
   prefs   <- readPrefs config
   let -- TODO: Use -y in repl for YOLO lifestyle
-      conf = EvalConf { isRepl    = True
-                      , evalTests = True
-                      , nicePath  = "<repl>"
-                      , evalPaths = []
+      conf = EvalConf { _isRepl    = True
+                      , _evalTests = True
+                      , _nicePath  = "<repl>"
+                      , _evalPaths = []
                       }
       looper = runInputTWithPrefs
         prefs
