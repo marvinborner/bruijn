@@ -6,6 +6,7 @@
 module Helper where
 
 import qualified Control.Monad.State           as S
+import           Data.Array
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
 import qualified Data.ByteString.Char8         as C
@@ -35,9 +36,10 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[41mERROR\ESC[0m "
-data Error = SyntaxError String | UndefinedIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | ImportError String
+data Error = SyntaxError String | UndefinedIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
+  show (SuggestSolution err sol) = show err <> "\nPerhaps you meant: " <> sol
   show (SyntaxError err) =
     errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
   show (UndefinedIdentifier ident) =
@@ -208,6 +210,25 @@ decodeStdout e = do
       Nothing -> Byte.empty
     )
     u
+
+---
+
+-- from reddit u/cgibbard
+levenshtein :: (Eq a) => [a] -> [a] -> Int
+levenshtein xs ys = levMemo ! (n, m)
+ where
+  levMemo =
+    array ((0, 0), (n, m)) [ ((i, j), lev i j) | i <- [0 .. n], j <- [0 .. m] ]
+  n  = length xs
+  m  = length ys
+  xa = listArray (1, n) xs
+  ya = listArray (1, m) ys
+  lev 0 v = v
+  lev u 0 = u
+  lev u v
+    | xa ! u == ya ! v = levMemo ! (u - 1, v - 1)
+    | otherwise = 1 + minimum
+      [levMemo ! (u, v - 1), levMemo ! (u - 1, v), levMemo ! (u - 1, v - 1)]
 
 ---
 

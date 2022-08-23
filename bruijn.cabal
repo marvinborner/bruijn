@@ -22,8 +22,10 @@ data-files:
     std/Byte.bruijn
     std/Church.bruijn
     std/Combinator.bruijn
+    std/Float.bruijn
     std/List.bruijn
     std/Logic.bruijn
+    std/Math.bruijn
     std/Number.bruijn
     std/Option.bruijn
     std/Pair.bruijn
@@ -49,7 +51,8 @@ library
       LambdaCase
   ghc-options: -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , binary
     , bitstring
     , bytestring
@@ -71,7 +74,8 @@ executable bruijn
       LambdaCase
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , binary
     , bitstring
     , bruijn
@@ -95,7 +99,8 @@ test-suite bruijn-test
       LambdaCase
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , binary
     , bitstring
     , bruijn

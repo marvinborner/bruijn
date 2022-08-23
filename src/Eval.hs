@@ -8,6 +8,7 @@ import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString               as Byte
+import           Data.Function                  ( on )
 import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe
@@ -67,9 +68,17 @@ evalFun fun (Environment sub) = state $ \env@(Environment e) ->
   let lookup' name env' = case M.lookup fun env' of
         Nothing                    -> Left $ UndefinedIdentifier name
         Just (EnvDef { _exp = x }) -> Right x
+      matching n
+        | length e == 0 = "<no idea>"
+        | otherwise = snd $ minimumBy (compare `on` fst) $ map
+          (\f -> (levenshtein (functionName f) n, show f))
+          (M.keys e)
+      suggest (Left u@(UndefinedIdentifier n)) =
+        Left $ SuggestSolution u (matching $ functionName n)
+      suggest x = x
   in  case lookup' fun sub of -- search in sub env
         s@(Right _) -> (s, env)
-        _           -> (lookup' fun e, env) -- search in global env
+        _           -> (suggest $ lookup' fun e, env) -- search in global env
 
 evalAbs :: Expression -> Environment -> EvalState (Failable Expression)
 evalAbs e sub = evalExp e sub >>= pure . fmap Abstraction
