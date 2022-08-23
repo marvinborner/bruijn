@@ -26,22 +26,36 @@ greekLetter :: Parser Char
 greekLetter = satisfy isGreek
   where isGreek c = ('Α' <= c && c <= 'Ω') || ('α' <= c && c <= 'ω')
 
+emoticon :: Parser Char
+emoticon = satisfy isEmoticon
+  where isEmoticon c = ('\128512' <= c && c <= '\128591')
+
+mathematicalOperator :: Parser Char
+mathematicalOperator = satisfy isMathematicalOperator
+  where isMathematicalOperator c = '∀' <= c && c <= '⋿'
+
+mathematicalArrow :: Parser Char
+mathematicalArrow = satisfy isMathematicalOperator
+  where isMathematicalOperator c = '←' <= c && c <= '⇿'
+
 infixOperator :: Parser Identifier
 infixOperator = normalInfix <|> namespacedInfix
  where
-  normalInfix     = InfixFunction <$> some specialChar
+  normalInfix = InfixFunction
+    <$> some (specialChar <|> mathematicalOperator <|> mathematicalArrow)
   namespacedInfix = NamespacedFunction <$> dottedNamespace <*> infixOperator
 
 prefixOperator :: Parser Identifier
 prefixOperator = normalPrefix <|> namespacedPrefix
  where
-  normalPrefix     = PrefixFunction <$> some specialChar
+  normalPrefix = PrefixFunction
+    <$> some (specialChar <|> mathematicalOperator <|> mathematicalArrow)
   namespacedPrefix = NamespacedFunction <$> dottedNamespace <*> prefixOperator
 
 defIdentifier :: Parser Identifier
 defIdentifier =
   (   NormalFunction
-    <$> ((:) <$> (lowerChar <|> greekLetter) <*> many
+    <$> ((:) <$> (lowerChar <|> greekLetter <|> emoticon) <*> many
           (alphaNumChar <|> specialChar <|> char '\'')
         )
     )
