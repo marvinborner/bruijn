@@ -4,9 +4,7 @@
 # Heavily inspired by the works of T.Æ. Mogensen (see refs in README)
 
 :import std/Combinator .
-
 :import std/Pair .
-
 :import std/Logic .
 
 # negative trit indicating coeffecient of (-1)

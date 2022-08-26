@@ -2,11 +2,8 @@
 # Lists in Church/Boehm-Berarducci encoding using pairs
 
 :import std/Combinator .
-
 :import std/Pair P
-
 :import std/Logic .
-
 :import std/Number .
 
 # empty list element

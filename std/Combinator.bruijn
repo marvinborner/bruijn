@@ -7,17 +7,17 @@ a [[1 0]]
 
 ($) a
 
-# bluebird combinator: 1 <- 1 composition
+# bluebird combinator: function composition: (f . g) x = f (g x)
 b [[[2 (1 0)]]]
 
 (.) b
 
-# blackbird combinator
+# blackbird combinator: 2x function composition: (f .. g) x y = f (g x y)
 b' [[[[3 (2 1 0)]]]]
 
 (..) b'
 
-# bunting combinator
+# bunting combinator: 3x function composition: (f ... g) x y z = f (g x y z)
 b'' [[[[[4 (3 2 1 0)]]]]]
 
 (...) b''
@@ -25,7 +25,7 @@ b'' [[[[[4 (3 2 1 0)]]]]]
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]]
 
-# cardinal combinator: reverse arguments
+# cardinal combinator: reverse arguments: \f x y = f y z
 c [[[2 0 1]]]
 
 \( c
@@ -81,6 +81,8 @@ j [[[[3 2 (3 0 1)]]]]
 # kestrel combinator: const, true
 k [[1]]
 
+const k
+
 # kite combinator: const id, false
 ki [[0]]
 
@@ -107,16 +109,17 @@ o [[0 (1 0)]]
 # omega combinator
 Ω ω ω
 
-# phoenix combinator
+# phoenix combinator: liftM2
+# alternative name: starling prime: s'
 φ [[[[3 (2 0) (1 0)]]]]
 
 # psi combinator: on
 ψ [[[[3 (2 1) (2 0)]]]]
 
-# queer combinator
+# queer combinator: reverse function composition: (f , g) x = g (f x)
 q [[[1 (2 0)]]]
 
-(>>>) q
+(,) q
 
 # quixotic bird combinator
 q' [[[2 (0 1)]]]
@@ -139,8 +142,10 @@ r* [[[[3 1 0 2]]]]
 # robin twice removed combinator
 r** [[[[[4 3 1 0 2]]]]]
 
-# starling combinator: <*>
+# starling combinator: (f <*> g) x = f x (g x)
 s [[[2 0 (1 0)]]]
+
+(<*>) s
 
 # thrush combinator: flipped $
 t [[0 1]]

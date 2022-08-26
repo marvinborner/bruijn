@@ -5,7 +5,7 @@
 :input std/Number .
 
 # greatest common divisor
-gcd Z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
+gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
 	case-eq 1
 	case-gre 2 (1 - 0) 0
 	case-les 2 1 (0 - 1)

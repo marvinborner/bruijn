@@ -15,13 +15,19 @@ eq? eq? B.eq?
 # returns true if character is part of a string
 in? in? B.eq?
 
-∈ \in?
+(∈) in?
 
-:test (∈ 'b' "ab") (true)
-:test (∈ 'c' "ab") (false)
+ni? \in?
+
+(∋) ni?
+
+:test ('b' ∈ "ab") (true)
+:test ('c' ∈ "ab") (false)
+:test ("ab" ∋ 'b') (true)
+:test ("ab" ∋ 'c') (false)
 
 # splits string by newline character
-lines Z [[rec]]
+lines z [[rec]]
 	rec <>?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
 		broken break (B.eq? '\n') 0
 
