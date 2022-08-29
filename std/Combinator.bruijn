@@ -5,22 +5,22 @@
 # apply combinator
 a [[1 0]]
 
-($) a
+…$… a
 
 # bluebird combinator: function composition: (f . g) x = f (g x)
 b [[[2 (1 0)]]]
 
-(.) b
+….… b
 
 # blackbird combinator: 2x function composition: (f .. g) x y = f (g x y)
 b' [[[[3 (2 1 0)]]]]
 
-(..) b'
+…..… b'
 
 # bunting combinator: 3x function composition: (f ... g) x y z = f (g x y z)
 b'' [[[[[4 (3 2 1 0)]]]]]
 
-(...) b''
+…...… b''
 
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]]
@@ -28,7 +28,7 @@ b''' [[[[3 (2 (1 0))]]]]
 # cardinal combinator: reverse arguments: \f x y = f y z
 c [[[2 0 1]]]
 
-\( c
+\‣ c
 
 # cardinal once removed combinator
 c* [[[[3 2 0 1]]]]
@@ -119,7 +119,7 @@ o [[0 (1 0)]]
 # queer combinator: reverse function composition: (f , g) x = g (f x)
 q [[[1 (2 0)]]]
 
-(,) q
+…,… q
 
 # quixotic bird combinator
 q' [[[2 (0 1)]]]
@@ -145,12 +145,12 @@ r** [[[[[4 3 1 0 2]]]]]
 # starling combinator: (f <*> g) x = f x (g x)
 s [[[2 0 (1 0)]]]
 
-(<*>) s
+…<*>… s
 
 # thrush combinator: flipped $
 t [[0 1]]
 
-(&) t
+…&… t
 
 # turing combinator
 u [[0 (1 1 0)]]

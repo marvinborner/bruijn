@@ -17,13 +17,13 @@ gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
 # power function
 pow [(!!) (iterate ((*) 0) (+1))]
 
-(**) pow
+…**… pow
 
 :test (((+2) ** (+3)) =? ((+8))) (true)
 
 # factorial function
 # fac Z [[(0 <? (+2)) (+1) (0 * (1 --0))]]
-fac [Π (take 0 (iterate ++( (+1)))]
+fac [Π (take 0 (iterate ++‣ (+1)))]
 
 :test ((fac (+3)) =? (+6)) (true)
 

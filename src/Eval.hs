@@ -13,6 +13,7 @@ import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe
 import           Helper
+-- import           Inet                           ( reduce )
 import           Parser
 import           Paths_bruijn
 import           Reducer
@@ -65,20 +66,20 @@ loadFile path conf cache = do
 
 evalFun :: Identifier -> Environment -> EvalState (Failable Expression)
 evalFun fun (Environment sub) = state $ \env@(Environment e) ->
-  let lookup' name env' = case M.lookup fun env' of
-        Nothing                    -> Left $ UndefinedIdentifier name
+  let lookup' env' = case M.lookup fun env' of
+        Nothing                    -> Left $ UndefinedIdentifier fun
         Just (EnvDef { _exp = x }) -> Right x
       matching n
-        | length e == 0 = "<no idea>"
+        | null e = "<no idea>"
         | otherwise = snd $ minimumBy (compare `on` fst) $ map
           (\f -> (levenshtein (functionName f) n, show f))
           (M.keys e)
       suggest (Left u@(UndefinedIdentifier n)) =
         Left $ SuggestSolution u (matching $ functionName n)
       suggest x = x
-  in  case lookup' fun sub of -- search in sub env
+  in  case lookup' sub of -- search in sub env
         s@(Right _) -> (s, env)
-        _           -> (suggest $ lookup' fun e, env) -- search in global env
+        _           -> (suggest $ lookup' e, env) -- search in global env
 
 evalAbs :: Expression -> Environment -> EvalState (Failable Expression)
 evalAbs e sub = evalExp e sub >>= pure . fmap Abstraction
@@ -89,14 +90,22 @@ evalApp f g sub = evalExp f sub >>= \case
   Left  e  -> pure $ Left e
   Right f' -> fmap (Application f') <$> evalExp g sub
 
-
-evalInfix
-  :: Expression
-  -> Identifier
-  -> Expression
-  -> Environment
-  -> EvalState (Failable Expression)
-evalInfix le i re = evalExp $ Application (Application (Function i) le) re
+evalMixfix :: [Mixfix] -> Environment -> EvalState (Failable Expression)
+evalMixfix m sub = resolve (mixfixKind m) mixfixArgs
+ where
+  -- longestMatching [] _  = error "invalid"
+  -- longestMatching x  xs = evalFun (MixfixFunction x) sub >>= \case
+  --   Left  _ -> longestMatching (init x) ((last x) : xs)
+  --   Right f -> (f, Function $ MixfixFunction xs)
+  resolve f args
+    | null [ s | s@(MixfixSome _) <- f ] = evalExp (foldl1 Application args) sub
+    | otherwise = evalExp
+      (foldl1 Application ((Function $ MixfixFunction f) : args))
+      sub
+  mixfixArgs = [ a | (MixfixExpression a) <- m ]
+  mixfixKind = map $ \case
+    MixfixOperator i -> MixfixSome $ functionName i
+    _                -> MixfixNone
 
 evalPrefix
   :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
@@ -107,7 +116,7 @@ evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
 evalExp (    Function    fun) = evalFun fun
 evalExp (    Abstraction e  ) = evalAbs e
 evalExp (    Application f g) = evalApp f g
-evalExp (    Infix le i re  ) = evalInfix le i re
+evalExp (    MixfixChain es ) = evalMixfix es
 evalExp (    Prefix p e     ) = evalPrefix p e
 
 evalDefinition
@@ -223,6 +232,19 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     | otherwise
     -> pure s
 
+-- TODO: Reduce redundancy
+showResult :: Expression -> Expression -> Environment -> IO ()
+showResult orig reduced env =
+  putStrLn
+    $  "<> "
+    <> (show orig)
+    <> "\n*> "
+    <> (show reduced)
+    <> "\n?> "
+    <> (humanifyExpression reduced)
+    <> "\n#> "
+    <> (matchingFunctions reduced env)
+
 evalInstruction
   :: Instruction -> EnvState -> (EnvState -> IO EnvState) -> IO EnvState
 evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
@@ -239,20 +261,10 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
           | otherwise -> rec s { _env = env' }
     Evaluate e ->
       let (res, _) = evalExp e (Environment M.empty) `runState` env
-      in  putStrLn
-              (case res of
-                Left err -> show err
-                Right e' ->
-                  "<> "
-                    <> (show e')
-                    <> "\n*> "
-                    <> (show reduced)
-                    <> "\n?> "
-                    <> (humanifyExpression reduced)
-                    <> "\n#> "
-                    <> (matchingFunctions reduced env)
-                  where reduced = reduce e'
-              )
+      in  (case res of
+            Left  err -> print err
+            Right e'  -> showResult e' (reduce e') env
+          )
             >> rec s
     Commands cs -> yeet (pure s) cs >>= rec
      where -- TODO: sus
@@ -281,21 +293,6 @@ eval (block : bs) s@(EnvState _ conf _) =
   blockParser | _isRepl conf = parseReplLine
               | otherwise    = parseBlock 0
 
-evalMainFunc :: Environment -> Expression -> Maybe Expression
-evalMainFunc (Environment env) arg = do
-  EnvDef { _exp = e } <- M.lookup entryFunction env
-  pure $ reduce $ Application e arg
-
-evalFileConf
-  :: String -> (a -> IO ()) -> (Expression -> a) -> EvalConf -> IO ()
-evalFileConf path wr conv conf = do
-  EnvState env _ _ <- loadFile path conf (EnvCache M.empty)
-  arg              <- encodeStdin
-  case evalMainFunc env arg of
-    Nothing -> print
-      $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
-    Just e -> wr $ conv e
-
 dumpFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
 dumpFile path wr conv = do
   EnvState (Environment env) _ _ <- loadFile path
@@ -306,23 +303,31 @@ dumpFile path wr conv = do
       $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
     Just EnvDef { _exp = e } -> wr $ conv e
 
-evalFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalFile path wr conv = evalFileConf path wr conv (defaultConf path)
+evalFileConf :: String -> EvalConf -> IO ()
+evalFileConf path conf = do
+  EnvState (Environment env) _ _ <- loadFile path conf (EnvCache M.empty)
+  arg                            <- encodeStdin
+  case M.lookup entryFunction env of
+    Nothing -> print
+      $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
+    Just EnvDef { _exp = e } ->
+      showResult e (reduce $ Application e arg) (Environment env)
+
+evalFile :: String -> IO ()
+evalFile path = evalFileConf path (defaultConf path)
 
 -- TODO: Merge with evalFile
-evalYolo :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-evalYolo path wr conv =
-  evalFileConf path wr conv (defaultConf path) { _evalTests = False }
+evalYolo :: String -> IO ()
+evalYolo path = evalFileConf path (defaultConf path) { _evalTests = False }
 
 exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
 exec path rd conv = do
   f   <- rd path
   arg <- encodeStdin
   case f of
-    Left  exception -> print (exception :: IOError)
-    Right f'        -> putStr $ humanifyExpression $ reduce $ Application
-      (fromBinary $ conv f')
-      arg
+    Left exception -> print (exception :: IOError)
+    Right f' -> showResult e (reduce $ Application e arg) (Environment M.empty)
+      where e = fromBinary $ conv f'
 
 repl :: EnvState -> InputT M ()
 repl (EnvState env conf cache) =
@@ -401,7 +406,7 @@ evalMain = do
     ["-e", path] ->
       exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
     ["-E", path] -> exec path (try . readFile) id
-    ["-y", path] -> evalYolo path putStr humanifyExpression
+    ["-y", path] -> evalYolo path
     ['-' : _]    -> usage
-    [path   ]    -> evalFile path putStr humanifyExpression
+    [path   ]    -> evalFile path
     _            -> usage

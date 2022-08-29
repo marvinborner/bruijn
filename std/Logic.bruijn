@@ -11,7 +11,7 @@ false ki
 # inverts boolean value
 not! [0 false true]
 
-!( not!
+!‣ not!
 
 :test (!true) (false)
 :test (!false) (true)
@@ -19,7 +19,7 @@ not! [0 false true]
 # true if both args are true
 and? [[1 0 false]]
 
-(&&) and?
+…&&… and?
 
 :test (true && true) (true)
 :test (true && false) (false)
@@ -37,7 +37,7 @@ nand? [[1 0 1 false true]]
 # true if one of the args is true
 or? [[1 true 0]]
 
-(||) or?
+…||… or?
 
 :test (true || true) (true)
 :test (true || false) (true)
@@ -73,7 +73,7 @@ xnor? [[1 0 !0]]
 # I personally just write (exp? case-T case-F) directly
 if [[[2 1 0]]]
 
-(?!) if
+…?!… if
 
 :test (if true true false) (true)
 :test ((true ?! true) false) (true)
@@ -83,7 +83,7 @@ if [[[2 1 0]]]
 # mathematical implies definition
 implies [[!1 || 0]]
 
-(=>?) implies
+…=>?… implies
 
 :test (true =>? true) (true)
 :test (true =>? false) (false)
@@ -93,7 +93,7 @@ implies [[!1 || 0]]
 # mathematical iff (if and only if) definition
 iff [[(1 =>? 0) && (0 =>? 1)]]
 
-(<=>?) iff
+…<=>?… iff
 
 :test (true <=>? true) (true)
 :test (true <=>? false) (false)

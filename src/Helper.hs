@@ -23,9 +23,9 @@ printContext :: Context -> String
 printContext (Context inp ""  ) = printContext (Context inp "<unknown>")
 printContext (Context inp path) = p $ lines inp
  where
-  withinText = "\ESC[42mwithin\ESC[0m "
-  inText     = "\ESC[44min\ESC[0m "
-  nearText   = "\ESC[45mnear\ESC[0m\n"
+  withinText = "\ESC[106m\ESC[30mwithin\ESC[0m "
+  inText     = "\ESC[104m\ESC[30min\ESC[0m "
+  nearText   = "\ESC[105m\ESC[30mnear\ESC[0m\n"
   p []  = withinText <> show path <> "\n"
   p [l] = inText <> show l <> "\n" <> withinText <> show path <> "\n"
   p (l : ls) =
@@ -35,13 +35,16 @@ printContext (Context inp path) = p $ lines inp
       <> "\n"
 
 errPrefix :: String
-errPrefix = "\ESC[41mERROR\ESC[0m "
+errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
 data Error = SyntaxError String | UndefinedIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
-  show (SuggestSolution err sol) = show err <> "\nPerhaps you meant: " <> sol
+  show (SuggestSolution err sol) =
+    show err
+      <> "\n\ESC[102m\ESC[30msuggestion\ESC[0m Perhaps you meant: "
+      <> sol
   show (SyntaxError err) =
-    errPrefix <> "invalid syntax\n\ESC[45mnear\ESC[0m " <> err
+    errPrefix <> "invalid syntax\n\ESC[105m\ESC[30mnear\ESC[0m " <> err
   show (UndefinedIdentifier ident) =
     errPrefix <> "undefined identifier " <> show ident
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
@@ -92,37 +95,43 @@ printBundle ParseErrorBundle {..} =
               <> pointer
               <> "\n"
 
-data Identifier = NormalFunction String | InfixFunction String | PrefixFunction String | NamespacedFunction String Identifier
+data MixfixIdentifierKind = MixfixSome String | MixfixNone
+  deriving (Ord, Eq)
+instance Show MixfixIdentifierKind where
+  show (MixfixSome e) = e
+  show _              = "…"
+data Identifier = NormalFunction String | MixfixFunction [MixfixIdentifierKind] | PrefixFunction String | NamespacedFunction String Identifier
   deriving (Ord, Eq)
 functionName :: Identifier -> String
 functionName = \case
   NormalFunction f       -> f
-  InfixFunction  i       -> "(" <> i <> ")"
-  PrefixFunction p       -> p <> "("
+  MixfixFunction is      -> intercalate "" $ map show is
+  PrefixFunction p       -> p <> "‣"
   NamespacedFunction n f -> n <> functionName f
 instance Show Identifier where
   show ident = "\ESC[95m" <> functionName ident <> "\ESC[0m"
-data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | Infix Expression Identifier Expression | Prefix Identifier Expression
+
+data Mixfix = MixfixOperator Identifier | MixfixExpression Expression
   deriving (Ord, Eq)
-data Command = Input String | Import String String | Test Expression Expression
-  deriving (Show)
-data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
-  deriving (Show)
+instance Show Mixfix where
+  show (MixfixOperator   i) = show i
+  show (MixfixExpression e) = show e
+-- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
+data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
+  deriving (Ord, Eq)
 instance Show Expression where
   show (Bruijn      x    ) = "\ESC[91m" <> show x <> "\ESC[0m"
   show (Function    ident) = "\ESC[95m" <> show ident <> "\ESC[0m"
   show (Abstraction e    ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
   show (Application exp1 exp2) =
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
-  show (Infix le i re) =
-    "\ESC[33m(\ESC[0m"
-      <> show i
-      <> " "
-      <> show le
-      <> " "
-      <> show re
-      <> "\ESC[33m)\ESC[0m"
+  show (MixfixChain ms) =
+    "\ESC[33m(\ESC[0m" <> (intercalate " " $ map show ms) <> "\ESC[33m)\ESC[0m"
   show (Prefix p e) = show p <> " " <> show e
+data Command = Input String | Import String String | Test Expression Expression
+  deriving (Show)
+data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
+  deriving (Show)
 
 data EvalConf = EvalConf
   { _isRepl    :: Bool

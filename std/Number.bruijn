@@ -38,7 +38,7 @@ t=? [0 false false true]
 # shifts a negative trit into a balanced ternary number
 up-neg [[[[[2 (4 3 2 1 0)]]]]]
 
-^<( up-neg
+^<‣ up-neg
 
 :test (^<(+0)) ((-1))
 :test (^<(-1)) ((-4))
@@ -47,7 +47,7 @@ up-neg [[[[[2 (4 3 2 1 0)]]]]]
 # shifts a positive trit into a balanced ternary number
 up-pos [[[[[1 (4 3 2 1 0)]]]]]
 
-^>( up-pos
+^>‣ up-pos
 
 :test (^>(+0)) ((+1))
 :test (^>(-1)) ((-2))
@@ -56,7 +56,7 @@ up-pos [[[[[1 (4 3 2 1 0)]]]]]
 # shifts a zero trit into a balanced ternary number
 up-zero [[[[[0 (4 3 2 1 0)]]]]]
 
-^=( up-zero
+^=‣ up-zero
 
 :test (^=(+0)) ([[[[0 3]]]])
 :test (^=(+1)) ((+3))
@@ -79,7 +79,7 @@ down [snd (0 z a< a> a=)]
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
 
--( negate
+-‣ negate
 
 :test (-(+0)) ((+0))
 :test (-(-1)) ((+1))
@@ -101,7 +101,7 @@ strip [fst (0 z a< a> a=)]
 	a> [0 [[^>1 : false]]]
 	a= [0 [[(0 (+0) ^=1) : 0]]]
 
-%( strip
+%‣ strip
 
 :test (%[[[[0 3]]]]) ((+0))
 :test (%[[[[2 (0 (0 (0 (0 3))))]]]]) ((-1))
@@ -119,7 +119,7 @@ lst [0 t= [t<] [t>] [t=]]
 # TODO: Find a more elegant way to do this (and resolve list import loop?)
 mst [fix (last (list! %0))]
 	last z [[<>?0 [false] [<>?(snd 1) (fst 1) (2 (snd 1))] i]]
-		<>?( [0 [[[false]]] true]
+		<>?‣ [0 [[[false]]] true]
 	fix [((t<? 0) || ((t>? 0) || (t=? 0))) 0 t=]
 
 :test (mst (-1)) (t<)
@@ -130,7 +130,7 @@ mst [fix (last (list! %0))]
 # returns true if balanced ternary number is negative
 negative? [t<? (mst 0)]
 
-<?( negative?
+<?‣ negative?
 
 :test (<?(+0)) (false)
 :test (<?(-1)) (true)
@@ -140,7 +140,7 @@ negative? [t<? (mst 0)]
 # returns true if balanced ternary number is positive
 positive? [t>? (mst 0)]
 
->?( positive?
+>?‣ positive?
 
 :test (>?(+0)) (false)
 :test (>?(-1)) (false)
@@ -150,7 +150,7 @@ positive? [t>? (mst 0)]
 # checks true if balanced ternary number is zero
 zero? [0 true [false] [false] i]
 
-=?( zero?
+=?‣ zero?
 
 :test (=?(+0)) (true)
 :test (=?(-1)) (false)
@@ -165,7 +165,7 @@ abstract! [0 z a< a> a=]
 	a> [[[[[1 4]]]]]
 	a= [[[[[0 4]]]]]
 
-->^( abstract!
+->^‣ abstract!
 
 :test (->^(-3)) ([[[[0 [[[[2 [[[[3]]]]]]]]]]]])
 :test (->^(+0)) ([[[[3]]]])
@@ -176,7 +176,7 @@ abstract! [0 z a< a> a=]
 normal! ω rec
 	rec [[0 (+0) [^<([3 3 0] 0)] [^>([3 3 0] 0)] [^=([3 3 0] 0)]]]
 
-->_( normal!
+->_‣ normal!
 
 :test (->_[[[[3]]]]) ((+0))
 :test (->_(->^(+42))) ((+42))
@@ -192,9 +192,9 @@ eq? [[abs 1 ->^0]]
 		a> [[0 false [false] [2 0] [false]]]
 		a= [[0 (1 0) [false] [false] [2 0]]]
 
-(=?) eq?
+…=?… eq?
 
-(/=?) not! .. eq?
+…/=?… not! .. eq?
 
 :test ((-42) =? (-42)) (true)
 :test ((-1) =? (-1)) (true)
@@ -219,7 +219,7 @@ inc [snd (0 z a< a> a=)]
 	a> [0 [[^>1 : ^<0]]]
 	a= [0 [[^=1 : ^>1]]]
 
-++( inc
+++‣ inc
 
 # adds (+1) to a balanced ternary number and strips leading 0s
 ssinc strip . inc
@@ -237,7 +237,7 @@ dec [snd (0 z a< a> a=)]
 	a> [0 [[^>1 : ^=1]]]
 	a= [0 [[^=1 : ^<1]]]
 
---( dec
+--‣ dec
 
 # subs (+1) from a balanced ternary number and strips leading 0s
 sdec strip . dec
@@ -263,7 +263,7 @@ add [[abs 1 ->^0]]
 		z [[0 --(->_1) ++(->_1) ->_1]]
 		c [[1 0 t=]]
 
-(+) add
+…+… add
 
 # adds two balanced ternary numbers and strips leading 0s
 sadd strip .. add
@@ -279,7 +279,7 @@ sadd strip .. add
 # larger numbers should be second argument (performance)
 sub [[1 + -0]]
 
-(-) sub
+…-… sub
 
 # subs two balanced ternary numbers and strips leading 0s
 ssub strip .. sub
@@ -295,7 +295,7 @@ ssub strip .. sub
 # larger numbers should be second argument (performance)
 gre? [[>?(1 - 0)]]
 
-(>?) gre?
+…>?… gre?
 
 :test ((+1) >? (+2)) (false)
 :test ((+2) >? (+2)) (false)
@@ -305,7 +305,7 @@ gre? [[>?(1 - 0)]]
 # smaller numbers should be second argument (performance)
 les? \gre?
 
-(<?) les?
+…<?… les?
 
 :test ((+1) <? (+2)) (true)
 :test ((+2) <? (+2)) (false)
@@ -315,7 +315,7 @@ les? \gre?
 # smaller numbers should be second argument (performance)
 leq? [[!(1 >? 0)]]
 
-(<=?) leq?
+…<=?… leq?
 
 :test ((+1) <=? (+2)) (true)
 :test ((+2) <=? (+2)) (true)
@@ -325,7 +325,7 @@ leq? [[!(1 >? 0)]]
 # smaller numbers should be second argument (performance)
 geq? \leq?
 
-(>=?) geq?
+…>=?… geq?
 
 :test ((+1) >=? (+2)) (false)
 :test ((+2) >=? (+2)) (true)
@@ -343,7 +343,7 @@ mul [[1 (+0) a< a> a=]]
 	a> [^=0 + 1]
 	a= [^=0]
 
-(*) mul
+…*… mul
 
 smul strip .. mul
 

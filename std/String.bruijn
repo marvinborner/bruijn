@@ -7,7 +7,7 @@
 # returns true if two strings are the same
 eq? eq? B.eq?
 
-(=?) eq?
+…=?… eq?
 
 :test ("ab" =? "ab") (true)
 :test ("ab" =? "aa") (false)
@@ -15,11 +15,11 @@ eq? eq? B.eq?
 # returns true if character is part of a string
 in? in? B.eq?
 
-(∈) in?
+…∈… in?
 
 ni? \in?
 
-(∋) ni?
+…∋… ni?
 
 :test ('b' ∈ "ab") (true)
 :test ('c' ∈ "ab") (false)

@@ -5,19 +5,19 @@
 # pairs two expressions into one
 pair [[[0 2 1]]]
 
-(:) pair
+…:… pair
 
 # extracts first expression from pair
 fst [0 k]
 
-^( fst
+^‣ fst
 
 :test (^([[0]] : [[1]])) ([[0]])
 
 # extracts second expression from pair
 snd [0 ki]
 
-~( snd
+~‣ snd
 
 :test (~([[0]] : [[1]])) ([[1]])
 

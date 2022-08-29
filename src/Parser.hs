@@ -19,7 +19,7 @@ sc = void $ char ' '
 
 -- "'" can't be in special chars because of 'c' char notation and prefixation
 specialChar :: Parser Char
-specialChar = oneOf "!?*@.:;+-_#$%^&<>/\\|~="
+specialChar = oneOf "!?*@.,:;+-_#$%^&<>/\\|{}~="
 
 -- lower or upper
 greekLetter :: Parser Char
@@ -38,12 +38,19 @@ mathematicalArrow :: Parser Char
 mathematicalArrow = satisfy isMathematicalOperator
   where isMathematicalOperator c = '←' <= c && c <= '⇿'
 
-infixOperator :: Parser Identifier
-infixOperator = normalInfix <|> namespacedInfix
+mixfixNone :: Parser MixfixIdentifierKind
+mixfixNone = char '…' >> pure MixfixNone
+
+mixfixSome :: Parser MixfixIdentifierKind
+mixfixSome =
+  MixfixSome
+    <$> (some $ specialChar <|> mathematicalOperator <|> mathematicalArrow)
+
+mixfixOperator :: Parser Identifier
+mixfixOperator = normalMixfix <|> namespacedMixfix
  where
-  normalInfix = InfixFunction
-    <$> some (specialChar <|> mathematicalOperator <|> mathematicalArrow)
-  namespacedInfix = NamespacedFunction <$> dottedNamespace <*> infixOperator
+  normalMixfix     = MixfixFunction <$> (some $ mixfixNone <|> mixfixSome)
+  namespacedMixfix = NamespacedFunction <$> dottedNamespace <*> mixfixOperator
 
 prefixOperator :: Parser Identifier
 prefixOperator = normalPrefix <|> namespacedPrefix
@@ -54,13 +61,14 @@ prefixOperator = normalPrefix <|> namespacedPrefix
 
 defIdentifier :: Parser Identifier
 defIdentifier =
-  (   NormalFunction
-    <$> ((:) <$> (lowerChar <|> greekLetter <|> emoticon) <*> many
-          (alphaNumChar <|> specialChar <|> char '\'')
-        )
-    )
-    <|> (char '(' *> infixOperator <* char ')')
-    <|> (prefixOperator <* char '(')
+  try
+      (   NormalFunction
+      <$> ((:) <$> (lowerChar <|> greekLetter <|> emoticon) <*> many
+            (alphaNumChar <|> specialChar <|> char '\'')
+          )
+      )
+    <|> try (prefixOperator <* char '‣')
+    <|> mixfixOperator
     <?> "defining identifier"
 
 identifier :: Parser Identifier
@@ -87,12 +95,6 @@ parseAbstraction = do
   e <- parseExpression
   _ <- string "]" <?> "closing abstraction"
   pure $ Abstraction e
-
--- one or more singletons wrapped in coupled application
-parseApplication :: Parser Expression
-parseApplication = do
-  s <- sepEndBy1 (try parsePrefix <|> parseSingleton) sc
-  pure $ foldl1 Application s
 
 parseBruijn :: Parser Expression
 parseBruijn = do
@@ -139,14 +141,16 @@ parseFunction = do
   var <- identifier
   pure $ Function var
 
-parseInfix :: Parser Expression
-parseInfix = do
-  e1 <- parseSingleton
-  sc
-  i <- infixOperator
-  sc
-  e2 <- parseSingleton
-  pure $ Infix e1 i e2
+parseMixfix :: Parser Expression
+parseMixfix = do
+  s <- sepBy1
+    (try prefixAsMixfix <|> try operatorAsMixfix <|> singletonAsMixfix)
+    sc
+  pure $ MixfixChain s
+ where
+  prefixAsMixfix    = MixfixExpression <$> parsePrefix
+  operatorAsMixfix  = MixfixOperator <$> mixfixOperator
+  singletonAsMixfix = MixfixExpression <$> parseSingleton
 
 parsePrefix :: Parser Expression
 parsePrefix = do
@@ -162,13 +166,12 @@ parseSingleton =
     <|> parseChar
     <|> parseAbstraction
     <|> try parseFunction
-    <|> try (parens parseInfix <?> "enclosed infix expr")
-    <|> (parens parseApplication <?> "enclosed application")
     <|> parsePrefix
+    <|> try (parens parseMixfix <?> "enclosed mixfix chain")
 
 parseExpression :: Parser Expression
 parseExpression = do
-  e <- try parseInfix <|> try parseApplication <|> parsePrefix
+  e <- parseMixfix
   pure e <?> "expression"
 
 parseEvaluate :: Parser Instruction
@@ -183,7 +186,6 @@ parseDefine lvl = do
   var <- defIdentifier
   sc
   e    <- parseExpression
-  -- TODO: Fix >1 sub-defs
   subs <-
     (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
   pure $ ContextualInstruction (Define var e subs) inp
