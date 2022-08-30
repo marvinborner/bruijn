@@ -144,12 +144,18 @@ parseFunction = do
 parseMixfix :: Parser Expression
 parseMixfix = do
   s <- sepBy1
-    (try prefixAsMixfix <|> try operatorAsMixfix <|> singletonAsMixfix)
+    (   try prefixAsMixfix
+    <|> try prefixOperatorAsMixfix
+    <|> try operatorAsMixfix
+    <|> singletonAsMixfix
+    )
     sc
   pure $ MixfixChain s
- where
-  prefixAsMixfix    = MixfixExpression <$> parsePrefix
-  operatorAsMixfix  = MixfixOperator <$> mixfixOperator
+ where -- TODO: Rethink this.
+  prefixAsMixfix = MixfixExpression <$> parsePrefix
+  prefixOperatorAsMixfix =
+    MixfixExpression . Function <$> (prefixOperator <* char '‣')
+  operatorAsMixfix  = MixfixOperator . MixfixFunction <$> some mixfixSome
   singletonAsMixfix = MixfixExpression <$> parseSingleton
 
 parsePrefix :: Parser Expression
