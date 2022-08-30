@@ -14,6 +14,9 @@ import           Data.List
 import qualified Data.Map                      as M
 import           Text.Megaparsec
 
+invalidProgramState :: a
+invalidProgramState = error "invalid program state"
+
 data Context = Context
   { _ctxInput :: String
   , _ctxPath  :: String
@@ -36,7 +39,7 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
-data Error = SyntaxError String | UndefinedIdentifier Identifier | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
+data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SuggestSolution err sol) =
@@ -47,6 +50,12 @@ instance Show Error where
     errPrefix <> "invalid syntax\n\ESC[105m\ESC[30mnear\ESC[0m " <> err
   show (UndefinedIdentifier ident) =
     errPrefix <> "undefined identifier " <> show ident
+  show (UnmatchedMixfix ks ms) =
+    errPrefix
+      <> "couldn't find matching mixfix for "
+      <> (intercalate "" (map show ks))
+      <> "\n\ESC[105m\ESC[30mnear\ESC[0m "
+      <> (intercalate " " (map show ms))
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
@@ -97,7 +106,7 @@ printBundle ParseErrorBundle {..} =
 
 data MixfixIdentifierKind = MixfixSome String | MixfixNone
   deriving (Ord, Eq)
-instance Show MixfixIdentifierKind where
+instance Show MixfixIdentifierKind where -- don't colorize (due to map)
   show (MixfixSome e) = e
   show _              = "…"
 data Identifier = NormalFunction String | MixfixFunction [MixfixIdentifierKind] | PrefixFunction String | NamespacedFunction String Identifier

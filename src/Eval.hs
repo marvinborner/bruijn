@@ -90,18 +90,31 @@ evalApp f g sub = evalExp f sub >>= \case
   Left  e  -> pure $ Left e
   Right f' -> fmap (Application f') <$> evalExp g sub
 
+-- TODO: This could be nicer and more performant (current is redundantly recursive)
 evalMixfix :: [Mixfix] -> Environment -> EvalState (Failable Expression)
 evalMixfix m sub = resolve (mixfixKind m) mixfixArgs
  where
-  -- longestMatching [] _  = error "invalid"
-  -- longestMatching x  xs = evalFun (MixfixFunction x) sub >>= \case
-  --   Left  _ -> longestMatching (init x) ((last x) : xs)
-  --   Right f -> (f, Function $ MixfixFunction xs)
+  longestMatching [] = pure $ Left $ UnmatchedMixfix (mixfixKind m) m
+  longestMatching x  = evalFun (MixfixFunction x) sub >>= \case
+    Left  _ -> longestMatching $ init x
+    Right _ -> pure $ Right $ Function $ MixfixFunction x
+  holeCount f = length [ h | h@(MixfixNone) <- f ]
   resolve f args
     | null [ s | s@(MixfixSome _) <- f ] = evalExp (foldl1 Application args) sub
-    | otherwise = evalExp
-      (foldl1 Application ((Function $ MixfixFunction f) : args))
-      sub
+    | otherwise = longestMatching f >>= \case
+      e@(Left _) -> pure e
+      Right l@(Function (MixfixFunction l')) ->
+        let splitted = take (holeCount l') args
+            chainRst = drop (length l') m
+        in  case chainRst of
+              [] -> evalExp (foldl1 Application $ l : splitted) sub
+              _  -> evalExp
+                ( MixfixChain
+                $ (MixfixExpression $ foldl1 Application $ l : splitted)
+                : chainRst
+                )
+                sub
+      _ -> invalidProgramState
   mixfixArgs = [ a | (MixfixExpression a) <- m ]
   mixfixKind = map $ \case
     MixfixOperator i -> MixfixSome $ functionName i
