@@ -89,20 +89,20 @@ foldr1 [[foldl 1 ^0 ~0]]
 # applies or to all list elements
 lor? foldr or? false
 
-||‣ lor?
+⋁?‣ lor?
 
-:test (||(true : (true : empty))) (true)
-:test (||(true : (false : empty))) (true)
-:test (||(false : (false : empty))) (false)
+:test (⋁?(true : (true : empty))) (true)
+:test (⋁?(true : (false : empty))) (true)
+:test (⋁?(false : (false : empty))) (false)
 
 # applies and to all list elements
 land? foldr and? true
 
-&&‣ land?
+⋀?‣ land?
 
-:test (&&(true : (true : empty))) (true)
-:test (&&(true : (false : empty))) (false)
-:test (&&(false : (false : empty))) (false)
+:test (⋀?(true : (true : empty))) (true)
+:test (⋀?(true : (false : empty))) (false)
+:test (⋀?(false : (false : empty))) (false)
 
 # multiplies all values in list
 product foldl mul (+1)
@@ -141,8 +141,8 @@ list [0 [[[2 (0 : 1)]]] reverse empty]
 
 # appends two lists
 append z [[[rec]]]
-	rec <>?1 case-end case-merge
-		case-merge ^1 : (2 ~1 0)
+	rec <>?1 case-end case-append
+		case-append ^1 : (2 ~1 0)
 		case-end 0
 
 …++… append
@@ -263,21 +263,21 @@ span z [[[rec]]]
 			recced 2 1 ~0
 		case-end empty : empty
 
-:test (span (\(<?) (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
+:test (span (\les? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
 # same as span but with inverted predicate
 break [span (not! . 0)]
 
-:test (break (\(>?) (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
+:test (break (\gre? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
 # returns true if any element in a list matches a predicate
-any? [||‣ . (map 0)]
+any? [⋁?‣ . (map 0)]
 
 :test (any? (\gre? (+2)) ((+1) : ((+2) : ((+3) : empty)))) (true)
 :test (any? (\gre? (+2)) ((+1) : ((+2) : ((+2) : empty)))) (false)
 
 # returns true if all elements in a list match a predicate
-all? [&&‣ . (map 0)]
+all? [⋀?‣ . (map 0)]
 
 :test (all? (\gre? (+2)) ((+3) : ((+4) : ((+5) : empty)))) (true)
 :test (all? (\gre? (+2)) ((+4) : ((+3) : ((+2) : empty)))) (false)
@@ -285,15 +285,15 @@ all? [&&‣ . (map 0)]
 # returns true if element is part of a list based on eq predicate
 in? [[any? (\1 0)]]
 
-:test (in? (=?) (+3) ((+1) : ((+2) : ((+3) : empty)))) (true)
-:test (in? (=?) (+0) ((+1) : ((+2) : ((+3) : empty)))) (false)
+:test (in? …=?… (+3) ((+1) : ((+2) : ((+3) : empty)))) (true)
+:test (in? …=?… (+0) ((+1) : ((+2) : ((+3) : empty)))) (false)
 
 # returns true if all elements of one list are equal to corresponding elements of other list
-eq? &&‣ ... zip-with
+eq? ⋀?‣ ... zip-with
 
-:test (eq? (=?) ((+1) : ((+2) : empty)) ((+1) : ((+2) : empty))) (true)
-:test (eq? (=?) ((+1) : ((+2) : empty)) ((+2) : ((+2) : empty))) (false)
-:test (eq? (=?) empty empty) (true)
+:test (eq? …=?… ((+1) : ((+2) : empty)) ((+1) : ((+2) : empty))) (true)
+:test (eq? …=?… ((+1) : ((+2) : empty)) ((+2) : ((+2) : empty))) (false)
+:test (eq? …=?… empty empty) (true)
 
 # removes first element that match an eq predicate
 remove z [[[[rec]]]]
@@ -301,16 +301,16 @@ remove z [[[[rec]]]]
 		case-remove (2 ^0 1) ~0 (^0 : (3 2 1 ~0))
 		case-end empty
 
-:test (remove (=?) (+2) ((+1) : ((+2) : ((+3) : ((+2) : empty))))) ((+1) : ((+3) : ((+2) : empty)))
+:test (remove …=?… (+2) ((+1) : ((+2) : ((+3) : ((+2) : empty))))) ((+1) : ((+3) : ((+2) : empty)))
 
 # removes duplicates from list based on eq predicate (keeps first occurrence)
 nub z [[[rec]]]
 	rec <>?0 case-end case-nub
-		case-nub ^0 : (2 1 (~0 <#> [!(2 0 ^1)]))
+		case-nub ^0 : (2 1 (~0 <#> [¬(2 0 ^1)]))
 		case-end empty
 
-:test (nub (=?) ((+1) : ((+2) : ((+3) : empty)))) (((+1) : ((+2) : ((+3) : empty))))
-:test (nub (=?) ((+1) : ((+2) : ((+1) : empty)))) (((+1) : ((+2) : empty)))
+:test (nub …=?… ((+1) : ((+2) : ((+3) : empty)))) (((+1) : ((+2) : ((+3) : empty))))
+:test (nub …=?… ((+1) : ((+2) : ((+1) : empty)))) (((+1) : ((+2) : empty)))
 
 # returns a list with infinite-times a element
 repeat z [[rec]]
@@ -319,7 +319,7 @@ repeat z [[rec]]
 :test (take (+3) (repeat (+4))) ((+4) : ((+4) : ((+4) : empty)))
 
 # returns a list with n-times a element
-replicate [[take 1 (repeat 0)]]
+replicate \(g take repeat)
 
 :test (replicate (+3) (+4)) ((+4) : ((+4) : ((+4) : empty)))
 

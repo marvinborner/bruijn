@@ -17,10 +17,6 @@ type Parser = Parsec Void String
 sc :: Parser ()
 sc = void $ char ' '
 
--- "'" can't be in special chars because of 'c' char notation and prefixation
-specialChar :: Parser Char
-specialChar = oneOf "!?*@.,:;+-_#$%^&<>/\\|{}~="
-
 -- lower or upper
 greekLetter :: Parser Char
 greekLetter = satisfy isGreek
@@ -31,20 +27,26 @@ emoticon = satisfy isEmoticon
   where isEmoticon c = ('\128512' <= c && c <= '\128591')
 
 mathematicalOperator :: Parser Char
-mathematicalOperator = satisfy isMathematicalOperator
-  where isMathematicalOperator c = '∀' <= c && c <= '⋿'
+mathematicalOperator = satisfy isMathematicalUnicodeBlock
+  <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
+  where isMathematicalUnicodeBlock c = ('∀' <= c && c <= '⋿')
 
 mathematicalArrow :: Parser Char
 mathematicalArrow = satisfy isMathematicalOperator
   where isMathematicalOperator c = '←' <= c && c <= '⇿'
 
+-- "'" can't be in special chars because of 'c' char notation and prefixation
+specialChar :: Parser Char
+specialChar =
+  oneOf "!?*@.,:;+-_#$%^&<>/\\|{}~="
+    <|> mathematicalOperator
+    <|> mathematicalArrow
+
 mixfixNone :: Parser MixfixIdentifierKind
 mixfixNone = char '…' >> pure MixfixNone
 
 mixfixSome :: Parser MixfixIdentifierKind
-mixfixSome =
-  MixfixSome
-    <$> (some $ specialChar <|> mathematicalOperator <|> mathematicalArrow)
+mixfixSome = MixfixSome <$> (some specialChar)
 
 mixfixOperator :: Parser Identifier
 mixfixOperator = normalMixfix <|> namespacedMixfix
@@ -55,8 +57,7 @@ mixfixOperator = normalMixfix <|> namespacedMixfix
 prefixOperator :: Parser Identifier
 prefixOperator = normalPrefix <|> namespacedPrefix
  where
-  normalPrefix = PrefixFunction
-    <$> some (specialChar <|> mathematicalOperator <|> mathematicalArrow)
+  normalPrefix     = PrefixFunction <$> some specialChar
   namespacedPrefix = NamespacedFunction <$> dottedNamespace <*> prefixOperator
 
 defIdentifier :: Parser Identifier

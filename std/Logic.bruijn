@@ -9,22 +9,23 @@ true k
 false ki
 
 # inverts boolean value
+# equivalent of [0 ⇒ false]
 not! [0 false true]
 
-!‣ not!
+¬‣ not!
 
-:test (!true) (false)
-:test (!false) (true)
+:test (¬true) (false)
+:test (¬false) (true)
 
 # true if both args are true
 and? [[1 0 false]]
 
-…&&… and?
+…⋀?… and?
 
-:test (true && true) (true)
-:test (true && false) (false)
-:test (false && true) (false)
-:test (false && false) (false)
+:test (true ⋀? true) (true)
+:test (true ⋀? false) (false)
+:test (false ⋀? true) (false)
+:test (false ⋀? false) (false)
 
 # true if not both args are true
 nand? [[1 0 1 false true]]
@@ -37,12 +38,12 @@ nand? [[1 0 1 false true]]
 # true if one of the args is true
 or? [[1 true 0]]
 
-…||… or?
+…⋁?… or?
 
-:test (true || true) (true)
-:test (true || false) (true)
-:test (false || true) (true)
-:test (false || false) (false)
+:test (true ⋁? true) (true)
+:test (true ⋁? false) (true)
+:test (false ⋁? true) (true)
+:test (false ⋁? false) (false)
 
 # true if both args are false
 nor? [[1 1 0 false true]]
@@ -53,7 +54,7 @@ nor? [[1 1 0 false true]]
 :test (nor? false false) (true)
 
 # true if args are not same bools
-xor? [[1 !0 0]]
+xor? [[1 ¬0 0]]
 
 :test (xor? true true) (false)
 :test (xor? true false) (true)
@@ -61,7 +62,7 @@ xor? [[1 !0 0]]
 :test (xor? false false) (false)
 
 # true if both args are same bools
-xnor? [[1 0 !0]]
+xnor? [[1 0 ¬0]]
 
 :test (xnor? true true) (true)
 :test (xnor? true false) (false)
@@ -73,29 +74,29 @@ xnor? [[1 0 !0]]
 # I personally just write (exp? case-T case-F) directly
 if [[[2 1 0]]]
 
-…?!… if
+…?…:… if
 
 :test (if true true false) (true)
-:test ((true ?! true) false) (true)
+:test (true ? true : false) (true)
 :test (if false true false) (false)
-:test ((false ?! true) false) (false)
+:test (false ? true : false) (false)
 
 # mathematical implies definition
-implies [[!1 || 0]]
+implies [[¬1 ⋁? 0]]
 
-…=>?… implies
+…⇒?… implies
 
-:test (true =>? true) (true)
-:test (true =>? false) (false)
-:test (false =>? true) (true)
-:test (false =>? false) (true)
+:test (true ⇒? true) (true)
+:test (true ⇒? false) (false)
+:test (false ⇒? true) (true)
+:test (false ⇒? false) (true)
 
 # mathematical iff (if and only if) definition
-iff [[(1 =>? 0) && (0 =>? 1)]]
+iff [[(1 ⇒? 0) ⋀? (0 ⇒? 1)]]
 
-…<=>?… iff
+…⇔?… iff
 
-:test (true <=>? true) (true)
-:test (true <=>? false) (false)
-:test (false <=>? true) (false)
-:test (false <=>? false) (true)
+:test (true ⇔? true) (true)
+:test (true ⇔? false) (false)
+:test (false ⇔? true) (false)
+:test (false ⇔? false) (true)

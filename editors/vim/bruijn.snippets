@@ -1,213 +1,374 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+# don't worry, this is mostly automatically generated
+
 priority 0
 
 # === Definition snippets === 
 
-snippet "(.+)>" "prefix" r
+snippet "(.+)>" "" r
 `!p snip.rv = match.group(1)`‣ $0
 endsnippet
 
-snippet "(.*)\." "mixfix" r
+snippet "(.*)\." "" r
 `!p snip.rv = match.group(1)`…$0
+endsnippet
+
+# === Operators ===
+
+snippet "(.*)&&" "" r
+`!p snip.rv = match.group(1)`⋀$0
+endsnippet
+
+snippet "(.*)\|\|" "" r
+`!p snip.rv = match.group(1)`⋁$0
+endsnippet
+
+snippet "(.*)=>" "" r
+`!p snip.rv = match.group(1)`⇒$0
+endsnippet
+
+snippet "(.*)<=>" "" r
+`!p snip.rv = match.group(1)`⇔$0
+endsnippet
+
+snippet "(.*)->" "" r
+`!p snip.rv = match.group(1)`→$0
+endsnippet
+
+snippet "(.*)<->" "" r
+`!p snip.rv = match.group(1)`↔$0
+endsnippet
+
+snippet "(.*)<=" "" r
+`!p snip.rv = match.group(1)`≤$0
+endsnippet
+
+snippet "(.*)>=" "" r
+`!p snip.rv = match.group(1)`≥$0
+endsnippet
+
+snippet "(.*)!" "" r
+`!p snip.rv = match.group(1)`¬$0
+endsnippet
+
+snippet "(.*)_0" "" r
+`!p snip.rv = match.group(1)`₀$0
+endsnippet
+
+snippet "(.*)_1" "" r
+`!p snip.rv = match.group(1)`₁$0
+endsnippet
+
+snippet "(.*)_2" "" r
+`!p snip.rv = match.group(1)`₂$0
+endsnippet
+
+snippet "(.*)_3" "" r
+`!p snip.rv = match.group(1)`₃$0
+endsnippet
+
+snippet "(.*)_4" "" r
+`!p snip.rv = match.group(1)`₄$0
+endsnippet
+
+snippet "(.*)_5" "" r
+`!p snip.rv = match.group(1)`₅$0
+endsnippet
+
+snippet "(.*)_6" "" r
+`!p snip.rv = match.group(1)`₆$0
+endsnippet
+
+snippet "(.*)_7" "" r
+`!p snip.rv = match.group(1)`₇$0
+endsnippet
+
+snippet "(.*)_8" "" r
+`!p snip.rv = match.group(1)`₈$0
+endsnippet
+
+snippet "(.*)_9" "" r
+`!p snip.rv = match.group(1)`₉$0
+endsnippet
+
+snippet "(.*)_+" "" r
+`!p snip.rv = match.group(1)`₊$0
+endsnippet
+
+snippet "(.*)_-" "" r
+`!p snip.rv = match.group(1)`₋$0
+endsnippet
+
+snippet "(.*)_=" "" r
+`!p snip.rv = match.group(1)`₌$0
+endsnippet
+
+snippet "(.*)_\(" "" r
+`!p snip.rv = match.group(1)`₍$0
+endsnippet
+
+snippet "(.*)_\)" "" r
+`!p snip.rv = match.group(1)`₎$0
+endsnippet
+
+snippet "(.*)\^0" "" r
+`!p snip.rv = match.group(1)`⁰$0
+endsnippet
+
+snippet "(.*)\^1" "" r
+`!p snip.rv = match.group(1)`¹$0
+endsnippet
+
+snippet "(.*)\^2" "" r
+`!p snip.rv = match.group(1)`²$0
+endsnippet
+
+snippet "(.*)\^3" "" r
+`!p snip.rv = match.group(1)`³$0
+endsnippet
+
+snippet "(.*)\^4" "" r
+`!p snip.rv = match.group(1)`⁴$0
+endsnippet
+
+snippet "(.*)\^5" "" r
+`!p snip.rv = match.group(1)`⁵$0
+endsnippet
+
+snippet "(.*)\^6" "" r
+`!p snip.rv = match.group(1)`⁶$0
+endsnippet
+
+snippet "(.*)\^7" "" r
+`!p snip.rv = match.group(1)`⁷$0
+endsnippet
+
+snippet "(.*)\^8" "" r
+`!p snip.rv = match.group(1)`⁸$0
+endsnippet
+
+snippet "(.*)\^9" "" r
+`!p snip.rv = match.group(1)`⁹$0
+endsnippet
+
+snippet "(.*)\^+" "" r
+`!p snip.rv = match.group(1)`⁺$0
+endsnippet
+
+snippet "(.*)\^-" "" r
+`!p snip.rv = match.group(1)`⁻$0
+endsnippet
+
+snippet "(.*)\^=" "" r
+`!p snip.rv = match.group(1)`⁼$0
+endsnippet
+
+snippet "(.*)\^\(" "" r
+`!p snip.rv = match.group(1)`⁽$0
+endsnippet
+
+snippet "(.*)\^\)" "" r
+`!p snip.rv = match.group(1)`⁾$0
 endsnippet
 
 # === Greek letters === 
 
-snippet Alpha
-Α
+snippet "(.*)Alpha" "" r
+`!p snip.rv = match.group(1)`Α$0
 endsnippet
 
-snippet alpha
-α
+snippet "(.*)alpha" "" r
+`!p snip.rv = match.group(1)`α$0
 endsnippet
 
-snippet Beta
-Β
+snippet "(.*)Beta" "" r
+`!p snip.rv = match.group(1)`Β$0
 endsnippet
 
-snippet beta
-β
+snippet "(.*)beta" "" r
+`!p snip.rv = match.group(1)`β$0
 endsnippet
 
-snippet Gamma
-Γ
+snippet "(.*)Gamma" "" r
+`!p snip.rv = match.group(1)`Γ$0
 endsnippet
 
-snippet gamma
-γ
+snippet "(.*)gamma" "" r
+`!p snip.rv = match.group(1)`γ$0
 endsnippet
 
-snippet Delta
-Δ
+snippet "(.*)Delta" "" r
+`!p snip.rv = match.group(1)`Δ$0
 endsnippet
 
-snippet delta
-δ
+snippet "(.*)delta" "" r
+`!p snip.rv = match.group(1)`δ$0
 endsnippet
 
-snippet Epsilon
-Ε
+snippet "(.*)Epsilon" "" r
+`!p snip.rv = match.group(1)`Ε$0
 endsnippet
 
-snippet epsilon
-ε
+snippet "(.*)epsilon" "" r
+`!p snip.rv = match.group(1)`ε$0
 endsnippet
 
-snippet varepsilon
-ϵ
+snippet "(.*)varepsilon" "" r
+`!p snip.rv = match.group(1)`ϵ$0
 endsnippet
 
-snippet Zeta
-Ζ
+snippet "(.*)Zeta" "" r
+`!p snip.rv = match.group(1)`Ζ$0
 endsnippet
 
-snippet zeta
-ζ
+snippet "(.*)zeta" "" r
+`!p snip.rv = match.group(1)`ζ$0
 endsnippet
 
-snippet Eta
-Η
+snippet "(.*)Eta" "" r
+`!p snip.rv = match.group(1)`Η$0
 endsnippet
 
-snippet eta
-η
+snippet "(.*)eta" "" r
+`!p snip.rv = match.group(1)`η$0
 endsnippet
 
-snippet Theta
-Θ
+snippet "(.*)Theta" "" r
+`!p snip.rv = match.group(1)`Θ$0
 endsnippet
 
-snippet theta
-θ
+snippet "(.*)theta" "" r
+`!p snip.rv = match.group(1)`θ$0
 endsnippet
 
-snippet Iota
-Ι
+snippet "(.*)Iota" "" r
+`!p snip.rv = match.group(1)`Ι$0
 endsnippet
 
-snippet iota
-ι
+snippet "(.*)iota" "" r
+`!p snip.rv = match.group(1)`ι$0
 endsnippet
 
-snippet Kappa
-Κ
+snippet "(.*)Kappa" "" r
+`!p snip.rv = match.group(1)`Κ$0
 endsnippet
 
-snippet kappa
-κ
+snippet "(.*)kappa" "" r
+`!p snip.rv = match.group(1)`κ$0
 endsnippet
 
-snippet Lambda
-Λ
+snippet "(.*)Lambda" "" r
+`!p snip.rv = match.group(1)`Λ$0
 endsnippet
 
-snippet lambda
-λ
+snippet "(.*)lambda" "" r
+`!p snip.rv = match.group(1)`λ$0
 endsnippet
 
-snippet Mu
-Μ
+snippet "(.*)Mu" "" r
+`!p snip.rv = match.group(1)`Μ$0
 endsnippet
 
-snippet mu
-μ
+snippet "(.*)mu" "" r
+`!p snip.rv = match.group(1)`μ$0
 endsnippet
 
-snippet Nu
-Ν
+snippet "(.*)Nu" "" r
+`!p snip.rv = match.group(1)`Ν$0
 endsnippet
 
-snippet nu
-ν
+snippet "(.*)nu" "" r
+`!p snip.rv = match.group(1)`ν$0
 endsnippet
 
-snippet Xi
-Ξ
+snippet "(.*)Xi" "" r
+`!p snip.rv = match.group(1)`Ξ$0
 endsnippet
 
-snippet xi
-ξ
+snippet "(.*)xi" "" r
+`!p snip.rv = match.group(1)`ξ$0
 endsnippet
 
-snippet Omicron
-Ο
+snippet "(.*)Omicron" "" r
+`!p snip.rv = match.group(1)`Ο$0
 endsnippet
 
-snippet omicron
-ο
+snippet "(.*)omicron" "" r
+`!p snip.rv = match.group(1)`ο$0
 endsnippet
 
-snippet Pi
-Π
+snippet "(.*)Pi" "" r
+`!p snip.rv = match.group(1)`Π$0
 endsnippet
 
-snippet pi
-π
+snippet "(.*)pi" "" r
+`!p snip.rv = match.group(1)`π$0
 endsnippet
 
-snippet Rho
-Ρ
+snippet "(.*)Rho" "" r
+`!p snip.rv = match.group(1)`Ρ$0
 endsnippet
 
-snippet rho
-ρ
+snippet "(.*)rho" "" r
+`!p snip.rv = match.group(1)`ρ$0
 endsnippet
 
-snippet Sigma
-Σ
+snippet "(.*)Sigma" "" r
+`!p snip.rv = match.group(1)`Σ$0
 endsnippet
 
-snippet sigma
-σ
+snippet "(.*)sigma" "" r
+`!p snip.rv = match.group(1)`σ$0
 endsnippet
 
-snippet Tau
-Τ
+snippet "(.*)Tau" "" r
+`!p snip.rv = match.group(1)`Τ$0
 endsnippet
 
-snippet tau
-τ
+snippet "(.*)tau" "" r
+`!p snip.rv = match.group(1)`τ$0
 endsnippet
 
-snippet Upsilon
-Υ
+snippet "(.*)Upsilon" "" r
+`!p snip.rv = match.group(1)`Υ$0
 endsnippet
 
-snippet upsilon
-υ
+snippet "(.*)upsilon" "" r
+`!p snip.rv = match.group(1)`υ$0
 endsnippet
 
-snippet Phi
-Φ
+snippet "(.*)Phi" "" r
+`!p snip.rv = match.group(1)`Φ$0
 endsnippet
 
-snippet phi
-φ
+snippet "(.*)phi" "" r
+`!p snip.rv = match.group(1)`φ$0
 endsnippet
 
-snippet varphi
-ϕ
+snippet "(.*)varphi" "" r
+`!p snip.rv = match.group(1)`ϕ$0
 endsnippet
 
-snippet Chi
-Χ
+snippet "(.*)Chi" "" r
+`!p snip.rv = match.group(1)`Χ$0
 endsnippet
 
-snippet chi
-χ
+snippet "(.*)chi" "" r
+`!p snip.rv = match.group(1)`χ$0
 endsnippet
 
-snippet Psi
-Ψ
+snippet "(.*)Psi" "" r
+`!p snip.rv = match.group(1)`Ψ$0
 endsnippet
 
-snippet psi
-ψ
+snippet "(.*)psi" "" r
+`!p snip.rv = match.group(1)`ψ$0
 endsnippet
 
-snippet Omega
-Ω
+snippet "(.*)Omega" "" r
+`!p snip.rv = match.group(1)`Ω$0
 endsnippet
 
-snippet omega
-ω
+snippet "(.*)omega" "" r
+`!p snip.rv = match.group(1)`ω$0
 endsnippet

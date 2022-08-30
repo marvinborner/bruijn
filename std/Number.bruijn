@@ -1,6 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# This file specifies the most basic mathematical operations
-# -> refer to std/Math for more advanced functions
+# This file defines the most basic mathematical operations
+# → refer to std/Math for more advanced functions
 # Heavily inspired by the works of T.Æ. Mogensen (see refs in README)
 
 :import std/Combinator .
@@ -8,73 +8,67 @@
 :import std/Logic .
 
 # negative trit indicating coeffecient of (-1)
-t< [[[2]]]
+t⁻ [[[2]]]
 
 # returns true if a trit is negative
-t<? [0 true false false]
+t⁻? [0 true false false]
 
 # positive trit indicating coeffecient of (+1)
-t> [[[1]]]
+t⁺ [[[1]]]
 
 # returns true if a trit is positive
-t>? [0 false true false]
+t⁺? [0 false true false]
 
 # zero trit indicating coeffecient of 0
-t= [[[0]]]
+t⁰ [[[0]]]
 
 # returns true if a trit is zero
-t=? [0 false false true]
+t⁰? [0 false false true]
 
-:test (t<? t<) (true)
-:test (t<? t>) (false)
-:test (t<? t=) (false)
-:test (t>? t<) (false)
-:test (t>? t>) (true)
-:test (t>? t=) (false)
-:test (t=? t<) (false)
-:test (t=? t>) (false)
-:test (t=? t=) (true)
+:test (t⁻? t⁻) (true)
+:test (t⁻? t⁺) (false)
+:test (t⁻? t⁰) (false)
+:test (t⁺? t⁻) (false)
+:test (t⁺? t⁺) (true)
+:test (t⁺? t⁰) (false)
+:test (t⁰? t⁻) (false)
+:test (t⁰? t⁺) (false)
+:test (t⁰? t⁰) (true)
 
 # shifts a negative trit into a balanced ternary number
-up-neg [[[[[2 (4 3 2 1 0)]]]]]
+↑⁻‣ [[[[[2 (4 3 2 1 0)]]]]]
 
-^<‣ up-neg
-
-:test (^<(+0)) ((-1))
-:test (^<(-1)) ((-4))
-:test (^<(+42)) ((+125))
+:test (↑⁻(+0)) ((-1))
+:test (↑⁻(-1)) ((-4))
+:test (↑⁻(+42)) ((+125))
 
 # shifts a positive trit into a balanced ternary number
-up-pos [[[[[1 (4 3 2 1 0)]]]]]
+↑⁺‣ [[[[[1 (4 3 2 1 0)]]]]]
 
-^>‣ up-pos
-
-:test (^>(+0)) ((+1))
-:test (^>(-1)) ((-2))
-:test (^>(+42)) ((+127))
+:test (↑⁺(+0)) ((+1))
+:test (↑⁺(-1)) ((-2))
+:test (↑⁺(+42)) ((+127))
 
 # shifts a zero trit into a balanced ternary number
-up-zero [[[[[0 (4 3 2 1 0)]]]]]
+↑⁰‣ [[[[[0 (4 3 2 1 0)]]]]]
 
-^=‣ up-zero
-
-:test (^=(+0)) ([[[[0 3]]]])
-:test (^=(+1)) ((+3))
-:test (^=(+42)) ((+126))
+:test (↑⁰(+0)) ([[[[0 3]]]])
+:test (↑⁰(+1)) ((+3))
+:test (↑⁰(+42)) ((+126))
 
 # shifts a specified trit into a balanced ternary number
 up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
 
-:test (up t< (+42)) (^<(+42))
-:test (up t> (+42)) (^>(+42))
-:test (up t= (+42)) (^=(+42))
+:test (up t⁻ (+42)) (↑⁻(+42))
+:test (up t⁺ (+42)) (↑⁺(+42))
+:test (up t⁰ (+42)) (↑⁰(+42))
 
 # shifts the least significant trit out - basically div by 3
-down [snd (0 z a< a> a=)]
+down [~(0 z a⁻ a⁺ a⁰)]
 	z (+0) : (+0)
-	a< [0 [[^<1 : 1]]]
-	a> [0 [[^>1 : 1]]]
-	a= [0 [[^=1 : 1]]]
+	a⁻ [0 [[↑⁻1 : 1]]]
+	a⁺ [0 [[↑⁺1 : 1]]]
+	a⁰ [0 [[↑⁰1 : 1]]]
 
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
@@ -86,20 +80,20 @@ negate [[[[[4 3 1 2 0]]]]]
 :test (-(+42)) ((-42))
 
 # converts a balanced ternary number to a list of trits
-list! [0 z a< a> a=]
+list! [0 z a⁻ a⁺ a⁰]
 	z [[0]]
-	a< [t< : 0]
-	a> [t> : 0]
-	a= [t= : 0]
+	a⁻ [t⁻ : 0]
+	a⁺ [t⁺ : 0]
+	a⁰ [t⁰ : 0]
 
 # TODO: Tests!
 
 # strips leading 0s from balanced ternary number
-strip [fst (0 z a< a> a=)]
+strip [^(0 z a⁻ a⁺ a⁰)]
 	z (+0) : true
-	a< [0 [[^<1 : false]]]
-	a> [0 [[^>1 : false]]]
-	a= [0 [[(0 (+0) ^=1) : 0]]]
+	a⁻ [0 [[↑⁻1 : false]]]
+	a⁺ [0 [[↑⁺1 : false]]]
+	a⁰ [0 [[(0 (+0) ↑⁰1) : 0]]]
 
 %‣ strip
 
@@ -108,27 +102,27 @@ strip [fst (0 z a< a> a=)]
 :test (%(+42)) ((+42))
 
 # extracts least significant trit from balanced ternary numbers
-lst [0 t= [t<] [t>] [t=]]
+lst [0 t⁰ [t⁻] [t⁺] [t⁰]]
 
-:test (lst (-1)) (t<)
-:test (lst (+0)) (t=)
-:test (lst (+1)) (t>)
-:test (lst (+42)) (t=)
+:test (lst (-1)) (t⁻)
+:test (lst (+0)) (t⁰)
+:test (lst (+1)) (t⁺)
+:test (lst (+42)) (t⁰)
 
 # extracts most significant trit from balanced ternary numbers
 # TODO: Find a more elegant way to do this (and resolve list import loop?)
 mst [fix (last (list! %0))]
-	last z [[<>?0 [false] [<>?(snd 1) (fst 1) (2 (snd 1))] i]]
+	last z [[<>?0 [false] [<>?(~1) ^1 (2 ~1)] i]]
 		<>?‣ [0 [[[false]]] true]
-	fix [((t<? 0) || ((t>? 0) || (t=? 0))) 0 t=]
+	fix [((t⁻? 0) ⋁? ((t⁺? 0) ⋁? (t⁰? 0))) 0 t⁰]
 
-:test (mst (-1)) (t<)
-:test (mst (+0)) (t=)
-:test (mst (+1)) (t>)
-:test (mst (+42)) (t>)
+:test (mst (-1)) (t⁻)
+:test (mst (+0)) (t⁰)
+:test (mst (+1)) (t⁺)
+:test (mst (+42)) (t⁺)
 
 # returns true if balanced ternary number is negative
-negative? [t<? (mst 0)]
+negative? [t⁻? (mst 0)]
 
 <?‣ negative?
 
@@ -138,7 +132,7 @@ negative? [t<? (mst 0)]
 :test (<?(+42)) (false)
 
 # returns true if balanced ternary number is positive
-positive? [t>? (mst 0)]
+positive? [t⁺? (mst 0)]
 
 >?‣ positive?
 
@@ -158,39 +152,39 @@ zero? [0 true [false] [false] i]
 :test (=?(+42)) (false)
 
 # converts the normal balanced ternary representation into abstract
-# -> the abstract representation is used in eq?/add/sub/mul
-abstract! [0 z a< a> a=]
+# → the abstract representation is used in eq?/add/sub/mul
+abstract! [0 z a⁻ a⁺ a⁰]
 	z (+0)
-	a< [[[[[2 4]]]]]
-	a> [[[[[1 4]]]]]
-	a= [[[[[0 4]]]]]
+	a⁻ [[[[[2 4]]]]]
+	a⁺ [[[[[1 4]]]]]
+	a⁰ [[[[[0 4]]]]]
 
-->^‣ abstract!
+→^‣ abstract!
 
-:test (->^(-3)) ([[[[0 [[[[2 [[[[3]]]]]]]]]]]])
-:test (->^(+0)) ([[[[3]]]])
-:test (->^(+3)) ([[[[0 [[[[1 [[[[3]]]]]]]]]]]])
+:test (→^(-3)) ([[[[0 [[[[2 [[[[3]]]]]]]]]]]])
+:test (→^(+0)) ([[[[3]]]])
+:test (→^(+3)) ([[[[0 [[[[1 [[[[3]]]]]]]]]]]])
 
 # converts the abstracted balanced ternary representation back to normal
 # using ω to solve recursion
 normal! ω rec
-	rec [[0 (+0) [^<([3 3 0] 0)] [^>([3 3 0] 0)] [^=([3 3 0] 0)]]]
+	rec [[0 (+0) [↑⁻([3 3 0] 0)] [↑⁺([3 3 0] 0)] [↑⁰([3 3 0] 0)]]]
 
-->_‣ normal!
+→_‣ normal!
 
-:test (->_[[[[3]]]]) ((+0))
-:test (->_(->^(+42))) ((+42))
-:test (->_(->^(-42))) ((-42))
+:test (→_[[[[3]]]]) ((+0))
+:test (→_(→^(+42))) ((+42))
+:test (→_(→^(-42))) ((-42))
 
 # checks whether two balanced ternary numbers are equal
 # larger numbers should be second argument (performance)
-# -> ignores leading 0s!
-eq? [[abs 1 ->^0]]
-	abs [0 z a< a> a=]
-		z [=?(->_0)]
-		a< [[0 false [2 0] [false] [false]]]
-		a> [[0 false [false] [2 0] [false]]]
-		a= [[0 (1 0) [false] [false] [2 0]]]
+# → ignores leading 0s!
+eq? [[abs 1 →^0]]
+	abs [0 z a⁻ a⁺ a⁰]
+		z [=?(→_0)]
+		a⁻ [[0 false [2 0] [false] [false]]]
+		a⁺ [[0 false [false] [2 0] [false]]]
+		a⁰ [[0 (1 0) [false] [false] [2 0]]]
 
 …=?… eq?
 
@@ -213,11 +207,11 @@ eq? [[abs 1 ->^0]]
 # the same. Something's weird.
 
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
-inc [snd (0 z a< a> a=)]
+inc [~(0 z a⁻ a⁺ a⁰)]
 	z (+0) : (+1)
-	a< [0 [[^<1 : ^=1]]]
-	a> [0 [[^>1 : ^<0]]]
-	a= [0 [[^=1 : ^>1]]]
+	a⁻ [0 [[↑⁻1 : ↑⁰1]]]
+	a⁺ [0 [[↑⁺1 : ↑⁻0]]]
+	a⁰ [0 [[↑⁰1 : ↑⁺1]]]
 
 ++‣ inc
 
@@ -231,11 +225,11 @@ ssinc strip . inc
 :test ((++(+42)) =? (+43)) (true)
 
 # subs (+1) from a balanced ternary number (can introduce leading 0s)
-dec [snd (0 z a< a> a=)]
+dec [~(0 z a⁻ a⁺ a⁰)]
 	z (+0) : (-1)
-	a< [0 [[^<1 : ^>0]]]
-	a> [0 [[^>1 : ^=1]]]
-	a= [0 [[^=1 : ^<1]]]
+	a⁻ [0 [[↑⁻1 : ↑⁺0]]]
+	a⁺ [0 [[↑⁺1 : ↑⁰1]]]
+	a⁰ [0 [[↑⁰1 : ↑⁻1]]]
 
 --‣ dec
 
@@ -250,18 +244,18 @@ sdec strip . dec
 
 # adds two balanced ternary numbers (can introduce leading 0s)
 # larger numbers should be second argument (performance)
-add [[abs 1 ->^0]]
-	abs [c (0 z a< a> a=)]
-		b< [1 ^>(3 0 t<) ^=(3 0 t=) ^<(3 0 t=)]
-		b= [up 1 (3 0 t=)]
-		b> [1 ^=(3 0 t=) ^<(3 0 t>) ^>(3 0 t=)]
-		a< [[[1 (b< 1) b<' b= b<]]]
-			b<' [1 ^=(3 0 t<) ^<(3 0 t=) ^>(3 0 t<)]
-		a> [[[1 (b> 1) b= b>' b>]]]
-			b>' [1 ^>(3 0 t=) ^=(3 0 t>) ^<(3 0 t>)]
-		a= [[[1 (b= 1) b< b> b=]]]
-		z [[0 --(->_1) ++(->_1) ->_1]]
-		c [[1 0 t=]]
+add [[abs 1 →^0]]
+	abs [c (0 z a⁻ a⁺ a⁰)]
+		b⁻ [1 ↑⁺(3 0 t⁻) ↑⁰(3 0 t⁰) ↑⁻(3 0 t⁰)]
+		b⁰ [up 1 (3 0 t⁰)]
+		b⁺ [1 ↑⁰(3 0 t⁰) ↑⁻(3 0 t⁺) ↑⁺(3 0 t⁰)]
+		a⁻ [[[1 (b⁻ 1) b⁻' b⁰ b⁻]]]
+			b⁻' [1 ↑⁰(3 0 t⁻) ↑⁻(3 0 t⁰) ↑⁺(3 0 t⁻)]
+		a⁺ [[[1 (b⁺ 1) b⁰ b⁺' b⁺]]]
+			b⁺' [1 ↑⁺(3 0 t⁰) ↑⁰(3 0 t⁺) ↑⁻(3 0 t⁺)]
+		a⁰ [[[1 (b⁰ 1) b⁻ b⁺ b⁰]]]
+		z [[0 --(→_1) ++(→_1) →_1]]
+		c [[1 0 t⁰]]
 
 …+… add
 
@@ -313,35 +307,35 @@ les? \gre?
 
 # returns true if number is less than or equal to other number
 # smaller numbers should be second argument (performance)
-leq? [[!(1 >? 0)]]
+leq? [[¬(1 >? 0)]]
 
-…<=?… leq?
+…≤?… leq?
 
-:test ((+1) <=? (+2)) (true)
-:test ((+2) <=? (+2)) (true)
-:test ((+3) <=? (+2)) (false)
+:test ((+1) ≤? (+2)) (true)
+:test ((+2) ≤? (+2)) (true)
+:test ((+3) ≤? (+2)) (false)
 
 # returns true if number is greater than or equal to other number
 # smaller numbers should be second argument (performance)
 geq? \leq?
 
-…>=?… geq?
+…≥?… geq?
 
-:test ((+1) >=? (+2)) (false)
-:test ((+2) >=? (+2)) (true)
-:test ((+3) >=? (+2)) (true)
+:test ((+1) ≥? (+2)) (false)
+:test ((+2) ≥? (+2)) (true)
+:test ((+3) ≥? (+2)) (true)
 
 # returns max number of two
-max [[(1 <=? 0) 0 1]]
+max [[(1 ≤? 0) 0 1]]
 
 # returns min number of two
-min [[(1 <=? 0) 1 0]]
+min [[(1 ≤? 0) 1 0]]
 
 # muls two balanced ternary numbers (can introduce leading 0s)
-mul [[1 (+0) a< a> a=]]
-	a< [^=0 - 1]
-	a> [^=0 + 1]
-	a= [^=0]
+mul [[1 (+0) a⁻ a⁺ a⁰]]
+	a⁻ [↑⁰0 - 1]
+	a⁺ [↑⁰0 + 1]
+	a⁰ [↑⁰0]
 
 …*… mul
 

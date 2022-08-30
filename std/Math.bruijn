@@ -15,7 +15,7 @@ gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
 :test ((gcd (+3) (+8)) =? ((+1))) (true)
 
 # power function
-pow [(!!) (iterate ((*) 0) (+1))]
+pow […!!… (iterate (…*… 0) (+1))]
 
 …**… pow
 
