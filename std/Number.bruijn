@@ -70,6 +70,12 @@ down [~(0 z a⁻ a⁺ a⁰)]
 	a⁺ [0 [[↑⁺1 : 1]]]
 	a⁰ [0 [[↑⁰1 : 1]]]
 
+# infinity
+# WARNING: using this mostly results in undefined behavior! (TODO?)
+infty z [[[[[1 (4 1)]]]]]
+
+∞ infty
+
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
 
@@ -152,6 +158,7 @@ zero? [0 true [false] [false] i]
 :test (=?(+42)) (false)
 
 # converts the normal balanced ternary representation into abstract
+# infinity can't be abstracted in finite time
 # → the abstract representation is used in eq?/add/sub/mul
 abstract! [0 z a⁻ a⁺ a⁰]
 	z (+0)
@@ -166,9 +173,11 @@ abstract! [0 z a⁻ a⁺ a⁰]
 :test (→^(+3)) ([[[[0 [[[[1 [[[[3]]]]]]]]]]]])
 
 # converts the abstracted balanced ternary representation back to normal
-# using ω to solve recursion
-normal! ω rec
-	rec [[0 (+0) [↑⁻([3 3 0] 0)] [↑⁺([3 3 0] 0)] [↑⁰([3 3 0] 0)]]]
+normal! ω [[0 z a⁻ a⁺ a⁰]]
+	z (+0)
+	a⁻ [↑⁻([3 3 0] 0)]
+	a⁺ [↑⁺([3 3 0] 0)]
+	a⁰ [↑⁰([3 3 0] 0)]
 
 →_‣ normal!
 
@@ -188,7 +197,7 @@ eq? [[abs 1 →^0]]
 
 …=?… eq?
 
-…/=?… not! .. eq?
+…/=?… not! ∘∘ eq?
 
 :test ((-42) =? (-42)) (true)
 :test ((-1) =? (-1)) (true)
@@ -216,7 +225,7 @@ inc [~(0 z a⁻ a⁺ a⁰)]
 ++‣ inc
 
 # adds (+1) to a balanced ternary number and strips leading 0s
-ssinc strip . inc
+ssinc strip ∘ inc
 
 :test ((++(-42)) =? (-41)) (true)
 :test ((++(-1)) =? (+0)) (true)
@@ -234,7 +243,7 @@ dec [~(0 z a⁻ a⁺ a⁰)]
 --‣ dec
 
 # subs (+1) from a balanced ternary number and strips leading 0s
-sdec strip . dec
+sdec strip ∘ dec
 
 :test ((--(-42)) =? (-43)) (true)
 :test ((--(+0)) =? (-1)) (true)
@@ -243,7 +252,7 @@ sdec strip . dec
 :test ((--(+42)) =? (+41)) (true)
 
 # adds two balanced ternary numbers (can introduce leading 0s)
-# larger numbers should be second argument (performance)
+# second argument gets abstracted (performance)
 add [[abs 1 →^0]]
 	abs [c (0 z a⁻ a⁺ a⁰)]
 		b⁻ [1 ↑⁺(3 0 t⁻) ↑⁰(3 0 t⁰) ↑⁻(3 0 t⁰)]
@@ -260,7 +269,7 @@ add [[abs 1 →^0]]
 …+… add
 
 # adds two balanced ternary numbers and strips leading 0s
-sadd strip .. add
+sadd strip ∘∘ add
 
 :test (((-42) + (-1)) =? (-43)) (true)
 :test (((-5) + (+6)) =? (+1)) (true)
@@ -270,13 +279,13 @@ sadd strip .. add
 :test (((+42) + (+1)) =? (+43)) (true)
 
 # subs two balanced ternary numbers (can introduce leading 0s)
-# larger numbers should be second argument (performance)
+# second argument gets abstracted (performance)
 sub [[1 + -0]]
 
 …-… sub
 
 # subs two balanced ternary numbers and strips leading 0s
-ssub strip .. sub
+ssub strip ∘∘ sub
 
 :test (((-42) - (-1)) =? (-41)) (true)
 :test (((-5) - (+6)) =? (-11)) (true)
@@ -284,6 +293,21 @@ ssub strip .. sub
 :test (((+0) - (+0)) =? (+0)) (true)
 :test (((+1) - (+2)) =? (-1)) (true)
 :test (((+42) - (+1)) =? (+41)) (true)
+
+# muls two balanced ternary numbers (can introduce leading 0s)
+mul [[1 (+0) a⁻ a⁺ a⁰]]
+	a⁻ [↑⁰0 - 1]
+	a⁺ [↑⁰0 + 1]
+	a⁰ [↑⁰0]
+
+…*… mul
+
+smul strip ∘∘ mul
+
+:test (((+42) * (+0)) =? (+0)) (true)
+:test (((-1) * (+42)) =? (-42)) (true)
+:test (((+3) * (+11)) =? (+33)) (true)
+:test (((+42) * (-4)) =? (-168)) (true)
 
 # returns true if number is greater than other number
 # larger numbers should be second argument (performance)
@@ -330,18 +354,3 @@ max [[(1 ≤? 0) 0 1]]
 
 # returns min number of two
 min [[(1 ≤? 0) 1 0]]
-
-# muls two balanced ternary numbers (can introduce leading 0s)
-mul [[1 (+0) a⁻ a⁺ a⁰]]
-	a⁻ [↑⁰0 - 1]
-	a⁺ [↑⁰0 + 1]
-	a⁰ [↑⁰0]
-
-…*… mul
-
-smul strip .. mul
-
-:test (((+42) * (+0)) =? (+0)) (true)
-:test (((-1) * (+42)) =? (-42)) (true)
-:test (((+3) * (+11)) =? (+33)) (true)
-:test (((+42) * (-4)) =? (-168)) (true)

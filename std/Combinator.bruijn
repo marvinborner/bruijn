@@ -7,20 +7,20 @@ a [[1 0]]
 
 …$… a
 
-# bluebird combinator: function composition: (f . g) x = f (g x)
+# bluebird combinator: function composition: (f ∘ g) x = f (g x)
 b [[[2 (1 0)]]]
 
-….… b
+…∘… b
 
-# blackbird combinator: 2x function composition: (f .. g) x y = f (g x y)
+# blackbird combinator: 2x function composition: (f ∘∘ g) x y = f (g x y)
 b' [[[[3 (2 1 0)]]]]
 
-…..… b'
+…∘∘… b'
 
-# bunting combinator: 3x function composition: (f ... g) x y z = f (g x y z)
+# bunting combinator: 3x function composition: (f ∘∘∘ g) x y z = f (g x y z)
 b'' [[[[[4 (3 2 1 0)]]]]]
 
-…...… b''
+…∘∘∘… b''
 
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]]

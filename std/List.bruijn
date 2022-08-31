@@ -68,8 +68,8 @@ foldl z [[[[rec]]]]
 		case-fold 3 2 (2 1 ^0) ~0
 		case-end 1
 
-:test ((foldl add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
-:test ((foldl sub (+6) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
+:test ((foldl …+… (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldl …-… (+6) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
 
 # foldl without starting value
 foldl1 [[foldl 1 ^0 ~0]]
@@ -80,8 +80,8 @@ foldr [[[z [[rec]] 0]]]
 		case-fold 4 ^0 (1 ~0)
 		case-end 3
 
-:test ((foldr add (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
-:test ((foldr sub (+2) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
+:test ((foldr …+… (+0) ((+1) : ((+2) : ((+3) : empty)))) =? (+6)) (true)
+:test ((foldr …-… (+2) ((+1) : ((+2) : ((+3) : empty)))) =? (+0)) (true)
 
 # foldr without starting value
 foldr1 [[foldl 1 ^0 ~0]]
@@ -104,30 +104,6 @@ land? foldr and? true
 :test (⋀?(true : (false : empty))) (false)
 :test (⋀?(false : (false : empty))) (false)
 
-# multiplies all values in list
-product foldl mul (+1)
-
-Π product
-
-:test (Π ((+1) : ((+2) : ((+3) : empty)))) ((+6))
-
-# adds all values in list
-sum foldl add (+0)
-
-Σ sum
-
-:test (Σ ((+1) : ((+2) : ((+3) : empty)))) ((+6))
-
-# returns max value of list
-lmax foldl1 max
-
-:test (lmax ((+1) : ((+3) : ((+2) : empty)))) ((+3))
-
-# returns min value of list
-lmin foldl1 min
-
-:test (lmin ((+2) : ((+1) : ((+0) : empty)))) ((+0))
-
 # reverses a list
 reverse foldl \cons empty
 
@@ -138,6 +114,13 @@ reverse foldl \cons empty
 # creates list out of n terms
 # TODO: fix for balanced ternary
 list [0 [[[2 (0 : 1)]]] reverse empty]
+
+# creates list with single element
+singleton [0 : empty]
+
+{…} singleton
+
+:test ({ (+1) }) ((+1) : empty)
 
 # appends two lists
 append z [[[rec]]]
@@ -150,7 +133,7 @@ append z [[[rec]]]
 :test (((+1) : ((+2) : ((+3) : empty))) ++ ((+4) : empty)) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
 
 # appends an element to a list
-snoc [[1 ++ (0 : empty)]]
+snoc [[1 ++ ({ 0 })]]
 
 …;… snoc
 
@@ -165,7 +148,7 @@ map z [[[rec]]]
 
 …<$>… map
 
-:test (inc <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
+:test (++‣ <$> ((+1) : ((+2) : ((+3) : empty)))) ((+2) : ((+3) : ((+4) : empty)))
 
 # filters a list based on a predicate
 filter z [[[rec]]]
@@ -204,7 +187,7 @@ concat foldr append empty
 :test (concat ("a" : ("b" : empty))) ("ab")
 
 # maps a function returning list of list and concatenates
-concat-map [foldr (append . 0) empty]
+concat-map concat ∘∘ map
 
 :test (concat-map [-0 : (0 : empty)] ((+1) : ((+2) : empty))) ((-1) : ((+1) : ((-2) : ((+2) : empty))))
 
@@ -222,7 +205,17 @@ zip-with z [[[[rec]]]]
 		case-zip <>?0 empty ((2 ^1 ^0) : (3 2 ~1 ~0))
 		case-end empty
 
-:test (zip-with add ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((+3) : ((+3) : empty))
+:test (zip-with …+… ((+1) : ((+2) : empty)) ((+2) : ((+1) : empty))) ((+3) : ((+3) : empty))
+
+# list comprehension
+{…|…} map
+
+:test ({ ++‣ | ((+0) : ((+2) : empty)) }) ((+1) : ((+3) : empty))
+
+# doubled list comprehension
+{…|…,…} zip-with
+
+:test ({ …+… | ((+0) : ((+2) : empty)) , ((+1) : ((+3) : empty)) }) ((+1) : ((+5) : empty))
 
 # returns first n elements of a list
 take z [[[rec]]]
@@ -266,30 +259,30 @@ span z [[[rec]]]
 :test (span (\les? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
 # same as span but with inverted predicate
-break [span (not! . 0)]
+break span ∘ (…∘… ¬‣)
 
 :test (break (\gre? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
 # returns true if any element in a list matches a predicate
-any? [⋁?‣ . (map 0)]
+any? ⋁?‣ ∘∘ map
 
 :test (any? (\gre? (+2)) ((+1) : ((+2) : ((+3) : empty)))) (true)
 :test (any? (\gre? (+2)) ((+1) : ((+2) : ((+2) : empty)))) (false)
 
 # returns true if all elements in a list match a predicate
-all? [⋀?‣ . (map 0)]
+all? ⋀?‣ ∘∘ map
 
 :test (all? (\gre? (+2)) ((+3) : ((+4) : ((+5) : empty)))) (true)
 :test (all? (\gre? (+2)) ((+4) : ((+3) : ((+2) : empty)))) (false)
 
 # returns true if element is part of a list based on eq predicate
-in? [[any? (\1 0)]]
+in? …∘… any?
 
 :test (in? …=?… (+3) ((+1) : ((+2) : ((+3) : empty)))) (true)
 :test (in? …=?… (+0) ((+1) : ((+2) : ((+3) : empty)))) (false)
 
 # returns true if all elements of one list are equal to corresponding elements of other list
-eq? ⋀?‣ ... zip-with
+eq? ⋀?‣ ∘∘∘ zip-with
 
 :test (eq? …=?… ((+1) : ((+2) : empty)) ((+1) : ((+2) : empty))) (true)
 :test (eq? …=?… ((+1) : ((+2) : empty)) ((+2) : ((+2) : empty))) (false)
@@ -333,7 +326,7 @@ cycle z [[rec]]
 iterate z [[[rec]]]
 	rec 0 : (2 1 (1 0))
 
-:test (take (+5) (iterate inc (+0))) (((+0) : ((+1) : ((+2) : ((+3) : ((+4) : empty))))))
+:test (take (+5) (iterate ++‣ (+0))) (((+0) : ((+1) : ((+2) : ((+3) : ((+4) : empty))))))
 :test (take (+2) (iterate sdec (+5))) (((+5) : ((+4) : empty)))
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
-:test (take (+0) (iterate inc (+0))) (empty)
+:test (take (+0) (iterate ++‣ (+0))) (empty)

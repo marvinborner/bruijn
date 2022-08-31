@@ -4,6 +4,54 @@
 
 :input std/Number .
 
+# adds all values in list
+sum foldl add (+0)
+
+∑‣ sum
+
+:test (∑((+1) : ((+2) : ((+3) : empty)))) ((+6))
+
+# returns max value of list
+lmax foldl1 max
+
+:test (lmax ((+1) : ((+3) : ((+2) : empty)))) ((+3))
+
+# returns min value of list
+lmin foldl1 min
+
+:test (lmin ((+2) : ((+1) : ((+0) : empty)))) ((+0))
+
+# list from num to num
+{…→…} z [[[rec]]]
+	rec (1 =? ++0) case-end case-list
+		case-list 1 : (2 ++1 0)
+		case-end empty
+
+:test ({ (+0) → (+2) }) ((+0) : ((+1) : ((+2) : empty)))
+
+# equivalent of mathematical sum function
+∑…→…|… z [[[[[rec]]]]] (+0)
+	rec (2 =? ++1) case-end case-sum
+		case-sum 4 (3 + (0 2)) ++2 1 0
+		case-end 3
+
+:test (∑ (+1) → (+3) | ++‣) ((+9))
+
+# multiplies all values in list
+product foldl mul (+1)
+
+Π product
+
+:test (Π ((+1) : ((+2) : ((+3) : empty)))) ((+6))
+
+# equivalent of mathematical product function
+∏…→…|… z [[[[[rec]]]]] (+1)
+	rec (2 =? ++1) case-end case-sum
+		case-sum 4 (3 * (0 2)) ++2 1 0
+		case-end 3
+
+:test (∏ (+1) → (+3) | ++‣) ((+24))
+
 # greatest common divisor
 gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
 	case-eq 1
@@ -22,13 +70,13 @@ pow […!!… (iterate (…*… 0) (+1))]
 :test (((+2) ** (+3)) =? ((+8))) (true)
 
 # factorial function
-# fac Z [[(0 <? (+2)) (+1) (0 * (1 --0))]]
-fac [Π (take 0 (iterate ++‣ (+1)))]
+# TODO: faster fac?
+fac [∏ (+1) → 0 | i]
 
 :test ((fac (+3)) =? (+6)) (true)
 
 # fibonacci sequence
-# fibs Z [(+1) : ((+1) : (zip-with (+) 0 ~0))]
+# TODO: faster fib?
 fibs fst <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1)))
 
 fib [fibs !! ++0]
