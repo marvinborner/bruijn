@@ -6,10 +6,10 @@ priority 0
 # === Definition snippets === 
 
 snippet "(.+)>" "" r
-`!p snip.rv = match.group(1)`‣ $0
+`!p snip.rv = match.group(1)`‣$0
 endsnippet
 
-snippet "(.*)\." "" r
+snippet "(.*)\?" "" r
 `!p snip.rv = match.group(1)`…$0
 endsnippet
 
@@ -21,6 +21,34 @@ endsnippet
 
 snippet "(.*)\|\|" "" r
 `!p snip.rv = match.group(1)`⋁$0
+endsnippet
+
+snippet "(.*)sum" "" r
+`!p snip.rv = match.group(1)`∑$0
+endsnippet
+
+snippet "(.*)prod" "" r
+`!p snip.rv = match.group(1)`∏$0
+endsnippet
+
+snippet "(.*)rprod" "" r
+`!p snip.rv = match.group(1)`∐$0
+endsnippet
+
+snippet "(.*)infty" "" r
+`!p snip.rv = match.group(1)`∞$0
+endsnippet
+
+snippet "(.*)\." "" r
+`!p snip.rv = match.group(1)`∘$0
+endsnippet
+
+snippet "(.*)\*" "" r
+`!p snip.rv = match.group(1)`⋅$0
+endsnippet
+
+snippet "(.*)\*\*" "" r
+`!p snip.rv = match.group(1)`⋆$0
 endsnippet
 
 snippet "(.*)=>" "" r
@@ -37,6 +65,30 @@ endsnippet
 
 snippet "(.*)<->" "" r
 `!p snip.rv = match.group(1)`↔$0
+endsnippet
+
+snippet "(.*)-\^" "" r
+`!p snip.rv = match.group(1)`↑$0
+endsnippet
+
+snippet "(.*)::" "" r
+`!p snip.rv = match.group(1)`∷$0
+endsnippet
+
+snippet "(.*)bra" "" r
+`!p snip.rv = match.group(1)`⟨$0
+endsnippet
+
+snippet "(.*)ket" "" r
+`!p snip.rv = match.group(1)`⟩$0
+endsnippet
+
+snippet "(.*)bbra" "" r
+`!p snip.rv = match.group(1)`⟪$0
+endsnippet
+
+snippet "(.*)kket" "" r
+`!p snip.rv = match.group(1)`⟫$0
 endsnippet
 
 snippet "(.*)<=" "" r
@@ -151,7 +203,7 @@ snippet "(.*)\^9" "" r
 `!p snip.rv = match.group(1)`⁹$0
 endsnippet
 
-snippet "(.*)\^+" "" r
+snippet "(.*)\^\+" "" r
 `!p snip.rv = match.group(1)`⁺$0
 endsnippet
 

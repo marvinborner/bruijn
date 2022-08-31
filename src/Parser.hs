@@ -27,9 +27,13 @@ emoticon = satisfy isEmoticon
   where isEmoticon c = ('\128512' <= c && c <= '\128591')
 
 mathematicalOperator :: Parser Char
-mathematicalOperator = satisfy isMathematicalUnicodeBlock
-  <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
-  where isMathematicalUnicodeBlock c = ('∀' <= c && c <= '⋿')
+mathematicalOperator =
+  satisfy isMathematicalUnicodeBlock
+    <|> satisfy isMiscMathematicalAUnicodeBlock
+    <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
+ where
+  isMathematicalUnicodeBlock c = ('∀' <= c && c <= '⋿')
+  isMiscMathematicalAUnicodeBlock c = ('⟀' <= c && c <= '⟯')
 
 mathematicalArrow :: Parser Char
 mathematicalArrow = satisfy isMathematicalOperator
