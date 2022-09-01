@@ -107,11 +107,15 @@ lst [0 t⁰ [t⁻] [t⁺] [t⁰]]
 :test (lst (+42)) (t⁰)
 
 # extracts most significant trit from balanced ternary numbers
-# TODO: Find a more elegant way to do this (and resolve list import loop?)
+# TODO: Find a more elegant/fast way to do this (and resolve list import loop?)
+# mst z [[[rec]]] (+0)
+# 	rec =?0 case-end case-mst
+# 		case-mst 2 0 /³0
+# 		case-end lst 1
 mst [fix (last (list! %0))]
-	last z [[<>?0 [false] [<>?(~1) ^1 (2 ~1)] i]]
+	last z [[<>?0 [false] (<>?(~0) ^0 (1 ~0))]]
 		<>?‣ [0 [[[false]]] true]
-	fix [((t⁻? 0) ⋁? ((t⁺? 0) ⋁? (t⁰? 0))) 0 t⁰]
+	fix [((t⁻? 0) ⋁? (t⁺? 0) ⋁? (t⁰? 0)) 0 t⁰]
 
 :test (mst (-1)) (t⁻)
 :test (mst (+0)) (t⁰)
@@ -327,6 +331,15 @@ geq? \leq?
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
 
+# negates a balanced ternary number if <0
+abs [<?0 -0 0]
+
+|‣ abs
+
+:test (|(+0)) ((+0))
+:test (|(-1)) ((+1))
+:test (|(+42)) ((+42))
+
 # muls two balanced ternary numbers (can introduce leading 0s)
 mul [[1 z a⁻ a⁺ a⁰]]
 	z (+0)
@@ -368,24 +381,50 @@ div² [z [[[[rec]]]] (+0) 0 0]
 :test (/²(-6)) ((-3))
 :test (/²(+5)) ((+2))
 
-remquo [[z [[[[[[rec]]]]]] (+0) ((+1) : 1) (<?0 (-1) (+1)) 1 (<?0 -0 0)]]
-	rec (4 =? (+2)) case-end case-div
-		case-div 5 ++4 (comp (↑⁰(^3) : ↑⁰(~3))) 2 1 0
-			comp [>?(^0) case-gre (<?(^0) case-les 0)]
-				case-gre huh (^0 - 1)
-					huh [((-0 <? ^1) ⋁? ((-0 =? ^1) ⋀? >?(~1))) (0 : (~1 + 4)) 1]
-				case-les huh (^0 + 1)
-					huh [((-0 >? ^1) ⋁? ((-0 =? ^1) ⋀? <?(~1))) (0 : (~1 - 4)) 1]
+# manually counts how many times a balanced ternary number fits into another one
+# TODO: quadratic approximation?
+# TODO: fix for negative numbers
+brute-div \[z [[[[[rec]]]]] (+0) 0 0]
+	rec (2 >? 0) case-end case-count
+		case-count 4 ++3 (2 + 1) 1 0
 		case-end 3
 
-mod ^‣ ∘∘ remquo
+…/!… brute-div
 
-…%… mod
+:test ((+4) /! (+2)) ((+2))
+:test ((+4) /! (+4)) ((+1))
+:test ((+4) /! (+5)) ((+0))
+
+# TODO: fix for negative numbers
+brute-mod \[z [[[[[rec]]]]] (+0) 0 0]
+	rec (2 >? 0) case-end case-count
+		case-count 4 ++3 (2 + 1) 1 0
+		case-end 0 - (3 * 1)
+
+…%!… brute-mod
+
+# finds quotient and remainder using long division
+# WARNING: don't use; incorrect and slow
+quot-rem [[z [[[[rec]]]] ((+1) : (+0)) 1 0]]
+	rec (1 =? 0) case-eq ((1 <? 0) case-les case-div)
+		case-div calc (z [[[align]]] ^2 0)
+			align (0 ≤? 4) (1 : 0) (2 ↑⁰1 ↑⁰0)
+			calc [final (4 (^0 : ~3) (2 - ~0) 1)]
+				final [(^4 + ^0) : (~4 + ~0)]
+		case-eq (+0) : (+1)
+		case-les (+1) : 1
 
 # divs two balanced ternary numbers
-div ~‣ ∘∘ remquo
+# WARNING: don't use; incorrect and slow
+div ^‣ ∘∘ quot-rem
 
 …/… div
+
+# returns remainder of integer division
+# WARNING: don't use; incorrect and slow
+mod ~‣ ∘∘ quot-rem
+
+…%… mod
 
 # returns max number of two
 max [[(1 ≤? 0) 0 1]]
