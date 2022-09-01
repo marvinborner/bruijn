@@ -1,7 +1,7 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # This file defines the most basic mathematical operations
 # → refer to std/Math for more advanced functions
-# Heavily inspired by the works of T.Æ. Mogensen (see refs in README)
+# Heavily inspired by the works of T.Æ. Mogensen and Douglas W. Jones (see refs in README)
 
 :import std/Combinator .
 :import std/Pair .
@@ -63,18 +63,9 @@ up [[[[[[5 2 1 0 (4 3 2 1 0)]]]]]]
 :test (up t⁺ (+42)) (↑⁺(+42))
 :test (up t⁰ (+42)) (↑⁰(+42))
 
-# shifts the least significant trit out - basically div by 3
-down [~(0 z a⁻ a⁺ a⁰)]
-	z (+0) : (+0)
-	a⁻ [0 [[↑⁻1 : 1]]]
-	a⁺ [0 [[↑⁺1 : 1]]]
-	a⁰ [0 [[↑⁰1 : 1]]]
-
 # infinity
 # WARNING: using this mostly results in undefined behavior! (TODO?)
 infty z [[[[[1 (4 1)]]]]]
-
-∞ infty
 
 # negates a balanced ternary number
 negate [[[[[4 3 1 2 0]]]]]
@@ -197,7 +188,9 @@ eq? [[abs 1 →^0]]
 
 …=?… eq?
 
-…/=?… not! ∘∘ eq?
+neq? not! ∘∘ eq?
+
+…/=?… neq?
 
 :test ((-42) =? (-42)) (true)
 :test ((-1) =? (-1)) (true)
@@ -294,21 +287,6 @@ ssub strip ∘∘ sub
 :test (((+1) - (+2)) =? (-1)) (true)
 :test (((+42) - (+1)) =? (+41)) (true)
 
-# muls two balanced ternary numbers (can introduce leading 0s)
-mul [[1 (+0) a⁻ a⁺ a⁰]]
-	a⁻ [↑⁰0 - 1]
-	a⁺ [↑⁰0 + 1]
-	a⁰ [↑⁰0]
-
-…*… mul
-
-smul strip ∘∘ mul
-
-:test (((+42) * (+0)) =? (+0)) (true)
-:test (((-1) * (+42)) =? (-42)) (true)
-:test (((+3) * (+11)) =? (+33)) (true)
-:test (((+42) * (-4)) =? (-168)) (true)
-
 # returns true if number is greater than other number
 # larger numbers should be second argument (performance)
 gre? [[>?(1 - 0)]]
@@ -348,6 +326,66 @@ geq? \leq?
 :test ((+1) ≥? (+2)) (false)
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
+
+# muls two balanced ternary numbers (can introduce leading 0s)
+mul [[1 z a⁻ a⁺ a⁰]]
+	z (+0)
+	a⁻ [↑⁰0 - 1]
+	a⁺ [↑⁰0 + 1]
+	a⁰ [↑⁰0]
+
+…*… mul
+
+smul strip ∘∘ mul
+
+:test (((+42) * (+0)) =? (+0)) (true)
+:test (((-1) * (+42)) =? (-42)) (true)
+:test (((+3) * (+11)) =? (+33)) (true)
+:test (((+42) * (-4)) =? (-168)) (true)
+
+# divs a balanced ternary number by three (rshifts least significant trit)
+div³ [~(0 z a⁻ a⁺ a⁰)]
+	z (+0) : (+0)
+	a⁻ [0 [[↑⁻1 : 1]]]
+	a⁺ [0 [[↑⁺1 : 1]]]
+	a⁰ [0 [[↑⁰1 : 1]]]
+
+/³‣ div³
+
+:test (/³(+6)) ((+2))
+:test (/³(-6)) ((-2))
+:test (/³(+5)) ((+2))
+
+# divs a balanced ternary number by two (essentially binary >>1)
+div² [z [[[[rec]]]] (+0) 0 0]
+	rec =?1 case-end case-div
+		case-div 3 /³(2 + 0) /³1 0
+		case-end 2
+
+/²‣ div²
+
+:test (/²(+6)) ((+3))
+:test (/²(-6)) ((-3))
+:test (/²(+5)) ((+2))
+
+remquo [[z [[[[[[rec]]]]]] (+0) ((+1) : 1) (<?0 (-1) (+1)) 1 (<?0 -0 0)]]
+	rec (4 =? (+2)) case-end case-div
+		case-div 5 ++4 (comp (↑⁰(^3) : ↑⁰(~3))) 2 1 0
+			comp [>?(^0) case-gre (<?(^0) case-les 0)]
+				case-gre huh (^0 - 1)
+					huh [((-0 <? ^1) ⋁? ((-0 =? ^1) ⋀? >?(~1))) (0 : (~1 + 4)) 1]
+				case-les huh (^0 + 1)
+					huh [((-0 >? ^1) ⋁? ((-0 =? ^1) ⋀? <?(~1))) (0 : (~1 - 4)) 1]
+		case-end 3
+
+mod ^‣ ∘∘ remquo
+
+…%… mod
+
+# divs two balanced ternary numbers
+div ~‣ ∘∘ remquo
+
+…/… div
 
 # returns max number of two
 max [[(1 ≤? 0) 0 1]]
