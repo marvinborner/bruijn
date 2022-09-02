@@ -161,10 +161,13 @@ filter z [[[rec]]]
 :test (((+1) : ((+0) : ((+3) : empty))) <#> zero?) ((+0) : empty)
 
 # returns the last element of a list
-last z [[rec]]
-	rec <>?0 case-end case-last
-		case-last <>?(~0) ^0 (1 ~0)
-		case-end empty
+# - slow algorithm:
+#   last z [[rec]]
+#   	rec <>?0 case-end case-last
+#   		case-last <>?(~0) ^0 (1 ~0)
+#   		case-end empty
+# - taking the first element of the reversed list is actually way faster because laziness
+last ^‣ ∘ <~>‣
 
 _‣ last
 

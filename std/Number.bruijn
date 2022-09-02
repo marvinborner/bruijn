@@ -106,16 +106,23 @@ lst [0 t⁰ [t⁻] [t⁺] [t⁰]]
 :test (lst (+1)) (t⁺)
 :test (lst (+42)) (t⁰)
 
+# checks true if balanced ternary number is zero
+zero? [0 true [false] [false] i]
+
+=?‣ zero?
+
+:test (=?(+0)) (true)
+:test (=?(-1)) (false)
+:test (=?(+1)) (false)
+:test (=?(+42)) (false)
+
 # extracts most significant trit from balanced ternary numbers
-# TODO: Find a more elegant/fast way to do this (and resolve list import loop?)
-# mst z [[[rec]]] (+0)
-# 	rec =?0 case-end case-mst
-# 		case-mst 2 0 /³0
-# 		case-end lst 1
-mst [fix (last (list! %0))]
-	last z [[<>?0 [false] (<>?(~0) ^0 (1 ~0))]]
+# <~>/<>? are hardcoded because list import would be recursive (TODO?)
+# while this looks incredibly inefficient it's actually fairly fast because laziness
+# TODO: find way of removing requirement of stripping first
+mst [=?0 t⁰ ^(<~>(list! %0))]
+	<~>‣ z [[[[<>?0 1 (3 2 (2 1 ^0) ~0)]]]] f false
 		<>?‣ [0 [[[false]]] true]
-	fix [((t⁻? 0) ⋁? (t⁺? 0) ⋁? (t⁰? 0)) 0 t⁰]
 
 :test (mst (-1)) (t⁻)
 :test (mst (+0)) (t⁰)
@@ -141,16 +148,6 @@ positive? [t⁺? (mst 0)]
 :test (>?(-1)) (false)
 :test (>?(+1)) (true)
 :test (>?(+42)) (true)
-
-# checks true if balanced ternary number is zero
-zero? [0 true [false] [false] i]
-
-=?‣ zero?
-
-:test (=?(+0)) (true)
-:test (=?(-1)) (false)
-:test (=?(+1)) (false)
-:test (=?(+42)) (false)
 
 # converts the normal balanced ternary representation into abstract
 # infinity can't be abstracted in finite time
