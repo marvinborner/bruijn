@@ -85,6 +85,12 @@ identifier =
 namespace :: Parser String
 namespace = (:) <$> upperChar <*> many letterChar <?> "namespace"
 
+typeIdentifier :: Parser String
+typeIdentifier = (:) <$> upperChar <*> many letterChar <?> "type"
+
+polymorphicTypeIdentifier :: Parser String
+polymorphicTypeIdentifier = many lowerChar <?> "polymorphic type"
+
 dottedNamespace :: Parser String
 dottedNamespace = (\n d -> n ++ [d]) <$> namespace <*> char '.'
 
@@ -148,7 +154,7 @@ parseFunction = do
 
 parseMixfix :: Parser Expression
 parseMixfix = do
-  s <- sepBy1
+  s <- sepEndBy1
     (   try prefixAsMixfix
     <|> try prefixOperatorAsMixfix
     <|> try operatorAsMixfix
@@ -191,46 +197,83 @@ parseEvaluate = do
   e   <- parseExpression
   pure $ ContextualInstruction (Evaluate e) inp
 
+parseFunctionType :: Parser Type
+parseFunctionType =
+  (FunctionType <$> sepBy1 parseTypeSingleton (sc *> char '→' <* sc))
+    <?> "function type"
+
+parseConstructorType :: Parser Type
+parseConstructorType = do
+  i <- typeIdentifier
+  sc
+  is <- sepBy1 parseTypeSingleton sc
+  (pure $ ConstructorType i is) <?> "constructor type"
+
+parseTypeIdentifier :: Parser Type
+parseTypeIdentifier = NormalType <$> typeIdentifier <?> "type identifier"
+
+parsePolymorphicTypeIdentifier :: Parser Type
+parsePolymorphicTypeIdentifier =
+  PolymorphicType
+    <$> polymorphicTypeIdentifier
+    <?> "polymorphic type identifier"
+
+parseTypeSingleton :: Parser Type
+parseTypeSingleton =
+  try (parens parseFunctionType)
+    <|> try (parens parseConstructorType)
+    <|> try parseTypeIdentifier
+    <|> try parsePolymorphicTypeIdentifier
+
+parseTypeExpression :: Parser Type
+parseTypeExpression = parseFunctionType <?> "type expression"
+
+parseDefineType :: Parser Type
+parseDefineType = do
+  (try $ char '⧗' <* sc *> parseTypeExpression) <|> (return AnyType)
+
 parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
   inp <- getInput
   var <- defIdentifier
   sc
   e    <- parseExpression
+  t    <- parseDefineType
   subs <-
     (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
-  pure $ ContextualInstruction (Define var e subs) inp
+  pure $ ContextualInstruction (Define var e t subs) inp
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
   inp <- getInput
   var <- defIdentifier
-  _   <- string " = "
+  _   <- sc *> char '=' <* sc
   e   <- parseExpression
-  pure $ ContextualInstruction (Define var e []) inp
+  t   <- parseDefineType
+  pure $ ContextualInstruction (Define var e t []) inp
 
 parseComment :: Parser ()
 parseComment = do
-  _ <- string "# " <?> "comment"
+  _ <- char '#' <* sc <?> "comment"
   _ <- some $ noneOf "\r\n"
   return ()
 
 parseImport :: Parser Command
 parseImport = do
-  _    <- string ":import " <?> "import instruction"
+  _    <- string ":import" <* sc <?> "import instruction"
   path <- importPath
   ns   <- (try $ (sc *> (namespace <|> string "."))) <|> (eof >> return "")
   pure (Import (path ++ ".bruijn") ns)
 
 parseInput :: Parser Command
 parseInput = do
-  _    <- string ":input " <?> "input instruction"
+  _    <- string ":input" <* sc <?> "input instruction"
   path <- importPath
   pure (Input $ path ++ ".bruijn")
 
 parseTest :: Parser Command
 parseTest = do
-  _  <- string ":test " <?> "test"
+  _  <- string ":test" <* sc <?> "test"
   e1 <- (parens parseExpression <?> "first expression")
   sc
   e2 <- (parens parseExpression <?> "second expression")

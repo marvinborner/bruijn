@@ -30,7 +30,7 @@ printContext (Context inp path) = p $ lines inp
   inText     = "\ESC[104m\ESC[30min\ESC[0m "
   nearText   = "\ESC[105m\ESC[30mnear\ESC[0m\n"
   p []  = withinText <> show path <> "\n"
-  p [l] = inText <> show l <> "\n" <> withinText <> show path <> "\n"
+  p [l] = inText <> l <> "\n" <> withinText <> path <> "\n"
   p (l : ls) =
     (p [l])
       <> nearText
@@ -39,7 +39,7 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
-data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
+data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String | TypeError [Type]
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
   show (SuggestSolution err sol) =
@@ -68,6 +68,8 @@ instance Show Error where
       <> " = "
       <> show red2
   show (ImportError path) = errPrefix <> "invalid import " <> show path
+  show (TypeError ts) =
+    errPrefix <> "couldn't match types " <> intercalate " and " (map show ts)
 type Failable = Either Error
 
 -- Modified from megaparsec's errorBundlePretty
@@ -126,7 +128,7 @@ instance Show Mixfix where
   show (MixfixOperator   i) = show i
   show (MixfixExpression e) = show e
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
-data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
+data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression | TypedExpression Type Expression
   deriving (Ord, Eq)
 instance Show Expression where
   show (Bruijn      x    ) = "\ESC[91m" <> show x <> "\ESC[0m"
@@ -136,10 +138,25 @@ instance Show Expression where
     "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
   show (MixfixChain ms) =
     "\ESC[33m(\ESC[0m" <> (intercalate " " $ map show ms) <> "\ESC[33m)\ESC[0m"
-  show (Prefix p e) = show p <> " " <> show e
+  show (Prefix          p e) = show p <> " " <> show e
+  show (TypedExpression t e) = show e <> " ⧗ " <> show t
 data Command = Input String | Import String String | Test Expression Expression
   deriving (Show)
-data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
+data Type = AnyType | PolymorphicType String | NormalType String | ConstructorType String [Type] | FunctionType [Type]
+  deriving (Ord, Eq)
+instance Show Type where
+  show AnyType             = "\ESC[33mAny\ESC[0m"
+  show (PolymorphicType n) = "\ESC[36m" <> n <> "\ESC[0m"
+  show (NormalType      n) = "\ESC[95m" <> n <> "\ESC[0m"
+  show (ConstructorType n ts) =
+    "("
+      <> "\ESC[95m"
+      <> n
+      <> "\ESC[0m"
+      <> (intercalate " " (map show ts))
+      <> ")"
+  show (FunctionType ts) = "(" <> (intercalate " → " (map show ts)) <> ")"
+data Instruction = Define Identifier Expression Type [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)
 
 data EvalConf = EvalConf
@@ -154,6 +171,7 @@ data ExpFlags = ExpFlags
   deriving Show
 data EnvDef = EnvDef
   { _exp   :: Expression
+  , _type  :: Type
   , _sub   :: Environment
   , _flags :: ExpFlags
   }
