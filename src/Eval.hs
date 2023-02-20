@@ -23,8 +23,6 @@ import           System.FilePath.Posix          ( takeBaseName )
 import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
-import           Typer
-
 data EnvState = EnvState
   { _env   :: Environment
   , _conf  :: EvalConf
@@ -67,8 +65,8 @@ loadFile path conf cache = do
 evalFun :: Identifier -> Environment -> EvalState (Failable Expression)
 evalFun fun (Environment sub) = state $ \env@(Environment e) ->
   let lookup' env' = case M.lookup fun env' of
-        Nothing                               -> Left $ UndefinedIdentifier fun
-        Just (EnvDef { _exp = x, _type = t }) -> Right $ TypedExpression t x
+        Nothing                    -> Left $ UndefinedIdentifier fun
+        Just (EnvDef { _exp = x }) -> Right x
       matching n
         | null e = "<no idea>"
         | otherwise = snd $ minimumBy (compare `on` fst) $ map
@@ -122,38 +120,27 @@ evalMixfix m sub = resolve (mixfixKind m) mixfixArgs
 
 evalPrefix
   :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
--- IDEA: typing and reduce if all arguments are fulfilled
--- evalPrefix (PrefixFunction "⊩") e sub = evalExp e sub >>= \case
---   Left  e' -> pure $ Left e'
---   Right e' -> pure $ Right $ reduce e'
--- evalPrefix p e sub = evalExp (Application (Function p) e) sub
 evalPrefix p e = evalExp $ Application (Function p) e
 
 evalExp :: Expression -> Environment -> EvalState (Failable Expression)
-evalExp idx@(Bruijn      _      ) = const $ pure $ Right idx
-evalExp (    Function    fun    ) = evalFun fun
-evalExp (    Abstraction e      ) = evalAbs e
-evalExp (    Application f g    ) = evalApp f g
-evalExp (    MixfixChain es     ) = evalMixfix es
-evalExp (    Prefix          p e) = evalPrefix p e
-evalExp (    TypedExpression t e) = error "invalid"
+evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
+evalExp (    Function    fun) = evalFun fun
+evalExp (    Abstraction e  ) = evalAbs e
+evalExp (    Application f g) = evalApp f g
+evalExp (    MixfixChain es ) = evalMixfix es
+evalExp (    Prefix p e     ) = evalPrefix p e
+evalExp _                     = error "invalid"
 
 evalDefinition
-  :: Identifier
-  -> Expression
-  -> Type
-  -> Environment
-  -> EvalState (Failable Expression)
-evalDefinition i e t sub = evalExp e sub >>= \case
-  Left  e' -> pure $ Left e'
-  Right f  -> case typeCheck f t of
-    err@(Left _) -> pure err
-    Right f' ->
-      modify
-          (\(Environment s) -> Environment
-            $ M.insert i (EnvDef f' t (Environment M.empty) defaultFlags) s
-          )
-        >> pure (Right f)
+  :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
+evalDefinition i e sub = evalExp e sub >>= \case
+  Left e' -> pure $ Left e'
+  Right f ->
+    modify
+        (\(Environment s) -> Environment
+          $ M.insert i (EnvDef f (Environment M.empty) defaultFlags) s
+        )
+      >> pure (Right f)
 
 evalTest
   :: Expression -> Expression -> Environment -> EvalState (Failable Command)
@@ -274,9 +261,9 @@ evalInstruction
   :: Instruction -> EnvState -> (EnvState -> IO EnvState) -> IO EnvState
 evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
   case instr of
-    Define i e t sub -> do
-      EnvState subEnv _ _ <- evalSubEnv sub s
-      (res, env') <- pure $ evalDefinition i e t subEnv `runState` env
+    Define i e sub -> do
+      EnvState subEnv _     _ <- evalSubEnv sub s
+      (        res    , env') <- pure $ evalDefinition i e subEnv `runState` env
       case res of
         Left err ->
           print (ContextualError err $ Context inp $ _nicePath conf) >> pure s -- don't continue

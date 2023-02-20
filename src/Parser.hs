@@ -197,40 +197,39 @@ parseEvaluate = do
   e   <- parseExpression
   pure $ ContextualInstruction (Evaluate e) inp
 
-parseFunctionType :: Parser Type
+parseFunctionType :: Parser ()
 parseFunctionType =
-  (FunctionType <$> sepBy1 parseTypeSingleton (sc *> char '→' <* sc))
+  sepBy1 parseTypeSingleton (sc *> char '→' <* sc)
+    >>  return ()
     <?> "function type"
 
-parseConstructorType :: Parser Type
+parseConstructorType :: Parser ()
 parseConstructorType = do
-  i <- typeIdentifier
+  _ <- typeIdentifier
   sc
-  is <- sepBy1 parseTypeSingleton sc
-  (pure $ ConstructorType i is) <?> "constructor type"
+  _ <- sepBy1 parseTypeSingleton sc
+  return () <?> "constructor type"
 
-parseTypeIdentifier :: Parser Type
-parseTypeIdentifier = NormalType <$> typeIdentifier <?> "type identifier"
+parseTypeIdentifier :: Parser ()
+parseTypeIdentifier = typeIdentifier >> return () <?> "type identifier"
 
-parsePolymorphicTypeIdentifier :: Parser Type
+parsePolymorphicTypeIdentifier :: Parser ()
 parsePolymorphicTypeIdentifier =
-  PolymorphicType
-    <$> polymorphicTypeIdentifier
-    <?> "polymorphic type identifier"
+  polymorphicTypeIdentifier >> return () <?> "polymorphic type identifier"
 
-parseTypeSingleton :: Parser Type
+parseTypeSingleton :: Parser ()
 parseTypeSingleton =
   try (parens parseFunctionType)
     <|> try (parens parseConstructorType)
     <|> try parseTypeIdentifier
     <|> try parsePolymorphicTypeIdentifier
 
-parseTypeExpression :: Parser Type
+parseTypeExpression :: Parser ()
 parseTypeExpression = parseFunctionType <?> "type expression"
 
-parseDefineType :: Parser Type
+parseDefineType :: Parser ()
 parseDefineType = do
-  (try $ char '⧗' <* sc *> parseTypeExpression) <|> (return AnyType)
+  (try $ char '⧗' <* sc *> parseTypeExpression) <|> (return ())
 
 parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
@@ -238,10 +237,10 @@ parseDefine lvl = do
   var <- defIdentifier
   sc
   e    <- parseExpression
-  t    <- parseDefineType
+  _    <- parseDefineType
   subs <-
     (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
-  pure $ ContextualInstruction (Define var e t subs) inp
+  pure $ ContextualInstruction (Define var e subs) inp
 
 parseReplDefine :: Parser Instruction
 parseReplDefine = do
@@ -250,7 +249,7 @@ parseReplDefine = do
   _   <- sc *> char '=' <* sc
   e   <- parseExpression
   t   <- parseDefineType
-  pure $ ContextualInstruction (Define var e t []) inp
+  pure $ ContextualInstruction (Define var e []) inp
 
 parseComment :: Parser ()
 parseComment = do
@@ -308,6 +307,7 @@ parseBlock lvl =
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine -- TODO: This is kinda hacky
-    <|> ((Commands . (: [])) <$> (try parseImport))
     <|> ((Commands . (: [])) <$> (try parseTest))
+    <|> ((Commands . (: [])) <$> (try parseInput))
+    <|> ((Commands . (: [])) <$> (try parseImport))
     <|> try parseEvaluate
