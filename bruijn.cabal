@@ -13,12 +13,12 @@ author:         Marvin Borner
 maintainer:     develop@marvinborner.de
 copyright:      2022 Marvin Borner
 license:        MIT
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
+    readme.md
 data-files:
     config
+    std/Binary.bruijn
     std/Byte.bruijn
     std/Church.bruijn
     std/Combinator.bruijn
@@ -62,6 +62,7 @@ library
     , haskeline
     , megaparsec
     , mtl
+    , random
   default-language: Haskell2010
 
 executable bruijn
@@ -86,6 +87,7 @@ executable bruijn
     , haskeline
     , megaparsec
     , mtl
+    , random
   default-language: Haskell2010
 
 test-suite bruijn-test
@@ -111,4 +113,5 @@ test-suite bruijn-test
     , haskeline
     , megaparsec
     , mtl
+    , random
   default-language: Haskell2010

@@ -7,7 +7,7 @@ maintainer:          "develop@marvinborner.de"
 copyright:           "2022 Marvin Borner"
 
 extra-source-files:
-- README.md
+- readme.md
 
 data-files:
 - config
@@ -26,9 +26,9 @@ default-extensions:
   - LambdaCase
 
 dependencies:
+- array
 - base >= 4.7 && < 5
 - binary
-- array
 - bitstring
 - bytestring
 - containers
@@ -37,6 +37,7 @@ dependencies:
 - haskeline
 - megaparsec
 - mtl
+- random
 
 library:
   source-dirs: src

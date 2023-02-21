@@ -1,3 +1,4 @@
+-- MIT License, Copyright (c) 2022 Marvin Borner
 module Parser
   ( parseBlock
   , parseReplLine
@@ -248,7 +249,7 @@ parseReplDefine = do
   var <- defIdentifier
   _   <- sc *> char '=' <* sc
   e   <- parseExpression
-  t   <- parseDefineType
+  _   <- parseDefineType
   pure $ ContextualInstruction (Define var e []) inp
 
 parseComment :: Parser ()

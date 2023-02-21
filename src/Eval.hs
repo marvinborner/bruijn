@@ -1,3 +1,4 @@
+-- MIT License, Copyright (c) 2022 Marvin Borner
 module Eval
   ( evalMain
   ) where
@@ -129,7 +130,6 @@ evalExp (    Abstraction e  ) = evalAbs e
 evalExp (    Application f g) = evalApp f g
 evalExp (    MixfixChain es ) = evalMixfix es
 evalExp (    Prefix p e     ) = evalPrefix p e
-evalExp _                     = error "invalid"
 
 evalDefinition
   :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
@@ -230,17 +230,15 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
   Test e1 e2
     | _evalTests conf
     -> let (res, _) = evalTest e1 e2 (Environment M.empty) `runState` env
-       in
-         case res of
-           Left err ->
-             print (ContextualError err $ Context inp $ _nicePath conf)
-               >> pure s
-           Right (Test e1' e2') ->
-             when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs) >> pure s
-            where
-             lhs = reduce e1'
-             rhs = reduce e2'
-           _ -> pure s
+       in  case res of
+             Left err ->
+               print (ContextualError err $ Context inp $ _nicePath conf)
+                 >> pure s
+             Right (Test e1' e2') -> do
+               lhs <- reduce e1'
+               rhs <- reduce e2'
+               when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs) >> pure s
+             _ -> pure s
     | otherwise
     -> pure s
 
@@ -274,10 +272,12 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
     Evaluate e ->
       let (res, _) = evalExp e (Environment M.empty) `runState` env
       in  (case res of
-            Left  err -> print err
-            Right e'  -> showResult e' (reduce e') env
+            Left  err -> print err >> rec s
+            Right e'  -> do
+              red <- reduce e'
+              showResult e' red env
+              rec s
           )
-            >> rec s
     Commands cs -> yeet (pure s) cs >>= rec
      where -- TODO: sus
       yeet s' []        = s'
@@ -322,8 +322,9 @@ evalFileConf path conf = do
   case M.lookup entryFunction env of
     Nothing -> print
       $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
-    Just EnvDef { _exp = e } ->
-      showResult e (reduce $ Application e arg) (Environment env)
+    Just EnvDef { _exp = e } -> do
+      red <- reduce $ Application e arg
+      showResult e red (Environment env)
 
 evalFile :: String -> IO ()
 evalFile path = evalFileConf path (defaultConf path)
@@ -337,8 +338,10 @@ exec path rd conv = do
   f   <- rd path
   arg <- encodeStdin
   case f of
-    Left exception -> print (exception :: IOError)
-    Right f' -> showResult e (reduce $ Application e arg) (Environment M.empty)
+    Left  exception -> print (exception :: IOError)
+    Right f'        -> do
+      red <- reduce $ Application e arg
+      showResult e red (Environment M.empty)
       where e = fromBinary $ conv f'
 
 repl :: EnvState -> InputT M ()

@@ -1,3 +1,4 @@
+-- MIT License, Copyright (c) 2022 Marvin Borner
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards #-}
