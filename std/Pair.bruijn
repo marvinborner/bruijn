@@ -3,45 +3,45 @@
 :import std/Combinator .
 
 # pairs two expressions into one
-pair [[[0 2 1]]]
+pair [[[0 2 1]]] ⧗ a → b → (Pair a b)
 
 …:… pair
 
 # extracts first expression from pair
-fst [0 k]
+fst [0 k] ⧗ (Pair a b) → a
 
 ^‣ fst
 
 :test (^([[0]] : [[1]])) ([[0]])
 
 # extracts second expression from pair
-snd [0 ki]
+snd [0 ki] ⧗ (Pair a b) → b
 
 ~‣ snd
 
 :test (~([[0]] : [[1]])) ([[1]])
 
 # applies both elements of a pair to a function
-uncurry [[1 ^0 ~0]]
+uncurry [[1 ^0 ~0]] ⧗ (a → b → c) → (Pair a b) → c
 
 :test (uncurry w ([[0]] : [[1]])) ([[1]])
 
 # applies a function to the pair of two values
-curry [[[2 (1 : 0)]]]
+curry [[[2 (1 : 0)]]] ⧗ ((Pair a b) → c) → a → b → c
 
 :test (curry fst [[0]] [[1]]) ([[0]])
 
 # zips two pairs (basically rotating the elements)
-zip [[(^1 : ^0) : (~1 : ~0)]]
+zip [[(^1 : ^0) : (~1 : ~0)]] ⧗ (Pair a b) → (Pair c d) → (Pair (Pair a c) (Pair b d))
 
 :test (zip ([[0]] : [[[0]]]) ([[1]] : [[[1]]])) (([[0]] : [[1]]) : ([[[0]]] : [[[1]]]))
 
 # applies pairs of two pairs as arguments to a function
-zip-with [[[(2 ^1 ^0) : (2 ~1 ~0)]]]
+zip-with [[[(2 ^1 ^0) : (2 ~1 ~0)]]] ⧗ (a → b → c) → (Pair a b) → (Pair a b) → (Pair c c)
 
 :test (zip-with w ([[0]] : [[[0]]]) ([[1]] : [[[1]]])) ([[1]] : [0])
 
 # swaps the elements of a pair
-swap [~0 : ^0]
+swap [~0 : ^0] ⧗ (Pair a b) → (Pair b a)
 
 :test (swap ([[0]] : [[1]])) ([[1]] : [[0]])

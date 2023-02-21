@@ -1,7 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/List .
-
 :input std/Number .
 
 # adds all values in list
@@ -69,6 +68,23 @@ pow […!!… (iterate (…*… 0) (+1))]
 
 :test (((+2) ** (+3)) =? ((+8))) (true)
 
+# power function using ternary exponentiation
+# a 1 → b 0
+# pow' z [[[rec]]]
+# 	rec =?0 case-end case-pow
+# 		case-pow =?(lst 0) (mult ⊩r) ((mult ⊩r) ⋅ 1)
+# 			mult [0 ⋅ 0 ⋅ 0]
+# 			r 2 1 /³0
+# 		case-end (+1)
+pow' z [[[rec]]]
+	rec =?0 case-end case-pow
+		case-pow =?(lst 0) (r ⋅ r ⋅ r) (r ⋅ r ⋅ r ⋅ 1)
+			r 2 1 /³0
+		case-end (+1)
+
+# prime number sequence
+primes nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2))
+
 # factorial function
 # TODO: faster fac?
 fac [∏ (+1) → 0 | i]
@@ -82,3 +98,20 @@ fibs fst <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1)))
 fib [fibs !! ++0]
 
 :test (fib (+5)) ((+8))
+
+# pascal triangle
+# TODO: this generally works, BUT lists in lists get reduced and mess up indexing
+pascal iterate [zip-with …+… ({ (+0) } ++ 0) (0 ; (+0))] ({ (+1) })
+
+# π
+# q 3, r 2, t 1, i 0
+# translation of unbounded spigot algorithm by Jeremy Gibbons
+π g (+1) (+180) (+60) (+2)
+	g y [[[[[calc]]]]]
+		calc b : (4 q r t i)
+			a ↑⁰(↑⁺0 ⋅ (↑⁰0 + (+2)))
+			b (3 ⋅ ↑⁰(↑⁻(↑⁻0)) + ((+5) ⋅ 2)) /! ((+5) ⋅ 1)
+			q (+10) ⋅ 3 ⋅ 0 ⋅ --((+2) ⋅ 0)
+			r (+10) ⋅ a ⋅ (3 ⋅ ((+5) ⋅ 0 - (+2)) + 2 - (b ⋅ 1)
+			t 1 ⋅ a
+			i ++0

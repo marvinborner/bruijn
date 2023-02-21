@@ -28,16 +28,12 @@ ni? \in?
 
 # splits string by newline character
 lines z [[rec]]
-	rec <>?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
+	rec ∅?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
 		broken break (B.eq? '\n') 0
 
 :test (lines "ab\ncd") ("ab" : ("cd" : empty))
 
-# :test (lines "ab\ncd\n") ("ab" : ("cd" : empty))
-
 # concats list of strings with newline character
-unlines concat-map (\(;) '\n')
+unlines concat-map (\(…;…) '\n')
 
 :test (unlines ("ab" : ("cd" : empty))) ("ab\ncd\n")
-
-main lines "ab\ncd"

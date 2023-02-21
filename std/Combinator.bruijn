@@ -180,6 +180,7 @@ w' [[0 1 1]]
 y [[1 (0 0)] [1 (0 0)]]
 
 # z fixed point combinator
+# y and z are almost always interchangeable
 z [[1 [1 1 0]] [1 [1 1 0]]]
 
 # theta combinator

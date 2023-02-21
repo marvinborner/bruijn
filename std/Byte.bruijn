@@ -11,7 +11,7 @@ b0 false
 b1 true
 
 # returns true if two bytes are equal
-eq? &&‣ .. (zip-with xnor?)
+eq? ⋀?‣ ∘∘ (zip-with xnor?)
 
 …=?… eq?
 
