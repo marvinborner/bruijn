@@ -31,20 +31,20 @@ toRedex = convertWorker []
     lhs <- convertWorker ns l
     rhs <- convertWorker ns r
     pure $ Rapp lhs rhs
-  convertWorker ns (Bruijn i) = pure $ Rvar $ Num
-    (if idx < 0 then i else ns !! idx)
-    where idx = i
-  convertWorker _ _ = error "invalid"
+  convertWorker ns (Bruijn i) =
+    pure $ Rvar $ Num (if i < 0 || i >= length ns then i else ns !! i)
+  convertWorker _ _ = invalidProgramState
 
 fromRedex :: Redex -> IO Expression
-fromRedex = pure . convertWorker []
+fromRedex = convertWorker []
  where
-  convertWorker es (Rabs n e) = Abstraction $ convertWorker (n : es) e
-  convertWorker es (Rapp l r) =
-    Application (convertWorker es l) (convertWorker es r)
-  convertWorker es (Rvar (Num n)) =
-    Bruijn $ maybe (error $ "unbound variable " ++ show n) id $ elemIndex n es
-  convertWorker _ _ = error "invalid"
+  convertWorker es (Rabs n e) = Abstraction <$> convertWorker (n : es) e
+  convertWorker es (Rapp l r) = do
+    lhs <- convertWorker es l
+    rhs <- convertWorker es r
+    pure $ Application lhs rhs
+  convertWorker es (Rvar (Num n)) = pure $ Bruijn $ maybe n id (elemIndex n es)
+  convertWorker _  _              = invalidProgramState
 
 transition :: Conf -> IO Conf
 transition (Econf (Rapp u v) e s) =
@@ -59,7 +59,7 @@ transition (Econf (Rvar (Num x)) e s) = do
   case rd of
     Todo (Rclosure v e') -> pure $ Econf v e' ((Rcache b (Rvar Hole)) : s)
     Done t               -> pure $ Cconf s t
-    _                    -> error "invalid"
+    _                    -> invalidProgramState
 transition (Cconf ((Rcache (Box m) (Rvar Hole)) : s) t) = do
   writeIORef m (Done t)
   pure $ Cconf s t
@@ -77,13 +77,13 @@ transition (Cconf s (Rcache (Box m) (Rclosure (Rabs x t) e))) = do
       pure $ Econf t
                    (Map.insert x (Box box) e)
                    ((Rabs x1 (Rvar Hole)) : (Rcache (Box m) (Rvar Hole)) : s)
-    Todo _ -> error "invalid"
+    Todo _ -> invalidProgramState
 transition (Cconf ((Rapp (Rvar Hole) (Rclosure v e)) : s) t) =
   pure $ Econf v e ((Rapp t (Rvar Hole)) : s)
 transition (Cconf ((Rapp t (Rvar Hole)) : s) v) = pure $ Cconf s (Rapp t v)
 transition (Cconf ((Rabs x1 (Rvar Hole)) : s) v) = pure $ Cconf s (Rabs x1 v)
 transition (Cconf [] _) = pure End
-transition _ = error "invalid"
+transition _ = invalidProgramState
 
 forEachState :: Conf -> (Conf -> IO Conf) -> IO Conf
 forEachState conf trans = trans conf >>= \case
@@ -98,4 +98,4 @@ reduce e = do
   redex <- toRedex e
   forEachState (loadTerm redex) transition >>= \case
     Cconf [] v -> fromRedex v
-    _          -> error "invalid"
+    _          -> invalidProgramState
