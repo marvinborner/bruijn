@@ -1,27 +1,28 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/List .
+
 :input std/Number .
 
 # adds all values in list
-sum foldl add (+0)
+sum foldl add (+0) ⧗ (List Number) → Number
 
 ∑‣ sum
 
 :test (∑((+1) : ((+2) : ((+3) : empty)))) ((+6))
 
 # returns max value of list
-lmax foldl1 max
+lmax foldl1 max ⧗ (List Number) → Number
 
 :test (lmax ((+1) : ((+3) : ((+2) : empty)))) ((+3))
 
 # returns min value of list
-lmin foldl1 min
+lmin foldl1 min ⧗ (List Number) → Number
 
 :test (lmin ((+2) : ((+1) : ((+0) : empty)))) ((+0))
 
 # list from num to num
-{…→…} z [[[rec]]]
+{…→…} z [[[rec]]] ⧗ Number → Number → (List Number)
 	rec (1 =? ++0) case-end case-list
 		case-list 1 : (2 ++1 0)
 		case-end empty
@@ -29,7 +30,7 @@ lmin foldl1 min
 :test ({ (+0) → (+2) }) ((+0) : ((+1) : ((+2) : empty)))
 
 # equivalent of mathematical sum function
-∑…→…|… z [[[[[rec]]]]] (+0)
+∑…→…|… z [[[[[rec]]]]] (+0) ⧗ Number → Number → (Number → Number) → Number
 	rec (2 =? ++1) case-end case-sum
 		case-sum 4 (3 + (0 2)) ++2 1 0
 		case-end 3
@@ -37,22 +38,22 @@ lmin foldl1 min
 :test (∑ (+1) → (+3) | ++‣) ((+9))
 
 # multiplies all values in list
-product foldl mul (+1)
+product foldl mul (+1) ⧗ (List Number) → Number
 
 Π product
 
 :test (Π ((+1) : ((+2) : ((+3) : empty)))) ((+6))
 
 # equivalent of mathematical product function
-∏…→…|… z [[[[[rec]]]]] (+1)
+∏…→…|… z [[[[[rec]]]]] (+1) ⧗ Number → Number → (Number → Number) → Number
 	rec (2 =? ++1) case-end case-sum
-		case-sum 4 (3 * (0 2)) ++2 1 0
+		case-sum 4 (3 ⋅ (0 2)) ++2 1 0
 		case-end 3
 
 :test (∏ (+1) → (+3) | ++‣) ((+24))
 
 # greatest common divisor
-gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
+gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]] ⧗ Number → Number → Number
 	case-eq 1
 	case-gre 2 (1 - 0) 0
 	case-les 2 1 (0 - 1)
@@ -62,40 +63,33 @@ gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]]
 :test ((gcd (+3) (+8)) =? ((+1))) (true)
 
 # power function
-pow […!!… (iterate (…*… 0) (+1))]
+pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number
 
 …**… pow
 
 :test (((+2) ** (+3)) =? ((+8))) (true)
 
-# power function using ternary exponentiation
-# a 1 → b 0
-# pow' z [[[rec]]]
-# 	rec =?0 case-end case-pow
-# 		case-pow =?(lst 0) (mult ⊩r) ((mult ⊩r) ⋅ 1)
-# 			mult [0 ⋅ 0 ⋅ 0]
-# 			r 2 1 /³0
-# 		case-end (+1)
-pow' z [[[rec]]]
+# power function using ternary exponentiation (TODO: slow..)
+pow' z [[[rec]]] ⧗ Number → Number → Number
 	rec =?0 case-end case-pow
 		case-pow =?(lst 0) (r ⋅ r ⋅ r) (r ⋅ r ⋅ r ⋅ 1)
 			r 2 1 /³0
 		case-end (+1)
 
 # prime number sequence
-primes nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2))
+primes nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2)) ⧗ (List Number)
 
 # factorial function
 # TODO: faster fac?
-fac [∏ (+1) → 0 | i]
+fac [∏ (+1) → 0 | i] ⧗ Number → Number
 
 :test ((fac (+3)) =? (+6)) (true)
 
 # fibonacci sequence
 # TODO: faster fib?
-fibs fst <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1)))
+fibs head <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1))) ⧗ (List Number)
 
-fib [fibs !! ++0]
+fib [fibs !! ++0] ⧗ Number
 
 :test (fib (+5)) ((+8))
 
@@ -106,7 +100,8 @@ pascal iterate [zip-with …+… ({ (+0) } ++ 0) (0 ; (+0))] ({ (+1) })
 # π
 # q 3, r 2, t 1, i 0
 # translation of unbounded spigot algorithm by Jeremy Gibbons
-π g (+1) (+180) (+60) (+2)
+# TODO: Fix/faster
+π g (+1) (+180) (+60) (+2) ⧗ (List Number)
 	g y [[[[[calc]]]]]
 		calc b : (4 q r t i)
 			a ↑⁰(↑⁺0 ⋅ (↑⁰0 + (+2)))
