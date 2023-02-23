@@ -1,45 +1,46 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/Combinator .
+:import std/Logic .
 
 # empty option
-none true
+none true ⧗ (Option a)
 
 # encapsulates value in option
-some [[[0 2]]]
+some [[[0 2]]] ⧗ (Option a)
 
 # checks whether option is none
-none? [0 true [false]]
+none? [0 true [false]] ⧗ (Option a) → Boolean
 
 :test (none? none) (true)
 :test (none? (some [[0]])) (false)
 
 # checks whether option is some
-some? [0 false [true]]
+some? [0 false [true]] ⧗ (Option a) → Boolean
 
 :test (some? none) (false)
 :test (some? (some [[0]])) (true)
 
 # applies a function to the value in option
-map [[0 none [some (2 0)]]]
+map [[0 none [some (2 0)]]] ⧗ (a → b) → (Option a) → (Option b)
 
 :test (map [[1]] (some [[0]])) (some [[[0]]])
 :test (map [[1]] none) (none)
 
 # applies a function to the value in option or returns first arg if none
-map-or [[[0 2 1]]]
+map-or [[[0 2 1]]] ⧗ (a → b) → (Option a) → (Option c)
 
 :test (map-or [[[2]]] [[1]] (some [[0]])) ([[[0]]])
 :test (map-or [[[2]]] [[1]] none) ([[[2]]])
 
 # extracts value from option or returns first argument if none
-unwrap-or [[0 1 I]]
+unwrap-or [[0 1 i]] ⧗ a → (Option b) → c
 
 :test (unwrap-or false (some true)) (true)
 :test (unwrap-or false none) (false)
 
 # applies encapsulated value to given function
-apply [[1 none 0]]
+apply [[1 none 0]] ⧗ (Option a) → (a → b) → c
 
 :test (apply none [some ([[1]] 0)]) (none)
 :test (apply (some [[0]]) [some ([[1]] 0)]) (some [[[0]]])

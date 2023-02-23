@@ -1,62 +1,63 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/Combinator .
+:import std/Logic .
 :import std/Option .
 
 # encapsulates a value in ok
-ok [[[1 2]]]
+ok [[[1 2]]] ⧗ (Result a)
 
 :test (ok [[0]]) ([[1 [[0]]]])
 
 # encapsulates a value in err
-err [[[0 2]]]
+err [[[0 2]]] ⧗ (Result a)
 
 :test (err [[0]]) ([[0 [[0]]]])
 
 # checks whether result is ok
-ok? [0 [true] [false]]
+ok? [0 [true] [false]] ⧗ (Result a) → Boolean
 
 :test (ok? (ok [[0]])) (true)
 :test (ok? (err [[0]])) (false)
 
 # checks whether result is not ok
-err? [0 [false] [true]]
+err? [0 [false] [true]] ⧗ (Result a) → Boolean
 
 :test (err? (ok [[0]])) (false)
 :test (err? (err [[0]])) (true)
 
 # encapsulates result ok value in a option
-option-ok [0 some [none]]
+option-ok [0 some [none]] ⧗ (Result a) → (Option a)
 
 :test (option-ok (ok [[0]])) (some [[0]])
 :test (option-ok (err [[0]])) (none)
 
 # encapsulate result err value in a option
-option-err [0 [none] some]
+option-err [0 [none] some] ⧗ (Result a) → (Option a)
 
 :test (option-err (ok [[0]])) (none)
 :test (option-err (err [[0]])) (some [[0]])
 
 # extracts value from result or returns first arg
-unwrap-or [[0 I [2]]]
+unwrap-or [[0 i [2]]] ⧗ a → (Result b) → c
 
 :test (unwrap-or [[1]] (ok [[0]])) ([[0]])
 :test (unwrap-or [[1]] (err [[0]])) ([[1]])
 
 # applies a function to the value in ok result
-map [[0 [ok (2 0)] err]]
+map [[0 [ok (2 0)] err]] ⧗ (a → b) → (Result a) → (Result b)
 
 :test (map [[1]] (ok [[0]])) (ok [[[0]]])
 :test (map [[1]] (err [[0]])) (err [[0]])
 
 # applies a function to the value in err result
-map-err [[0 ok [err (2 0)]]]
+map-err [[0 ok [err (2 0)]]] ⧗ (a → b) → (Result a) → (Result b)
 
 :test (map-err [[1]] (ok [[0]])) ((ok [[0]]))
 :test (map-err [[1]] (err [[0]])) ((err [[[0]]]))
 
 # applies encapsulated value to given function (if ok)
-apply [[1 0 err]]
+apply [[1 0 err]] ⧗ (Result a) → (a → b) → (Result b)
 
 :test (apply (err [[0]]) [ok ([[1]] 0)]) (err [[0]])
 :test (apply (ok [[0]]) [ok ([[1]] 0)]) (ok [[[0]]])
