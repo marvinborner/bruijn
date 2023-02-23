@@ -181,11 +181,16 @@ listify [] = Abstraction (Abstraction (Bruijn 0))
 listify (e : es) =
   Abstraction (Application (Application (Bruijn 0) e) (listify es))
 
+binarify :: [Expression] -> Expression
+binarify []       = Bruijn 2
+binarify (e : es) = Application e (binarify es)
+
 encodeByte :: [Bool] -> Expression
-encodeByte bits = listify (map encodeBit bits)
+encodeByte bits = Abstraction $ Abstraction $ Abstraction $ binarify
+  (map encodeBit bits)
  where
-  encodeBit False = Abstraction (Abstraction (Bruijn 0))
-  encodeBit True  = Abstraction (Abstraction (Bruijn 1))
+  encodeBit False = Bruijn 0
+  encodeBit True  = Bruijn 1
 
 -- TODO: There must be a better way to do this :D
 encodeBytes :: Byte.ByteString -> Expression
@@ -211,12 +216,11 @@ unlistify (Abstraction (Application (Application (Bruijn 0) e) es)) =
 unlistify _ = Nothing
 
 decodeByte :: Expression -> Maybe [Bool]
-decodeByte (Abstraction (Abstraction (Bruijn 0))) = Just []
-decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 0)))) es))
-  = (:) <$> Just False <*> (decodeByte es)
-decodeByte (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Bruijn 1)))) es))
-  = (:) <$> Just True <*> (decodeByte es)
-decodeByte _ = Nothing
+decodeByte (Abstraction (Abstraction (Abstraction es))) = decodeByte es
+decodeByte (Application (Bruijn 0) es) = (:) <$> Just False <*> (decodeByte es)
+decodeByte (Application (Bruijn 1) es) = (:) <$> Just True <*> (decodeByte es)
+decodeByte (Bruijn 2                 ) = Just []
+decodeByte _                           = Nothing
 
 decodeStdout :: Expression -> Maybe String
 decodeStdout e = do
@@ -276,6 +280,22 @@ decimalToTernary n =
   gen 0 = Bruijn 3
   gen n' =
     Application (Bruijn $ fromIntegral $ mod n' 3) (gen $ div (n' + 1) 3)
+
+-- Decimal to binary encoding
+decimalToBinary :: Integer -> Expression
+decimalToBinary n | n < 0     = decimalToBinary 0
+decimalToBinary n | otherwise = Abstraction $ Abstraction $ Abstraction $ gen n
+ where
+  gen 0  = Bruijn 2
+  gen n' = Application (Bruijn $ fromIntegral $ mod n' 2) (gen $ div n' 2)
+
+-- Decimal to unary (church) encoding
+decimalToUnary :: Integer -> Expression
+decimalToUnary n | n < 0     = decimalToUnary 0
+decimalToUnary n | otherwise = Abstraction $ Abstraction $ gen n
+ where
+  gen 0  = Bruijn 0
+  gen n' = Application (Bruijn 1) (gen (n' - 1))
 
 ternaryToDecimal :: Expression -> Maybe String
 ternaryToDecimal e = do

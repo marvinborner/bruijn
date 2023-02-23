@@ -18,7 +18,7 @@ toBinary :: Expression -> String
 toBinary (Bruijn      x        ) = (replicate (x + 1) '1') ++ "0"
 toBinary (Abstraction e        ) = "00" ++ toBinary e
 toBinary (Application exp1 exp2) = "01" ++ (toBinary exp1) ++ (toBinary exp2)
-toBinary _                       = error "invalid"
+toBinary _                       = invalidProgramState
 
 fromBinary' :: String -> (Expression, String)
 fromBinary' inp = case inp of
@@ -28,7 +28,7 @@ fromBinary' inp = case inp of
         (exp2, rst2) = fromBinary' rst1
     in  (Application exp1 exp2, rst2)
   '1' : _ : rst -> binaryBruijn rst
-  e             -> error $ "invalid: " <> e
+  _             -> invalidProgramState
  where
   binaryBruijn rst =
     let idx = (length $ takeWhile (== '1') $ inp) - 1
@@ -49,7 +49,7 @@ toBitString str = Bit.concat
     (\case
       '0' -> False
       '1' -> True
-      _   -> error "invalid bit"
+      _   -> invalidProgramState
     )
     str
   ]

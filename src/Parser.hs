@@ -103,9 +103,9 @@ importPath = some $ oneOf "./_+-" <|> letterChar <|> digitChar
 
 parseAbstraction :: Parser Expression
 parseAbstraction = do
-  _ <- string "[" <?> "opening abstraction"
+  _ <- string "[" <?> "abstraction start"
   e <- parseExpression
-  _ <- string "]" <?> "closing abstraction"
+  _ <- string "]" <?> "abstraction end"
   pure $ Abstraction e
 
 parseBruijn :: Parser Expression
@@ -115,9 +115,16 @@ parseBruijn = do
 
 parseNumeral :: Parser Expression
 parseNumeral = do
-  num <- parens number <?> "signed number"
-  pure $ decimalToTernary num
+  _    <- string "(" <?> "number start"
+  num  <- number <?> "signed number"
+  base <- (try (oneOf "ubt") <|> return 't')
+  _    <- string ")" <?> "number end"
+  pure $ (f base) num
  where
+  f 't' = decimalToTernary
+  f 'b' = decimalToBinary
+  f 'u' = decimalToUnary
+  f _   = invalidProgramState
   sign :: Parser (Integer -> Integer)
   sign = (char '-' >> return negate) <|> (char '+' >> return id)
   nat :: Parser Integer
@@ -166,7 +173,7 @@ parseMixfix = do
  where -- TODO: Rethink this.
   prefixAsMixfix = MixfixExpression <$> parsePrefix
   prefixOperatorAsMixfix =
-    MixfixExpression . Function <$> (prefixOperator <* char '‣')
+    MixfixExpression . Function <$> prefixOperator <* char '‣'
   operatorAsMixfix  = MixfixOperator . MixfixFunction <$> some mixfixSome
   singletonAsMixfix = MixfixExpression <$> parseSingleton
 
@@ -240,7 +247,7 @@ parseDefine lvl = do
   e    <- parseExpression
   _    <- parseDefineType
   subs <-
-    (try $ newline *> (many (parseBlock (lvl + 1)))) <|> (try eof >> return [])
+    (try $ newline *> (many $ parseBlock $ lvl + 1)) <|> (try eof >> return [])
   pure $ ContextualInstruction (Define var e subs) inp
 
 parseReplDefine :: Parser Instruction
@@ -262,22 +269,22 @@ parseImport :: Parser Command
 parseImport = do
   _    <- string ":import" <* sc <?> "import instruction"
   path <- importPath
-  ns   <- (try $ (sc *> (namespace <|> string "."))) <|> (eof >> return "")
+  ns   <- (try $ sc *> (namespace <|> string ".")) <|> (eof >> return "")
   pure (Import (path ++ ".bruijn") ns)
 
 parseInput :: Parser Command
 parseInput = do
   _    <- string ":input" <* sc <?> "input instruction"
   path <- importPath
-  pure (Input $ path ++ ".bruijn")
+  pure $ Input $ path ++ ".bruijn"
 
 parseTest :: Parser Command
 parseTest = do
   _  <- string ":test" <* sc <?> "test"
-  e1 <- (parens parseExpression <?> "first expression")
+  e1 <- parens parseExpression <?> "first expression"
   sc
-  e2 <- (parens parseExpression <?> "second expression")
-  pure (Test e1 e2)
+  e2 <- parens parseExpression <?> "second expression"
+  pure $ Test e1 e2
 
 parseCommentBlock :: Parser Instruction
 parseCommentBlock = do
@@ -299,7 +306,7 @@ parseDefBlock :: Int -> Parser Instruction
 parseDefBlock lvl =
   (sepEndBy parseComment newline)
     *> string (replicate lvl '\t')
-    *> (try (parseDefine lvl))
+    *> (try $ parseDefine lvl)
 
 parseBlock :: Int -> Parser Instruction
 parseBlock lvl =
