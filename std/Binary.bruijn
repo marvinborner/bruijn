@@ -1,0 +1,238 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# TODO: Use abstract representation for logic instead of listifying
+
+:import std/Combinator .
+:import std/List .
+:import std/Logic .
+
+# bit indicating a one, compatible with std/Logic
+b¹ true ⧗ Bit
+
+# bit indicating a zero, compatible with std/Logic
+b⁰ false ⧗ Bit
+
+# returns true if a bit is set
+b¹? i ⧗ Bit → Boolean
+
+:test (b¹? b¹) (true)
+:test (b¹? b⁰) (false)
+
+# returns true if a bit is unset
+b⁰? not! ⧗ Bit → Boolean
+
+:test (b⁰? b⁰) (true)
+:test (b⁰? b¹) (false)
+
+# shifts a one into a binary number
+↑¹‣ [[[[1 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+:test (↑¹[[[0 2]]]) ([[[1 (0 2)]]])
+
+# shifts a zero into a binary number
+↑⁰‣ [[[[0 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+:test (↑⁰(+1b)) ((+2b))
+
+# shifts a specified bit into a binary number
+up [[[[[4 1 0 (3 2 1 0)]]]]] ⧗ Bit → Binary → Binary
+
+:test (up b¹ [[[0 2]]]) ([[[1 (0 2)]]])
+:test (up b⁰ (+1b)) ((+2b))
+
+# converts a binary number to a list of bits
+list! [0 z a¹ a⁰] ⧗ Binary → (List Bit)
+	z empty
+	a¹ [b¹ : 0]
+	a⁰ [b⁰ : 0]
+
+:test (list! (+0b)) (empty)
+:test (list! (+6b)) (b⁰ : (b¹ : (b¹ : empty)))
+
+# converts a list of bits to a binary number
+binary! foldr up (+0b) ⧗ (List Bit) → Binary
+
+:test (binary! (list! (+0b))) ((+0b))
+:test (binary! (list! (+42b))) ((+42b))
+
+# strips leading 0s from a binary number
+strip [^(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : true
+	a¹ [0 [[↑¹1 : false]]]
+	a⁰ [0 [[(0 (+0b) ↑⁰1) : 0]]]
+
+%‣ strip
+
+:test (%[[[0 2]]]) ((+0b))
+:test (%[[[1 (0 (0 (0 (0 2))))]]]) ((+1b))
+:test (%(+2b)) ((+2b))
+
+# returns true if a binary number is zero
+zero? [0 true [false] i] ⧗ Binary → Boolean
+
+=?‣ zero?
+
+:test (=?(+0b)) (true)
+:test (=?[[[0 (0 2)]]]) (true)
+:test (=?(+1b)) (false)
+
+# extracts least significant bit from a binary number
+lst [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
+
+:test (lst (+0b)) (b⁰)
+:test (lst (+1b)) (b¹)
+:test (lst (+42b)) (b⁰)
+
+# extracts most significant bit from a binary number
+# not really useful for binary numbers, but part of interface
+mst [=?0 b⁰ ^(<~>(list! %0))] ⧗ Binary → Bit
+
+:test (mst (+0b)) (b⁰)
+:test (mst (+1b)) (b¹)
+:test (mst (+42b)) (b¹)
+
+# extracts nth bit from a binary number
+nth …!!… ∘ list! ⧗ Binary → Number → Bit
+
+# logical and on two binary numbers
+and! binary! ∘∘ (ψ* zip-with …⋀?… list!) ⧗ Binary → Binary → Binary
+
+…⋀!… and!
+
+:test (and! (+1b) (+0b)) ((+0b))
+:test (and! (+5b) (+4b)) ((+4b))
+:test (and! (+10b) (+12b)) ((+8b))
+
+# logical or on two binary numbers
+# TODO: Fix for numbers with different length (→ zero padding?)
+or! binary! ∘∘ (ψ* zip-with …⋁?… list!) ⧗ Binary → Binary → Binary
+
+…⋁!… or!
+
+:test (or! (+10b) (+12b)) ((+14b))
+
+# :test (or! (+1b) (+0b)) ((+1b))
+# :test (or! (+5b) (+3b)) ((+7b))
+
+# converts the normal binary representation into abstract
+abstract! [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
+	z (+0b)
+	a¹ [[[[1 3]]]]
+	a⁰ [[[[0 3]]]]
+
+→^‣ abstract!
+
+# converts the abstracted binary representation back to normal
+normal! ω [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
+	z (+0b)
+	a¹ [↑¹([3 3 0] 0)]
+	a⁰ [↑⁰([3 3 0] 0)]
+
+→_‣ normal!
+
+# returns true if two binary numbers are equal
+# → ignores leading 0s!
+# also: ⋀?‣ ∘∘ (ψ* zip-with xnor? list!)
+eq? [[abs 1 →^0]] ⧗ Binary → Binary → Boolean
+	abs [0 z a¹ a⁰]
+		z [=?(→_0)]
+		a¹ [[0 false [2 0] [false]]]
+		a⁰ [[0 (1 0) [false] [2 0]]]
+
+…=?… eq?
+
+:test ((+0b) =? (+0b)) (true)
+:test ([[[1 (0 2)]]] =? [[[1 (0 2)]]]) (true)
+:test ([[[1 (0 2)]]] =? (+2b)) (false)
+
+# returns true if two binary numbers are not equal
+not-eq? not! ∘∘ eq? ⧗ Binary → Binary → Boolean
+
+…≠?… not-eq?
+
+:test ((+0b) ≠? (+0b)) (false)
+:test ([[[1 (0 2)]]] ≠? [[[1 (0 2)]]]) (false)
+:test ([[[1 (0 2)]]] ≠? (+2b)) (true)
+
+# adds 1 to a binary number (can introduce leading 0s)
+inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+1b)
+	a¹ [0 [[↑¹1 : ↑⁰0]]]
+	a⁰ [0 [[↑⁰1 : ↑¹1]]]
+
+++‣ inc
+
+:test (++(+0b)) ((+1b))
+:test (++(+2b)) ((+3b))
+
+# subs 1 from a binary number (can introduce leading 0s)
+dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+0b)
+	a¹ [0 [[↑¹1 : ↑⁰1]]]
+	a⁰ [0 [[↑⁰1 : ↑¹0]]]
+
+--‣ dec
+
+:test (--(+0b)) ((+0b))
+:test (--(+1b)) ([[[0 2]]])
+:test (--(+3b)) ((+2b))
+
+# adds two binary numbers (can introduce leading 0s)
+# second argument gets abstracted (performance)
+add [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+	abs [c (0 z a¹ a⁰)]
+		c¹ [1 ↑⁰(3 0 b¹) ↑¹(3 0 b⁰)]
+		a¹ [[[1 (c¹ 1) c¹' c¹]]]
+			c¹' [up 1 (3 0 b¹)]
+		a⁰ [[[1 (c⁰ 1) c¹ c⁰]]]
+			c⁰ [up 1 (3 0 b⁰)]
+		z [[0 ++(→_1) →_1]]
+		c [[1 0 b⁰]]
+
+…+… add
+
+:test (((+0b) + (+0b)) =? (+0b)) (true)
+:test (((+0b) + (+3b)) =? (+3b)) (true)
+:test (((+1b) + (+2b)) =? (+3b)) (true)
+:test (((+42b) + (+1b)) =? (+43b)) (true)
+
+# subs two binary numbers (can introduce leading 0s)
+# second argument gets abstracted (performance)
+sub [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+	abs [c (0 z a¹ a⁰)]
+		a¹ [[[1 (c¹ 1) c¹' c¹]]]
+			c¹ [1 ↑⁰(3 0 b¹) ↑¹(3 0 b⁰)]
+			c¹' [1 ↑¹(3 0 b⁰) ↑¹(3 0 b⁰)]
+		a⁰ [[[1 (c⁰ 1) c⁰' c⁰]]]
+			c⁰ [1 ↑¹(3 0 b⁰) ↑⁰(3 0 b⁰)]
+			c⁰' [1 (3 0 b⁰) ↑¹(3 0 b¹)]
+		z [[0 --(→_1) →_1]]
+		c [[1 0 b⁰]]
+
+…-… sub
+
+:test ((+5b) - (+0b)) ((+5b))
+:test ((+8b) - (+3b)) ((+5b))
+:test ((+10b) - (+5b)) ((+5b))
+:test (((+20b) - (+1b))) ((+19b))
+
+# :test (%((+20b) - (+0b))) ((+20b))
+# :test (%((+20b) - (+1b))) ((+19b))
+# :test (%((+19b) - (+1b))) ((+18b))
+# :test (%((+19b) - (+2b))) ((+17b))
+# :test (%((+18b) - (+2b))) ((+16b))
+# :test (%((+18b) - (+3b))) ((+15b))
+# :test (%((+17b) - (+3b))) ((+14b))
+# :test (%((+17b) - (+4b))) ((+13b))
+# :test (%((+16b) - (+4b))) ((+12b))
+# :test (%((+16b) - (+5b))) ((+11b))
+# :test (%((+15b) - (+5b))) ((+10b))
+# :test (%((+15b) - (+6b))) ((+9b))
+# :test (%((+14b) - (+6b))) ((+8b))
+# :test (%((+14b) - (+7b))) ((+7b))
+# :test (%((+13b) - (+7b))) ((+6b))
+# :test (%((+13b) - (+8b))) ((+5b))
+# :test (%((+12b) - (+8b))) ((+4b))
+# :test (%((+12b) - (+9b))) ((+3b))
+# :test (%((+11b) - (+9b))) ((+2b))
+# :test (%((+11b) - (+10b))) ((+1b))
+# :test (%((+10b) - (+10b))) ((+0b))

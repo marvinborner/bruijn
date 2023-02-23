@@ -4,33 +4,35 @@
 # Heavily inspired by the works of T.Æ. Mogensen and Douglas W. Jones (see refs in README)
 
 :import std/Combinator .
-:import std/Pair .
 :import std/Logic .
+:import std/Pair .
 
 # negative trit indicating coeffecient of (-1)
 t⁻ [[[2]]] ⧗ Trit
 
-# returns true if a trit is negative
-t⁻? [0 true false false] ⧗ Trit → Boolean
-
 # positive trit indicating coeffecient of (+1)
 t⁺ [[[1]]] ⧗ Trit
-
-# returns true if a trit is positive
-t⁺? [0 false true false] ⧗ Trit → Boolean
 
 # zero trit indicating coeffecient of 0
 t⁰ [[[0]]] ⧗ Trit
 
-# returns true if a trit is zero
-t⁰? [0 false false true] ⧗ Trit → Boolean
+# returns true if a trit is negative
+t⁻? [0 true false false] ⧗ Trit → Boolean
 
 :test (t⁻? t⁻) (true)
 :test (t⁻? t⁺) (false)
 :test (t⁻? t⁰) (false)
+
+# returns true if a trit is positive
+t⁺? [0 false true false] ⧗ Trit → Boolean
+
 :test (t⁺? t⁻) (false)
 :test (t⁺? t⁺) (true)
 :test (t⁺? t⁰) (false)
+
+# returns true if a trit is zero
+t⁰? [0 false false true] ⧗ Trit → Boolean
+
 :test (t⁰? t⁻) (false)
 :test (t⁰? t⁺) (false)
 :test (t⁰? t⁰) (true)
@@ -85,7 +87,7 @@ list! [0 z a⁻ a⁺ a⁰] ⧗ Number → List
 
 # TODO: Tests!
 
-# strips leading 0s from balanced ternary number
+# strips leading 0s from a balanced ternary number
 strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : true
 	a⁻ [0 [[↑⁻1 : false]]]
@@ -97,14 +99,6 @@ strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 :test (%[[[[0 3]]]]) ((+0))
 :test (%[[[[2 (0 (0 (0 (0 3))))]]]]) ((-1))
 :test (%(+42)) ((+42))
-
-# extracts least significant trit from balanced ternary numbers
-lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
-
-:test (lst (-1)) (t⁻)
-:test (lst (+0)) (t⁰)
-:test (lst (+1)) (t⁺)
-:test (lst (+42)) (t⁰)
 
 # returns true if balanced ternary number is zero
 zero? [0 true [false] [false] i] ⧗ Number → Boolean
@@ -126,10 +120,19 @@ not-zero? [0 false [true] [true] i] ⧗ Number → Boolean
 :test (≠?(+1)) (true)
 :test (≠?(+42)) (true)
 
-# extracts most significant trit from balanced ternary numbers
+# extracts least significant trit from a balanced ternary number
+lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
+
+:test (lst (-1)) (t⁻)
+:test (lst (+0)) (t⁰)
+:test (lst (+1)) (t⁺)
+:test (lst (+42)) (t⁰)
+
+# extracts most significant trit from a balanced ternary number
 # <~>/<>? are hardcoded because list import would be recursive (TODO?)
 # while this looks incredibly inefficient it's actually fairly fast because laziness
 # TODO: find way of removing requirement of stripping first
+#       (or better solution in general)
 mst [=?0 t⁰ ^(<~>(list! %0))] ⧗ Number → Trit
 	<~>‣ z [[[[<>?0 1 (3 2 (2 1 ^0) ~0)]]]] f false
 		<>?‣ [0 [[[false]]] true]
@@ -188,7 +191,6 @@ normal! ω [[0 z a⁻ a⁺ a⁰]] ⧗ AbstractNumber → Number
 :test (→_(→^(-42))) ((-42))
 
 # returns true if two balanced ternary numbers are equal
-# larger numbers should be second argument (performance)
 # → ignores leading 0s!
 eq? [[abs 1 →^0]] ⧗ Number → Number → Boolean
 	abs [0 z a⁻ a⁺ a⁰]
@@ -199,6 +201,7 @@ eq? [[abs 1 →^0]] ⧗ Number → Number → Boolean
 
 …=?… eq?
 
+# returns true if two balanced ternary numbers are not equal
 not-eq? not! ∘∘ eq? ⧗ Number → Number → Boolean
 
 …≠?… not-eq?

@@ -115,6 +115,8 @@ o [[0 (1 0)]] ⧗ ((a → b) → a) → (a → b) → b
 # psi combinator: on
 ψ [[[[3 (2 1) (2 0)]]]] ⧗ (b → b → c) → (a → b) → a → a → c
 
+ψ* [[[[[4 3 (2 1) (2 0)]]]]] ⧗ (c → b → b → d) → c → (a → b) → a → a → d
+
 # queer bird combinator: reverse function composition: (f , g) x = g (f x)
 q [[[1 (2 0)]]] ⧗ (a → b) → (b → c) → a → c
 
