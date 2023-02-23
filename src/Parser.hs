@@ -265,12 +265,18 @@ parseComment = do
   _ <- some $ noneOf "\r\n"
   return ()
 
+parseTime :: Parser Instruction
+parseTime = do
+  _ <- string ":time" <* sc <?> "time instruction"
+  e <- parseExpression
+  pure $ Time e
+
 parseImport :: Parser Command
 parseImport = do
   _    <- string ":import" <* sc <?> "import instruction"
   path <- importPath
   ns   <- (try $ sc *> (namespace <|> string ".")) <|> (eof >> return "")
-  pure (Import (path ++ ".bruijn") ns)
+  pure $ Import (path ++ ".bruijn") ns
 
 parseInput :: Parser Command
 parseInput = do
@@ -318,4 +324,5 @@ parseReplLine =
     <|> ((Commands . (: [])) <$> (try parseTest))
     <|> ((Commands . (: [])) <$> (try parseInput))
     <|> ((Commands . (: [])) <$> (try parseImport))
+    <|> try parseTime
     <|> try parseEvaluate

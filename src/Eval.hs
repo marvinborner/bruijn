@@ -17,6 +17,7 @@ import           Helper
 import           Parser
 import           Paths_bruijn
 import           Reducer
+import           System.Clock
 import           System.Console.Haskeline
 import           System.Directory
 import           System.Environment
@@ -284,6 +285,19 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
       yeet s' (c : cs') = do
         s'' <- s'
         yeet (evalCommand inp s'' c) cs'
+    Time e -> do
+      start <- getTime Monotonic
+      _     <- evalInstruction (ContextualInstruction (Evaluate e) inp) s rec
+      end   <- getTime Monotonic
+      let roundSecs x =
+            (fromIntegral (round $ x * 1e6 :: Integer)) / 1e6 :: Double
+      putStr
+        $ show
+        $ roundSecs
+        $ (fromIntegral $ toNanoSecs $ diffTimeSpec start end :: Double)
+        / 1e9
+      putStrLn " seconds"
+      rec s
     _ -> rec s
 evalInstruction instr s rec =
   evalInstruction (ContextualInstruction instr "<unknown>") s rec
