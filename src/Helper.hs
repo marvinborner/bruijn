@@ -262,7 +262,11 @@ matchingFunctions e (Environment env) =
 
 -- TODO: Expression -> Maybe Char is missing
 maybeHumanifyExpression :: Expression -> Maybe String
-maybeHumanifyExpression e = ternaryToDecimal e <|> decodeStdout e
+maybeHumanifyExpression e =
+  binaryToDecimal e
+    <|> ternaryToDecimal e
+    <|> unaryToDecimal e
+    <|> decodeStdout e
 
 humanifyExpression :: Expression -> String
 humanifyExpression e = case maybeHumanifyExpression e of
@@ -297,6 +301,39 @@ decimalToUnary n | otherwise = Abstraction $ Abstraction $ gen n
   gen 0  = Bruijn 0
   gen n' = Application (Bruijn 1) (gen (n' - 1))
 
+unaryToDecimal :: Expression -> Maybe String
+unaryToDecimal e = do
+  res <- resolve e
+  return $ show $ (sum res :: Integer)
+ where
+  multiplier (Bruijn 1) = Just 1
+  multiplier _          = Nothing
+  resolve' (Bruijn 0) = Just []
+  resolve' (Application x@(Bruijn _) (Bruijn 0)) =
+    (:) <$> multiplier x <*> Just []
+  resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
+    (:) <$> (multiplier x) <*> (resolve' xs)
+  resolve' _ = Nothing
+  resolve (Abstraction (Abstraction n)) = resolve' n
+  resolve _                             = Nothing
+
+binaryToDecimal :: Expression -> Maybe String
+binaryToDecimal e = do
+  res <- resolve e
+  return $ show $ (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer)
+ where
+  multiplier (Bruijn 0) = Just 0
+  multiplier (Bruijn 1) = Just 1
+  multiplier _          = Nothing
+  resolve' (Bruijn 2) = Just []
+  resolve' (Application x@(Bruijn _) (Bruijn 2)) =
+    (:) <$> multiplier x <*> Just []
+  resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
+    (:) <$> (multiplier x) <*> (resolve' xs)
+  resolve' _ = Nothing
+  resolve (Abstraction (Abstraction (Abstraction n))) = resolve' n
+  resolve _ = Nothing
+
 ternaryToDecimal :: Expression -> Maybe String
 ternaryToDecimal e = do
   res <- resolve e
@@ -306,6 +343,7 @@ ternaryToDecimal e = do
   multiplier (Bruijn 1) = Just 1
   multiplier (Bruijn 2) = Just (-1)
   multiplier _          = Nothing
+  resolve' (Bruijn 3) = Just []
   resolve' (Application x@(Bruijn _) (Bruijn 3)) =
     (:) <$> multiplier x <*> Just []
   resolve' (Application x@(Bruijn _) xs@(Application _ _)) =

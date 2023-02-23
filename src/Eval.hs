@@ -194,7 +194,10 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
         full <- fullPath path
         t    <- getModificationTime full
         if t > mtime
-          then putStrLn "reload" >> evalCommand inp s (Input full) >> monitor t
+          then
+            putStrLn "\ESC[2Jreload"
+            >> evalCommand inp s (Input full)
+            >> monitor t
           else monitor t
     in  getCurrentTime >>= monitor
   Import path namespace -> do -- TODO: Merge with Input (very similar)
