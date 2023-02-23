@@ -265,11 +265,16 @@ parseComment = do
   _ <- some $ noneOf "\r\n"
   return ()
 
-parseTime :: Parser Instruction
+parseTime :: Parser Command
 parseTime = do
   _ <- string ":time" <* sc <?> "time instruction"
   e <- parseExpression
   pure $ Time e
+
+parseClearState :: Parser Command
+parseClearState = do
+  _ <- string ":free" <?> "free instruction"
+  pure ClearState
 
 parseImport :: Parser Command
 parseImport = do
@@ -321,8 +326,9 @@ parseBlock lvl =
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine -- TODO: This is kinda hacky
-    <|> ((Commands . (: [])) <$> (try parseTest))
-    <|> ((Commands . (: [])) <$> (try parseInput))
-    <|> ((Commands . (: [])) <$> (try parseImport))
-    <|> try parseTime
+    <|> ((Commands . (: [])) <$> try parseTest)
+    <|> ((Commands . (: [])) <$> try parseInput)
+    <|> ((Commands . (: [])) <$> try parseImport)
+    <|> ((Commands . (: [])) <$> try parseTime)
+    <|> ((Commands . (: [])) <$> try parseClearState)
     <|> try parseEvaluate

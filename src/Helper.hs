@@ -136,9 +136,9 @@ instance Show Expression where
   show (MixfixChain ms) =
     "\ESC[33m(\ESC[0m" <> (intercalate " " $ map show ms) <> "\ESC[33m)\ESC[0m"
   show (Prefix p e) = show p <> " " <> show e
-data Command = Input String | Import String String | Test Expression Expression
+data Command = Input String | Import String String | Test Expression Expression | ClearState | Time Expression
   deriving (Show)
-data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Time Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
+data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)
 
 data EvalConf = EvalConf
