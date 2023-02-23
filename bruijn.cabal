@@ -19,8 +19,6 @@ extra-source-files:
 data-files:
     config
     std/Binary.bruijn
-    std/Byte.bruijn
-    std/Church.bruijn
     std/Combinator.bruijn
     std/Float.bruijn
     std/List.bruijn
@@ -31,6 +29,7 @@ data-files:
     std/Pair.bruijn
     std/Result.bruijn
     std/String.bruijn
+    std/Unary.bruijn
 
 source-repository head
   type: git
@@ -56,6 +55,7 @@ library
     , binary
     , bitstring
     , bytestring
+    , clock
     , containers
     , directory
     , filepath
@@ -63,6 +63,7 @@ library
     , megaparsec
     , mtl
     , random
+    , time
   default-language: Haskell2010
 
 executable bruijn
@@ -81,6 +82,7 @@ executable bruijn
     , bitstring
     , bruijn
     , bytestring
+    , clock
     , containers
     , directory
     , filepath
@@ -88,6 +90,7 @@ executable bruijn
     , megaparsec
     , mtl
     , random
+    , time
   default-language: Haskell2010
 
 test-suite bruijn-test
@@ -107,6 +110,7 @@ test-suite bruijn-test
     , bitstring
     , bruijn
     , bytestring
+    , clock
     , containers
     , directory
     , filepath
@@ -114,4 +118,5 @@ test-suite bruijn-test
     , megaparsec
     , mtl
     , random
+    , time
   default-language: Haskell2010

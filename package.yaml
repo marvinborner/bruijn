@@ -31,6 +31,8 @@ dependencies:
 - binary
 - bitstring
 - bytestring
+- clock
+- time
 - containers
 - directory
 - filepath

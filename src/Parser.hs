@@ -289,6 +289,12 @@ parseInput = do
   path <- importPath
   pure $ Input $ path ++ ".bruijn"
 
+parseWatch :: Parser Command
+parseWatch = do
+  _    <- string ":watch" <* sc <?> "watch instruction"
+  path <- importPath
+  pure $ Watch $ path ++ ".bruijn"
+
 parseTest :: Parser Command
 parseTest = do
   _  <- string ":test" <* sc <?> "test"
@@ -328,6 +334,7 @@ parseReplLine =
   try parseReplDefine -- TODO: This is kinda hacky
     <|> ((Commands . (: [])) <$> try parseTest)
     <|> ((Commands . (: [])) <$> try parseInput)
+    <|> ((Commands . (: [])) <$> try parseWatch)
     <|> ((Commands . (: [])) <$> try parseImport)
     <|> ((Commands . (: [])) <$> try parseTime)
     <|> ((Commands . (: [])) <$> try parseClearState)

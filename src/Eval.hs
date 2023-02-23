@@ -4,6 +4,7 @@ module Eval
   ) where
 
 import           Binary
+import           Control.Concurrent
 import           Control.Exception
 import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
@@ -13,6 +14,7 @@ import           Data.Function                  ( on )
 import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe
+import           Data.Time.Clock
 import           Helper
 import           Parser
 import           Paths_bruijn
@@ -185,6 +187,16 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
                             $ M.union (_imported cache) (_imported cache')
             }
           pure $ EnvState (Environment $ M.union env' envDefs) conf cache'' -- import => _isRepl = False
+  Watch path ->
+    let
+      monitor mtime = do
+        threadDelay 100000
+        full <- fullPath path
+        t    <- getModificationTime full
+        if t > mtime
+          then putStrLn "reload" >> evalCommand inp s (Input full) >> monitor t
+          else monitor t
+    in  getCurrentTime >>= monitor
   Import path namespace -> do -- TODO: Merge with Input (very similar)
     full <- fullPath path
     if full `elem` _evalPaths conf
