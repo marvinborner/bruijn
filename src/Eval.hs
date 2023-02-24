@@ -281,17 +281,15 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     pure s
 
 -- TODO: Reduce redundancy
-showResult :: Expression -> Expression -> Environment -> IO ()
-showResult orig reduced env =
-  putStrLn
-    $  "<> "
-    <> (show orig)
-    <> "\n*> "
-    <> (show reduced)
-    <> "\n?> "
-    <> (humanifyExpression reduced)
-    <> "\n#> "
-    <> (matchingFunctions reduced env)
+showResult :: Expression -> Environment -> IO ()
+showResult reduced env =
+  let matching   = matchingFunctions reduced env
+      humanified = humanifyExpression reduced
+  in  putStrLn
+        $  "*> "
+        <> (show reduced)
+        <> (if null humanified then "" else "\n?> " <> humanified)
+        <> (if null matching then "" else "\n#> " <> matching)
 
 evalInstruction
   :: Instruction -> EnvState -> (EnvState -> IO EnvState) -> IO EnvState
@@ -313,7 +311,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
             Left  err -> print err >> rec s
             Right e'  -> do
               red <- reduce e'
-              showResult e' red env
+              showResult red env
               rec s
           )
     Commands cs -> yeet (pure s) cs >>= rec
@@ -362,7 +360,7 @@ evalFileConf path conf = do
       $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
     Just EnvDef { _exp = e } -> do
       red <- reduce $ Application e arg
-      showResult e red (Environment env)
+      showResult red (Environment env)
 
 evalFile :: String -> IO ()
 evalFile path = evalFileConf path (defaultConf path)
@@ -379,7 +377,7 @@ exec path rd conv = do
     Left  exception -> print (exception :: IOError)
     Right f'        -> do
       red <- reduce $ Application e arg
-      showResult e red (Environment M.empty)
+      showResult red (Environment M.empty)
       where e = fromBinary $ conv f'
 
 repl :: EnvState -> InputT M ()

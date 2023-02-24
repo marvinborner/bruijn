@@ -260,18 +260,25 @@ matchingFunctions e (Environment env) =
     (\EnvDef { _exp = e' } -> e == e')
     env
 
--- TODO: Expression -> Maybe Char is missing
+-- TODO: Show binary as char if in ascii range (=> + humanify strings)
 maybeHumanifyExpression :: Expression -> Maybe String
 maybeHumanifyExpression e =
-  binaryToDecimal e
+  unaryToDecimal e
+    <|> binaryToDecimal e
     <|> ternaryToDecimal e
-    <|> unaryToDecimal e
-    <|> decodeStdout e
+    <|> humanifyList e
 
 humanifyExpression :: Expression -> String
 humanifyExpression e = case maybeHumanifyExpression e of
-  Nothing -> show e
+  Nothing -> ""
   Just h  -> h
+
+humanifyList :: Expression -> Maybe String
+humanifyList e = do
+  es <- unlistify e
+  let conv x = maybe (show x) id (maybeHumanifyExpression x)
+      m = map conv es
+  pure $ "{" <> intercalate ", " m <> "}"
 
 ---
 
@@ -304,7 +311,7 @@ decimalToUnary n | otherwise = Abstraction $ Abstraction $ gen n
 unaryToDecimal :: Expression -> Maybe String
 unaryToDecimal e = do
   res <- resolve e
-  return $ show $ (sum res :: Integer)
+  return $ show (sum res :: Integer) <> "u"
  where
   multiplier (Bruijn 1) = Just 1
   multiplier _          = Nothing
@@ -320,7 +327,7 @@ unaryToDecimal e = do
 binaryToDecimal :: Expression -> Maybe String
 binaryToDecimal e = do
   res <- resolve e
-  return $ show $ (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer)
+  return $ show (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer) <> "b"
  where
   multiplier (Bruijn 0) = Just 0
   multiplier (Bruijn 1) = Just 1
@@ -337,7 +344,7 @@ binaryToDecimal e = do
 ternaryToDecimal :: Expression -> Maybe String
 ternaryToDecimal e = do
   res <- resolve e
-  return $ show $ (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer)
+  return $ show (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer) <> "t"
  where
   multiplier (Bruijn 0) = Just 0
   multiplier (Bruijn 1) = Just 1
