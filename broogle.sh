@@ -13,11 +13,11 @@ pretty() {
 			alia=$(sed -n "$line,$ p" "$file" | sed -n "s/^\\(.*\\) $name$/\\1/p" | xargs)
 			[ -z "$type" ] && type="Any"
 
-			echo
 			echo -e "\e[101m\e[30mFOUND\e[0m \e[95m$name\e[0m ⧗ \e[33m$type\e[0m"
 			[ -z "$alia" ] || echo -e "\e[106m\e[30malso\e[0m \e[95m$alia\e[0m"
 			echo -e "\e[104m\e[30min\e[0m $file:$line"
 			[ -z "$desc" ] || echo -e "\e[3;2m$desc\e[0m"
+			echo
 		done
 }
 
@@ -38,11 +38,14 @@ case $1 in
 	shift
 	search_type "${@//->/→}"
 	;;
--n)
+-f)
 	shift
 	search_name "$@"
 	;;
+-c)
+	echo "sorry, not supported right now"
+	;;
 *)
-	echo "unknown command $1, please use -t/f/c]"
+	echo "unknown command $1, please use -t/f/c"
 	;;
 esac
