@@ -8,24 +8,24 @@ other sections.
 
 ## Features
 
--   **De Bruijn indices[\[0\]](#References)** eliminate the complexity
-    of α-equivalence and α-conversion
--   Unique **bracket-style representation** for lambda abstractions
-    enables improved human-readability and faster syntactic perception
--   **Call-by-need** reduction with mostly linear time/memory complexity
-    by using the RKNL[\[4\]](#References) abstract machine (similar to
-    [calm](https://github.com/marvinborner/calm/))
--   **Syntactic sugar** for unary/binary/ternary numerals and
-    binary-encoded strings and chars
--   **No primitive functions** - every function is implemented in Bruijn
-    itself
--   Highly space-efficient compilation to **binary lambda calculus
-    (BLC)[\[2\]](#References)[\[3\]](#References)** additionally to
-    normal interpretation and REPL
--   Strongly **opinionated parser** with strict syntax rules
--   **Recursion** can be implemented using combinators such as Y, Z or ω
--   Substantial **standard library** featuring many useful functions
-    (see `std/`)
+- **De Bruijn indices[\[0\]](#References)** eliminate the complexity of
+  α-equivalence and α-conversion
+- Unique **bracket-style representation** for lambda abstractions
+  enables improved human-readability and faster syntactic perception
+- **Call-by-need** reduction with mostly linear time/memory complexity
+  by using the RKNL[\[4\]](#References) abstract machine (similar to
+  [calm](https://github.com/marvinborner/calm/))
+- **Syntactic sugar** for unary/binary/ternary numerals and
+  binary-encoded strings and chars
+- **No primitive functions** - every function is implemented in Bruijn
+  itself
+- Highly space-efficient compilation to **binary lambda calculus
+  (BLC)[\[2\]](#References)[\[3\]](#References)** additionally to normal
+  interpretation and REPL
+- Strongly **opinionated parser** with strict syntax rules
+- **Recursion** can be implemented using combinators such as Y, Z or ω
+- Substantial **standard library** featuring many useful functions (see
+  `std/`)
 
 ## Basics
 
@@ -48,7 +48,7 @@ presented normal lambda calculus syntax with De Bruijn indices. The main
 difference of the syntax of expressions is the usage of square brackets
 instead of λs (e.g. `[[1 0]]` instead of λλ10).
 
-You can use any function that you've previously defined. You can also
+You can use any function that you’ve previously defined. You can also
 overwrite previously defined functions. The environment gets interpreted
 from bottom to top (starting at `main`).
 
@@ -97,12 +97,12 @@ indicating the desired base of the number.
 
 Generally the decimal representation is only syntactic sugar for a
 lambda calculus encoding. The default base is balanced ternary because
-it's a great compromise between performance and size (according to
-[\[1\]](#References)). The currently supported base suffixes are 't' for
-balanced ternary (default), 'b' for binary and 'u' for unary
+it’s a great compromise between performance and size (according to
+[\[1\]](#References)). The currently supported base suffixes are ‘t’ for
+balanced ternary (default), ‘b’ for binary and ‘u’ for unary
 (church-encoded).
 
-You don't have to care about the internals too much though as long as
+You don’t have to care about the internals too much though as long as
 you use the included operations from the standard library
 (`std/Number/`). The REPL even tries its best at displaying decimal
 numbers directly for expressions that look like numbers.
@@ -110,17 +110,17 @@ numbers directly for expressions that look like numbers.
 For example, in the REPL:
 
     λ (+42)
-    <> [[[[(0 (2 (2 (2 (1 3)))))]]]]
+    *> [[[[(0 (2 (2 (2 (1 3)))))]]]]
     ?> 42t
 
     λ (+42b)
-    <> [[[(0 (1 (0 (1 (0 (1 2))))))]]]
+    *> [[[(0 (1 (0 (1 (0 (1 2))))))]]]
     ?> 42b
 
 ### Standard library
 
 You may want to use the included standard library to reach your
-program's full potential. It includes many common combinators as well as
+program’s full potential. It includes many common combinators as well as
 functions for numerical, boolean and IO operations and much more.
 
 For example, you can import the standard library for numbers using
@@ -129,7 +129,7 @@ directory.
 
 ### Broogle
 
-You can use the broogle script (inspired by Haskell's hoogle) to search
+You can use the broogle script (inspired by Haskell’s hoogle) to search
 for standard library functions by type, name or comment:
 
     ./broogle.sh -t "a -> a"
@@ -145,13 +145,13 @@ file. You should pipe something into the stdin to receive stdout:
 `cat /dev/null | bruijn test.bruijn` should work for now.
 
 **Remember** that you need an equal sign between the function name and
-its definition if you're using the REPL.
+its definition if you’re using the REPL.
 
 #### Plain execution without any predefined functions
 
 Without using its standard library bruijn is basically unmodified pure
 lambda calculus with syntactically sugared numerals, strings and chars.
-Bruijn doesn't support any numerical operations or any other
+Bruijn doesn’t support any numerical operations or any other
 infix/prefix functions by default. Using it without its standard library
 can be quite fun, though - especially for exploring and understanding
 the logic of lambda calculus:
@@ -212,22 +212,22 @@ the logic of lambda calculus:
 
 #### Using standard library
 
-Concatenating "Hello world" program using IO (the first argument of the
+Concatenating “Hello world” program using IO (the first argument of the
 `main` function is a binary representation of stdin):
 
     :import std/List .
 
-    main [("Hello " ++ 0) ++ "!\n"]
+    main ["Hello " ++ 0 ++ "!\n"]
 
-You can then use `printf "world" | bruijn file.bruijn` to get "Hello
-world!"
+You can then use `printf "world" | bruijn file.bruijn` to get “Hello
+world!”
 
 Some other great functions:
 
     :import std/Combinator .
     :import std/List .
     :import std/Logic .
-    :import std/Number/Ternary .
+    :import std/Number .
     :import std/Option .
     :import std/Pair .
 
@@ -267,25 +267,26 @@ Some other great functions:
 
     # boolean
     # the main function gets executed automatically
-    main not (false && true || true)
+    # ignore stdin arguments by not referencing 0
+    main [¬(false ⋀? true ⋁? true)]
 
-    :test (main) (false)
+    :test (main [0]) (false)
 
 Read the files in `std/` for an overview of all functions/libraries.
 
 ### Compilation to BLC
 
-You can compile bruijn to John Tromp's
+You can compile bruijn to John Tromp’s
 BLC[\[2\]](#References)[\[3\]](#References). Only the used functions
 actually get compiled in order to achieve a minimal binary size.
 
 BLC uses the following encoding:
 
-  term           lambda   bruijn   BLC
-  -------------- -------- -------- ------------------------------------
-  abstraction    λM       \[M\]    00M
-  application    MN       MN       01MN
-  bruijn index   i        i        1`<sup>`{=html}i+1`</sup>`{=html}0
+| term         | lambda | bruijn | BLC              |
+|:-------------|:-------|:-------|:-----------------|
+| abstraction  | λM     | \[M\]  | 00M              |
+| application  | MN     | MN     | 01MN             |
+| bruijn index | i      | i      | 1<sup>i+1</sup>0 |
 
 ## Installation
 
@@ -310,18 +311,18 @@ argument.
 
 ## References
 
-0.  De Bruijn, Nicolaas Govert. "Lambda calculus notation with nameless
+0.  De Bruijn, Nicolaas Govert. “Lambda calculus notation with nameless
     dummies, a tool for automatic formula manipulation, with application
-    to the Church-Rosser theorem." Indagationes Mathematicae
+    to the Church-Rosser theorem.” Indagationes Mathematicae
     (Proceedings). Vol. 75. No. 5. North-Holland, 1972.
-1.  Mogensen, Torben. "An investigation of compact and efficient number
-    representations in the pure lambda calculus." International Andrei
+1.  Mogensen, Torben. “An investigation of compact and efficient number
+    representations in the pure lambda calculus.” International Andrei
     Ershov Memorial Conference on Perspectives of System Informatics.
     Springer, Berlin, Heidelberg, 2001.
-2.  Tromp, John. "Binary lambda calculus and combinatory logic."
+2.  Tromp, John. “Binary lambda calculus and combinatory logic.”
     Randomness and Complexity, from Leibniz to Chaitin. 2007. 237-260.
-3.  Tromp, John. "Functional Bits: Lambda Calculus based Algorithmic
-    Information Theory." (2022).
+3.  Tromp, John. “Functional Bits: Lambda Calculus based Algorithmic
+    Information Theory.” (2022).
 4.  Biernacka, M., Charatonik, W., & Drab, T. (2022). A simple and
     efficient implementation of strong call by need by an abstract
     machine. Proceedings of the ACM on Programming Languages, 6(ICFP),
