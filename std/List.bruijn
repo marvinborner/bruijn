@@ -112,7 +112,7 @@ reverse foldl \cons empty ⧗ (List a) → (List a)
 :test (<~>((+1) : ((+2) : ((+3) : empty)))) ((+3) : ((+2) : ((+1) : empty)))
 
 # creates list out of n terms
-# TODO: fix for balanced ternary
+# TODO: use balanced ternary
 # TODO: fix/remove incorrect type?
 list [0 [[[2 (0 : 1)]]] reverse empty] ⧗ (List a) → Unary → b → (List b)
 
@@ -185,9 +185,7 @@ init z [[rec]] ⧗ (List a) → (List a)
 # concatenates a list of lists to one list
 concat foldr append empty ⧗ (List a) → (List a) → (List a)
 
-# TODO: ?
-# :test (concat ((((+1) : ((+2) : empty)) : ((+3) : ((+4) : empty))) : empty)) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
-
+:test (concat (((+1) : ((+2) : empty)) : (((+3) : ((+4) : empty)) : empty))) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
 :test (concat ("a" : ("b" : empty))) ("ab")
 
 # maps a function returning list of list and concatenates
@@ -329,6 +327,16 @@ repeat z [[rec]] ⧗ a → (List a)
 replicate \(g take repeat) ⧗ Number → a → (List a)
 
 :test (replicate (+3) (+4)) ((+4) : ((+4) : ((+4) : empty)))
+
+# pads a list at end until its length is n
+pad-right [[[0 ++ (replicate |(2 - ∀0) 1)]]] ⧗ Number → a → (List a) → (List a)
+
+:test (pad-right (+6) 'a' "hah") ("hahaaa")
+
+# pads a list at start until its length is n
+pad-left [[[(replicate (2 - ∀0) 1) ++ 0]]] ⧗ Number → a → (List a) → (List a)
+
+:test (pad-left (+6) 'a' "hah") ("aaahah")
 
 # returns an infinite list repeating a finite list
 cycle z [[rec]] ⧗ (List a) → (List a)

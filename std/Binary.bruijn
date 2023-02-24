@@ -121,6 +121,8 @@ abstract! [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
 
 →^‣ abstract!
 
+:test (→^(+2b)) ([[[0 [[[1 [[[2]]]]]]]]])
+
 # converts the abstracted binary representation back to normal
 normal! ω [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
 	z (+0b)
@@ -128,6 +130,8 @@ normal! ω [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
 	a⁰ [↑⁰([3 3 0] 0)]
 
 →_‣ normal!
+
+:test (→_[[[0 [[[1 [[[2]]]]]]]]]) ((+2b))
 
 # returns true if two binary numbers are equal
 # → ignores leading 0s!
@@ -142,7 +146,7 @@ eq? [[abs 1 →^0]] ⧗ Binary → Binary → Boolean
 
 :test ((+0b) =? (+0b)) (true)
 :test ([[[1 (0 2)]]] =? [[[1 (0 2)]]]) (true)
-:test ([[[1 (0 2)]]] =? (+2b)) (false)
+:test ([[[1 2]]] =? (+2b)) (false)
 
 # returns true if two binary numbers are not equal
 not-eq? not! ∘∘ eq? ⧗ Binary → Binary → Boolean
@@ -176,6 +180,30 @@ dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 :test (--(+1b)) ([[[0 2]]])
 :test (--(+3b)) ((+2b))
 
+# flips the bits of a binary number (1's complement)
+complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
+
+~‣ complement
+
+:test (~(+0b) =? (+0b)) (true)
+:test (~(+1b) =? (+0b)) (true)
+:test (~(+42b)) ([[[1 (0 (1 (0 (1 (0 2)))))]]])
+
+# inverts a binary number by complementing and incrementing (2's complement)
+# don't forget to pad the number with zeroes if needed
+invert ++‣ ∘ ~‣ ⧗ Binary → Binary
+
+-‣ invert
+
+:test (-(+0b)) ((+1b))
+:test (-(+1b)) ((+1b))
+
+# pads a binary number with zeroes until its as long a another binary number
+# TODO: this could probably be done without list magic
+pad [[binary! (pad-right ∀(list! %1) b⁰ (list! 0))]] ⧗ Binary → Binary → Binary
+
+:test (pad (+5b) [[[1 2]]]) ([[[1 (0 (0 2))]]])
+
 # adds two binary numbers (can introduce leading 0s)
 # second argument gets abstracted (performance)
 add [[abs 1 →^0]] ⧗ Binary → Binary → Binary
@@ -190,15 +218,18 @@ add [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 
 …+… add
 
-:test (((+0b) + (+0b)) =? (+0b)) (true)
-:test (((+0b) + (+3b)) =? (+3b)) (true)
-:test (((+1b) + (+2b)) =? (+3b)) (true)
-:test (((+42b) + (+1b)) =? (+43b)) (true)
+:test ((+0b) + (+0b) =? (+0b)) (true)
+:test ((+0b) + (+3b) =? (+3b)) (true)
+:test ((+1b) + (+2b) =? (+3b)) (true)
+:test ((+42b) + (+1b) =? (+43b)) (true)
+:test ((+1b) + (+42b) =? (+43b)) (true)
 
 # subs two binary numbers (can introduce leading 0s)
 # second argument gets abstracted (performance)
-sub [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+# TODO: fix sub*; implementation is completely wrong
+sub* [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 	abs [c (0 z a¹ a⁰)]
+		c¹ [1 ↑¹(3 0 b⁰) ↑¹(3 0 b⁰)]
 		a¹ [[[1 (c¹ 1) c¹' c¹]]]
 			c¹ [1 ↑⁰(3 0 b¹) ↑¹(3 0 b⁰)]
 			c¹' [1 ↑¹(3 0 b⁰) ↑¹(3 0 b⁰)]
@@ -208,31 +239,14 @@ sub [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 		z [[0 --(→_1) →_1]]
 		c [[1 0 b⁰]]
 
+# subs two binary numbers
+# uses addition but with two's complement
+# TODO: isn't very performant ⇒ replace with sub*
+# TODO: gives wrong results if b>=a in a-b
+sub [[-((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binary
+
 …-… sub
 
-:test ((+5b) - (+0b)) ((+5b))
-:test ((+8b) - (+3b)) ((+5b))
-:test ((+10b) - (+5b)) ((+5b))
-:test (((+20b) - (+1b))) ((+19b))
-
-# :test (%((+20b) - (+0b))) ((+20b))
-# :test (%((+20b) - (+1b))) ((+19b))
-# :test (%((+19b) - (+1b))) ((+18b))
-# :test (%((+19b) - (+2b))) ((+17b))
-# :test (%((+18b) - (+2b))) ((+16b))
-# :test (%((+18b) - (+3b))) ((+15b))
-# :test (%((+17b) - (+3b))) ((+14b))
-# :test (%((+17b) - (+4b))) ((+13b))
-# :test (%((+16b) - (+4b))) ((+12b))
-# :test (%((+16b) - (+5b))) ((+11b))
-# :test (%((+15b) - (+5b))) ((+10b))
-# :test (%((+15b) - (+6b))) ((+9b))
-# :test (%((+14b) - (+6b))) ((+8b))
-# :test (%((+14b) - (+7b))) ((+7b))
-# :test (%((+13b) - (+7b))) ((+6b))
-# :test (%((+13b) - (+8b))) ((+5b))
-# :test (%((+12b) - (+8b))) ((+4b))
-# :test (%((+12b) - (+9b))) ((+3b))
-# :test (%((+11b) - (+9b))) ((+2b))
-# :test (%((+11b) - (+10b))) ((+1b))
-# :test (%((+10b) - (+10b))) ((+0b))
+:test ((+42b) - (+12b) =? (+30b)) (true)
+:test ((+3b) - (+0b) =? (+3b)) (true)
+:test ((+3b) - (+2b) =? (+1b)) (true)
