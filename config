@@ -10,6 +10,3 @@ historyDuplicates: IgnoreConsecutive
 bind: { {  } left
 bind: ( (  ) left
 bind: [ [  ] left
-bind: } right
-bind: ] right
-bind: ) right
