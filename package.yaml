@@ -12,6 +12,7 @@ extra-source-files:
 data-files:
 - config
 - std/*
+- std/**/*
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package

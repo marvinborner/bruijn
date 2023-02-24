@@ -18,7 +18,6 @@ extra-source-files:
     readme.md
 data-files:
     config
-    std/Binary.bruijn
     std/Combinator.bruijn
     std/Float.bruijn
     std/List.bruijn
@@ -29,7 +28,9 @@ data-files:
     std/Pair.bruijn
     std/Result.bruijn
     std/String.bruijn
-    std/Unary.bruijn
+    std/Number/Binary.bruijn
+    std/Number/Ternary.bruijn
+    std/Number/Unary.bruijn
 
 source-repository head
   type: git

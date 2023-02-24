@@ -1,6 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
-:import std/Binary B
+:import std/Number/Binary B
 
 :input std/List
 
