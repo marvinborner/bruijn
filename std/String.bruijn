@@ -1,5 +1,7 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
+:import std/Char C
+:import std/Number .
 :import std/Number/Binary B
 
 :input std/List
@@ -25,6 +27,11 @@ ni? \in?
 :test ('c' ∈ "ab") (false)
 :test ("ab" ∋ 'b') (true)
 :test ("ab" ∋ 'c') (false)
+
+# converts a string of digits into a number
+number! from-digits ∘ (map C.number!)
+
+:test ((number! "123") =? (+123)) (true)
 
 # splits string by newline character
 lines z [[rec]]

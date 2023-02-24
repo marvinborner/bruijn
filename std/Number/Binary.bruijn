@@ -4,6 +4,7 @@
 :import std/Combinator .
 :import std/List .
 :import std/Logic .
+:import std/Number/Ternary T
 
 # bit indicating a one, compatible with std/Logic
 b¹ true ⧗ Bit
@@ -180,6 +181,16 @@ dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 :test (--(+1b)) ([[[0 2]]])
 :test (--(+3b)) ((+2b))
 
+# converts a binary number to a balanced ternary number
+# TODO: find a better solution
+ternary! z [[[rec]]] (+0t) ⧗ Binary → Ternary
+	rec =?0 case-end case-inc
+		case-inc 2 (T.inc 1) --0
+		case-end 1
+
+:test (ternary! (+0b)) ((+0t))
+:test (ternary! (+42b)) ((+42t))
+
 # flips the bits of a binary number (1's complement)
 complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
 
@@ -242,8 +253,8 @@ sub* [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 # subs two binary numbers
 # uses addition but with two's complement
 # TODO: isn't very performant ⇒ replace with sub*
-# TODO: gives wrong results if b>=a in a-b
-sub [[-((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binary
+# TODO: gives wrong results if b>a in a-b
+sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binary
 
 …-… sub
 

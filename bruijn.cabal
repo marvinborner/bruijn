@@ -18,8 +18,8 @@ extra-source-files:
     readme.md
 data-files:
     config
+    std/Char.bruijn
     std/Combinator.bruijn
-    std/Float.bruijn
     std/List.bruijn
     std/Logic.bruijn
     std/Math.bruijn

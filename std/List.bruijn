@@ -4,7 +4,7 @@
 :import std/Combinator .
 :import std/Pair P
 :import std/Logic .
-:import std/Number .
+:import std/Number/Ternary .
 
 # empty list element
 empty false ⧗ (List a)

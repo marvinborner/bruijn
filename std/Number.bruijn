@@ -2,4 +2,15 @@
 # this is just a reference to the ternary implementation
 # read the readme for the reasoning of using balanced ternary by default
 
+:import std/List .
+
 :input std/Number/Ternary .
+
+# the following functions are only here because of recursive imports of list/ternary
+
+# converts a list of digits into a balanced ternary number
+from-digits foldl [[(+10) ⋅ 1 + 0]] (+0)
+
+:test (from-digits ((+4) : ((+2) : ((+0) : empty)))) ((+420))
+:test (from-digits empty) ((+0))
+

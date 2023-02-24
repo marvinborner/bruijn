@@ -1,0 +1,5 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+
+:import std/Number/Binary .
+
+number! [ternary! (0 - '0')] ⧗ Char → Number
