@@ -1,0 +1,7 @@
+:import std/Math .
+:import std/String .
+
+main [lmax sums]
+	numbers number! <$> (lines 0)
+	parts split-at =?‣ numbers
+	sums sum <$> parts
