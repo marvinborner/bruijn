@@ -8,7 +8,7 @@ const term = t => t
 	.replaceAll(/(\))(?!\<)/g, "<span class='right-app'>)</span>")
 	.replaceAll("[", "<span class='left-abs'>[</span>")
 	.replaceAll("]", "<span class='right-abs'>]</span>")
-	.replaceAll(/(?<![+-0-9])([0-9])/g, "<span class='index'>$1</span>")
+	.replaceAll(/(?<![+-\d])([0-9])/g, "<span class='index'>$1</span>")
 
 code.innerHTML = code.innerHTML
 	.replaceAll(/^:import std\/(.*) (.*)$/gm, (_, p, s) => `<span class="com">:import</span> <a href='${fixPath(p)}.bruijn.html'>std/${p}</a> ${s}`)

@@ -1,5 +1,10 @@
+@font-face {
+	font-family: "Iosevka";
+	src: url("iosevka.woff2") format("woff2");
+}
+
 body {
-	font-family: monospace;
+	font-family: "Iosevka", monospace;
 	background-color: #222222;
 	color: #cccccc;
 	font-size: 1.2em;

@@ -17,4 +17,4 @@ done
 
 sed -e "s@LINKS@$links@g" index.template >std/index.html
 
-cp content.js content.css index.css std/
+cp res/* content.js content.css index.css std/
