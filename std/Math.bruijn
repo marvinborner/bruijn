@@ -2,7 +2,7 @@
 
 :import std/List .
 
-:input std/Number .
+:input std/Number
 
 # adds all values in list
 sum foldl add (+0) ⧗ (List Number) → Number
@@ -67,7 +67,7 @@ pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number
 
 …**… pow
 
-:test (((+2) ** (+3)) =? ((+8))) (true)
+:test (((+2) ** (+3)) =? (+8)) (true)
 
 # power function using ternary exponentiation (TODO: slow..)
 pow' z [[[rec]]] ⧗ Number → Number → Number

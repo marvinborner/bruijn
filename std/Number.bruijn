@@ -4,7 +4,7 @@
 
 :import std/List .
 
-:input std/Number/Ternary .
+:input std/Number/Ternary
 
 # the following functions are only here because of recursive imports of list/ternary
 
