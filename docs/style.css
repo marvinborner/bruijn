@@ -1,0 +1,160 @@
+body {
+	font-family: monospace;
+	background-color: #222222;
+	color: #cccccc;
+	font-size: 1.2em;
+	padding: 0;
+	margin: 0;
+}
+
+a {
+	color: #cccccc;
+}
+
+.header {
+	display: flex;	
+	align-items: center;
+	flex-direction: column;
+}
+
+.header img {
+	width: auto;
+	max-height: 20vh;
+}
+
+.header h1 {
+	margin-top: -0.5em;
+	font-size: 3em;
+}
+
+.example {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-flow: row wrap;
+	column-gap: 5vw;
+	max-width: 80%;
+	margin: 0 auto;
+}
+
+.example p {
+	font-size: 1.3em;
+	max-width: 80vw;
+	text-align: center;
+}
+
+.instructions {
+	max-width: 80%;
+	margin: 0 auto;
+}
+
+@media(min-width: 768px) {
+	.example {
+		flex-flow: row nowrap;
+		max-width: 80%;
+	}
+
+	.example p {
+		width: 30vw;
+		font-size: 1.5em;
+	}
+
+	.instructions {
+		max-width: 80%;
+	}
+}
+
+@media(min-width: 1800px) {
+	.example {
+		flex-flow: row nowrap;
+		max-width: 35%;
+	}
+
+	.instructions {
+		max-width: 35%;
+	}
+}
+
+.bar {
+	text-align: center;
+	background-color: #333333;
+	margin: 30px 0;
+}
+
+.bar.small {
+	font-size: 1.2em;
+	line-height: 1.2em;
+	padding: 15px;
+}
+
+.bar.big {
+	font-size: 2em;
+	line-height: 5em;
+	padding: 20px;
+}
+
+.bar a {
+	color: #cccccc;
+}
+
+.popup {
+	position: absolute;
+	display: block;
+	border-sizing: border-box;
+	box-shadow: 0 10px 50px rgba(0,0,0,.6);
+	background-color: #333333;
+	border-radius: 10px;
+	padding: 15px;
+	max-width: 300px;
+}
+
+.code {
+	background-color: #333333;
+	padding: 15px;
+	font-size: 1.2em;
+	border-radius: 10px;
+}
+
+.instructions .code {
+	overflow-x: scroll;
+}
+
+.code .repl {
+	color: #13dbee;
+}
+
+.code .def {
+	color: #13dbee;
+}
+
+.code .left-abs, .code .right-abs {
+	color: #6b82ff;
+}
+
+.code .left-app, .code .right-app {
+	color: #ff8750;
+}
+
+.code .com {
+	color: #ff64bd;
+}
+
+.code .ternary, .code .binary {
+	color: #b1ee13;
+}
+
+.code .char, .code .string {
+	color: #b1ee13;
+}
+
+.code .mixfix {
+	color: #eee513;
+}
+
+.code .symbol {
+	color: #f9f9f9;
+}
+
+.code .index {
+	color: #ff5050;
+}

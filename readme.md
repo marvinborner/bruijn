@@ -6,6 +6,8 @@
 [Jump to examples](#Examples) or use the navigation tree to jump to
 other sections.
 
+Docs, examples and more: [website](https://bruijn.marvinborner.de).
+
 ## Features
 
 - **De Bruijn indices[\[0\]](#References)** eliminate the complexity of
@@ -261,7 +263,7 @@ Some other great functions:
     # lazy evaluation using infinite lists and indexing
     pow2 …!!… (iterate (…⋅… (+2)) (+1))
 
-    :test ((pow2 (+5)) =? ((+32))) (true)
+    :test ((pow2 (+5)) =? (+32)) (true)
 
     # options
     :test (map inc (some (+1))) (some (+2))
@@ -274,7 +276,8 @@ Some other great functions:
 
     :test (main [0]) (false)
 
-Read the files in `std/` for an overview of all functions/libraries.
+Read the files in `std/` for an overview of all functions/libraries or
+visit the interactive [website](https://bruijn.marvinborner.de).
 
 ### Compilation to BLC
 

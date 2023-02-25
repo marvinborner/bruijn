@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href="content.css" type="text/css" media="all">
+		<title>bruijn std/</title>
+	</head>
+	<body>
+		<h1>NAME</h1>
+<pre>
+CONTENT
+</pre>
+
+	<script src="content.js" charset="utf-8"></script>
+	</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href="style.css" type="text/css" media="all">
+		<title>bruijn</title>
+	</head>
+	<body>
+		<div class="header">
+			<img src="res/logo.png" />
+			<h1>bruijn</h1>
+		</div>
+
+		<div class="example">
+			<pre class="code">
+<span class="def">pow</span> <span class="term">[<span class="symbol">…!!…</span> (<span class="symbol">iterate</span> (<span class="symbol">…⋅…</span> 0) <span class="ternary">(+1)</span>)]</span>
+
+<span class="def">…**…</span> <span class="symbol">pow</span>
+
+<span class="com">:test</span> <span class="test">(<span class="term"><span class="ternary">(+2)</span> <span class="mixfix">**</span> <span class="ternary">(+3)</span> <span class="mixfix">=?</span> <span class="ternary">(+8)</span></span>)</span> <span class="test">(<span class="symbol">true</span>)</span></pre>
+			
+			<p>
+				Functional language based on pure bruijn-indexed lambda calculus.
+			</p>
+		</div>
+
+		<div class="bar small">
+			<b>Hint</b>: Click on anything you don't understand.
+		</div>
+
+		<div class="example">
+			<p>
+				Lambdas all the way down.<br>
+				No primitive functions.
+			</p>
+			<pre class="code">
+<span class="repl">></span> <span class="ternary">(+5)</span>
+<span class="term">[[[[2 (2 (1 3))]]]]</span>
+<span class="repl">></span> <span class="char">'a'</span>
+<span class="term">[[[1 (0 (0 (0 (0 (1 (1 (0 2)))))))]]]</span>
+<span class="repl">></span> <span class="symbol">add</span>
+<span class="term">[[(([([[1 0 [[0]]]] ((((0 [[(((0...</span></pre>
+		</div>
+
+		<div class="example">
+			<pre class="code">
+<span class="repl">></span> <span class="com">:time</span> <span class="symbol">factorial</span> <span class="ternary">(+30)</span>
+<span class="time">0.35 seconds</span></pre>
+			<p>
+				Efficient call-by-need reduction using abstract machines.
+			</p>
+		</div>
+
+		<div class="example">
+			<p>
+				Substantial standard library.<br>
+				<a href="std/">Docs</a>
+			</p>
+			<pre class="code">
+<span class="repl">></span> <span class="mixfix">∏</span> <span class="ternary">(+1)</span> <span class="mixfix">→</span> <span class="ternary">(+3)</span> <span class="mixfix">|</span> <span class="symbol">++‣</span>
+<span class="repl">></span> <span class="symbol">number!</span> <span class="mixfix"><$></span> <span class="left-app">(</span><span class="symbol">lines</span> <span class="string">"42\n25"</span><span class="right-app">)</span>
+<span class="repl">></span> <span class="term"><span class="symbol">sum</span> (<span class="symbol">take</span> <span class="ternary">(+3)</span> (<span class="symbol">repeat</span> <span class="ternary">(+4)</span>))</span>
+<span class="repl">></span> <span class="binary">(+10b)</span> <span class="mixfix">⋀!</span> <span class="binary">(+12b)</span></pre>
+		</div>
+
+		<div class="example">
+			<pre class="code">
+$ echo "main [0]" > echo.bruijn
+$ bruijn -b echo.bruijn > echo
+$ wc -c echo
+2 echo
+$ echo "hello world!" | bruijn -e echo
+hello world!</pre>
+			<p>
+				Compilation to Tromp's binary lambda calculus.<br>
+				Support for byte and ASCII encoding.
+			</p>
+		</div>
+
+		<div class="bar big">
+			Learn more: <a href="https://github.com/marvinborner/bruijn">GitHub</a>
+		</div>
+
+		<div class="instructions">
+			<h1>Installation</h1>
+			<pre class="code">
+$ git clone https://github.com/marvinborner/bruijn.git && cd bruijn
+$ <span class="stack">stack</span> run # for playing around
+$ <span class="stack">stack</span> install
+$ bruijn</pre>	
+		</div>
+
+		<div class="instructions">
+			<h1>Broogle</h1>
+			<pre class="code">
+$ ./broogle.sh -f add
+<span class="def">add</span> ⧗ Unary → Unary → Unary
+also known as <span class="def">…+…</span>
+in std/Number/Unary.bruijn:35
+# adds two unary numbers
+...</pre>	
+		</div>
+
+		<div class="instructions">
+			<h1>Syntax highlighting</h1>
+			<ol>
+				<li>Use vim and vim-plug</li>
+				<li>Add "Plug 'marvinborner/bruijn', { 'rtp': 'editors/vim' }" to your .vimrc</li>
+				<li>Run :PlugInstall</li>
+			</ol>
+			Learn more: <a href="https://github.com/marvinborner/bruijn/tree/main/editors">GitHub</a>
+		</div>
+
+		<div class="bar big">
+			Standard library: <a href="std/">Docs</a>
+		</div>
+
+		<script src="script.js" charset="utf-8"></script>
+	</body>
+</html>

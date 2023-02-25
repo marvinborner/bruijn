@@ -1,0 +1,14 @@
+body {
+	font-family: monospace;
+	background-color: #222222;
+	color: #cccccc;
+	font-size: 1.2em;
+}
+
+a {
+	color: #cccccc;
+}
+
+.com {
+	color: #ff64bd;
+}

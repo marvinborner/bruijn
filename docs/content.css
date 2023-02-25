@@ -1,0 +1,65 @@
+body {
+	font-family: monospace;
+	background-color: #222222;
+	color: #cccccc;
+	font-size: 1.2em;
+}
+
+a {
+	color: #cccccc;
+}
+
+pre {
+	margin: 0 0 1em;
+	padding: .5em 1em;
+}
+
+pre .line {
+	display: block;
+	float: left;
+	margin: 0 1em 0 -1em;
+	border-right: 1px solid;
+	text-align: right;
+}
+
+pre .line span {
+	display: block;
+	padding: 0 .5em 0 1em;
+}
+
+pre .cl {
+	display: block;
+	clear: both;
+}
+
+.com {
+	color: #ff64bd;
+}
+
+.def {
+	color: #13dbee;
+}
+
+.comment {
+	color: #999999;
+}
+
+.type {
+	color: #ffa120;
+}
+
+.left-abs, .right-abs {
+	color: #6b82ff;
+}
+
+.left-app, .right-app {
+	color: #ff8750;
+}
+
+.index {
+	color: #ff5050;
+}
+
+.number {
+	color: #b1ee13;
+}

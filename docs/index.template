@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href="index.css" type="text/css" media="all">
+		<title>bruijn standard library</title>
+	</head>
+	<body>
+		<h1>bruijn standard library</h1>
+		<ol>
+			LINKS
+		</ol>
+	</body>
+</html>
