@@ -433,9 +433,6 @@ runRepl = do
 usage :: IO ()
 usage = do
   putStrLn "Invalid arguments. Use 'bruijn [option] path' instead"
-  putStrLn "-o\toptimize path"
-  putStrLn "-c\tcompress path to binary-BLC"
-  putStrLn "-C\tcompress path to ASCII-BLC"
   putStrLn "-b\tcompile path to binary-BLC"
   putStrLn "-B\tcompile path to ASCII-BLC"
   putStrLn "-e\texecute path as binary-BLC"
