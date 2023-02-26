@@ -58,9 +58,9 @@ gcd z [[[(1 =? 0) case-eq ((1 >? 0) case-gre case-les)]]] ⧗ Number → Number 
 	case-gre 2 (1 - 0) 0
 	case-les 2 1 (0 - 1)
 
-:test ((gcd (+2) (+4)) =? ((+2))) (true)
-:test ((gcd (+10) (+5)) =? ((+5))) (true)
-:test ((gcd (+3) (+8)) =? ((+1))) (true)
+:test ((gcd (+2) (+4)) =? (+2)) (true)
+:test ((gcd (+10) (+5)) =? (+5)) (true)
+:test ((gcd (+3) (+8)) =? (+1)) (true)
 
 # power function
 pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number

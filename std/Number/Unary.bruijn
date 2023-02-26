@@ -1,14 +1,13 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
+# with help from Justine Tunney
 # classic Church style numerals
 
 :import std/Logic .
 :import std/Combinator .
 :import std/Pair .
 
-zero [[0]]
-
 # returns true if a unary number is zero
-zero? [0 [zero] true] ⧗ Unary → Boolean
+zero? [0 [(+0u)] true] ⧗ Unary → Boolean
 
 =?‣ zero?
 
@@ -114,8 +113,7 @@ mul …∘… ⧗ Unary → Unary → Unary
 :test ((+2u) ⋅ (+3u)) ((+6u))
 
 # divs two unary numbers
-div [z div* ++0] ⧗ Unary → Unary → Unary
-	div* [[[[[[=?0 ((+0u) 2 1) (2 (5 0 3 2 1))] (3 - 2)]]]]]
+div [[[[3 [[0 1]] [1] (3 [3 [[0 1]] [3 (0 1)] [0]] 0)]]]] ⧗ Unary → Unary → Unary
 
 …/… div
 
@@ -124,15 +122,22 @@ div [z div* ++0] ⧗ Unary → Unary → Unary
 :test ((+2u) / (+2u)) ((+1u))
 :test ((+2u) / (+3u)) ((+0u))
 
+# slower div
+div* [z rec ++0] ⧗ Unary → Unary → Unary
+	rec [[[[[[=?0 ((+0u) 2 1) (2 (5 0 3 2 1))] (3 - 2)]]]]]
+
 # returns remainder of integer division
-mod [[1 [0 [[(0 ⋀? (3 ≤? 1)) case-rec case-end]]] (1 : true) [[1]]]] ⧗ Unary → Unary → Unary
-	case-rec (1 - 3) : true
-	case-end 1 : false
+mod [[[[3 [0 [[1]]] (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) [[0]]]]]] ⧗ Unary → Unary → Unary
 
 …%… mod
 
 :test ((+10u) % (+3u)) ((+1u))
 :test ((+3u) % (+5u)) ((+3u))
+
+# slower mod
+mod* [[1 [0 [[(0 ⋀? (3 ≤? 1)) case-rec case-end]]] (1 : true) [[1]]]] ⧗ Unary → Unary → Unary
+	case-rec (1 - 3) : true
+	case-end 1 : false
 
 # exponentiates two unary number
 # doesn't give correct results for x^0
@@ -145,3 +150,14 @@ pow [[0 [[3 (1 0)]] [[1 0]]]] ⧗ Unary → Unary → Unary
 
 :test ((+2u) ^ (+3u)) ((+8u))
 :test ((+3u) ^ (+2u)) ((+9u))
+
+# fibonacci sequence
+# index +1 vs std/Math fib
+fib [0 [[[2 0 [2 (1 0)]]]] [[1]] [0]] ⧗ Unary → Unary
+
+:test (fib (+6u)) ((+8u))
+
+# factorial function
+fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] [0]]] ⧗ Unary → Unary
+
+:test (fac (+3u)) ((+6u))
