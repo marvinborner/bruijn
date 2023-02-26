@@ -1,0 +1,4 @@
+# "echo text | bruijn echo.bruijn"
+
+# returning the binary encoded argument ⇒ echo
+main [0]
