@@ -1,0 +1,46 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# Rose trees based on std/List
+
+:import std/Combinator .
+:import std/List L
+:import std/Logic .
+:import std/Math .
+:import std/Pair .
+
+# a tree node has a label as its head and subtrees as its tail
+
+# constructs a tree with a label and no branches
+leaf [0 : L.empty] ⧗ a → (Tree a)
+
+{:}‣ leaf
+
+# constructs a node with a subnodes
+node [[1 : 0]] ⧗ a → (List (Tree a)) → (Tree a)
+
+{…:…} node
+
+# returns the root label of a tree
+label ^‣ ⧗ (Tree a) → a
+
+^‣ label
+
+# returns the branches of a tree
+branches ~‣ ⧗ (Tree a) → (List (Tree a))
+
+~‣ branches
+
+# returns true if a tree is empty
+empty? [L.empty? ~0] ⧗ (Tree a) → Boolean
+
+∅?‣ empty?
+
+:test (∅?({ 'a' : {:}'b' })) (false)
+:test (∅?({:}'a')) (true)
+
+# applies a function to leaf and the leafs of all branches
+map z [[[rec]]] ⧗ (a → b) → (Tree a) → (Tree b)
+	rec { (1 ^0) : (L.map (2 1) ~0) }
+
+…<$>… map
+
+:test (map ^‣ ({ "woo" : ({:}"oof" : (({ "aah" : (({:}"huh" : L.empty)) }) : L.empty)) })) ({ 'w' : ({:}'o' : (({ 'a' : ({:}'h' : L.empty) }) : L.empty)) })

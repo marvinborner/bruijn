@@ -20,6 +20,7 @@ data-files:
     config
     std/Char.bruijn
     std/Combinator.bruijn
+    std/Float.bruijn
     std/List.bruijn
     std/Logic.bruijn
     std/Math.bruijn
@@ -28,6 +29,7 @@ data-files:
     std/Pair.bruijn
     std/Result.bruijn
     std/String.bruijn
+    std/Tree.bruijn
     std/Number/Binary.bruijn
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn

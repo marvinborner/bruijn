@@ -4,13 +4,12 @@
 
 :import std/Combinator .
 :import std/Number .
-:import std/List .
 :import std/Pair P
 
 # generates a float from a normal balanced ternary number
-float! \(P.:) (+0)
+float! \(P.…:…) (+0)
 
 # adds two floating numbers
 # TODO: Carry support
 # - needed: mod, div (?) -> ternary carry != decimal carry
-add P.zip-with (+)
+add P.zip-with …+…

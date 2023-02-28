@@ -94,8 +94,8 @@ fib [fibs !! ++0] ⧗ Number
 :test (fib (+5)) ((+8))
 
 # pascal triangle
-# TODO: this generally works, BUT lists in lists get reduced and mess up indexing
-pascal iterate [zip-with …+… ({ (+0) } ++ 0) (0 ; (+0))] ({ (+1) })
+# TODO: something is wrong in here
+pascal iterate [zip-with …+… ({}(+0) ++ 0) (0 ; (+0))] ({}(+1))
 
 # π
 # q 3, r 2, t 1, i 0

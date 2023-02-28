@@ -1,5 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # Lists in Church/Boehm-Berarducci encoding using pairs
+# TODO: Replace fold/map/etc. with faster LC native logic
 
 :import std/Combinator .
 :import std/Pair P
@@ -119,9 +120,9 @@ list [0 [[[2 (0 : 1)]]] reverse empty] ⧗ (List a) → Unary → b → (List b)
 # creates list with single element
 singleton [0 : empty] ⧗ a → (List a)
 
-{…} singleton
+{}‣ singleton
 
-:test ({ (+1) }) ((+1) : empty)
+:test ({}(+1)) ((+1) : empty)
 
 # appends two lists
 append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
@@ -134,7 +135,7 @@ append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
 :test (((+1) : ((+2) : ((+3) : empty))) ++ ((+4) : empty)) ((+1) : ((+2) : ((+3) : ((+4) : empty))))
 
 # appends an element to a list
-snoc [[1 ++ ({ 0 })]] ⧗ (List a) → a → (List a)
+snoc [[1 ++ {}0]] ⧗ (List a) → a → (List a)
 
 …;… snoc
 
