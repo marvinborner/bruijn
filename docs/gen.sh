@@ -4,7 +4,7 @@ set -e
 
 rm -rf std/ && mkdir -p std/
 
-files=$(find ../std/ -type f | sort)
+files=$(find ../std/ -type f -printf '%h\0%d\0%p\n' | sort -t '\0' -n | awk -F '\0' '{print $3}')
 links=""
 
 for file in $files; do
