@@ -262,7 +262,12 @@ span z [[[rec]]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
 :test (span (\les? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
 # same as span but with inverted predicate
-break span ∘ (…∘… ¬‣) ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
+# slower but equivalent: span ∘ (…∘… ¬‣)
+break z [[[rec]]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
+	rec ∅?0 case-end case-drop
+		case-drop ¬(1 ^0) ((^0 : ^recced) : ~recced) (empty : 0)
+			recced 2 1 ~0
+		case-end empty : empty
 
 :test (break (\gre? (+3)) ((+1) : ((+2) : ((+4) : ((+1) : empty))))) (((+1) : ((+2) : empty)) : ((+4) : ((+1) : empty)))
 
