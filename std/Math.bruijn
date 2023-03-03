@@ -1,8 +1,8 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
-:import std/List .
-
 :input std/Number
+
+:import std/List .
 
 # adds all values in list
 sum foldl add (+0) ⧗ (List Number) → Number

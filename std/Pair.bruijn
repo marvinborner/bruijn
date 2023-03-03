@@ -21,6 +21,13 @@ snd [0 ki] ⧗ (Pair a b) → b
 
 :test (~([[0]] : [[1]])) ([[1]])
 
+# maps both elements to a function
+map [[(1 ^0) : (1 ~0)]] ⧗ (a → b) → (Pair a a) → (Pair b b)
+
+…<$>… map
+
+:test ([[1]] <$> ([[0]] : [[1]])) ([[[0]]] : [[[1]]])
+
 # applies both elements of a pair to a function
 uncurry [[1 ^0 ~0]] ⧗ (a → b → c) → (Pair a b) → c
 

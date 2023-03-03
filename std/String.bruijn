@@ -35,8 +35,8 @@ number! from-digits ∘ (map C.number!)
 
 # splits string by newline character
 lines z [[rec]]
-	rec ∅?(~broken) (^broken : empty) (^broken : (1 ~(~broken)))
-		broken break (B.eq? '\n') 0
+	rec build (break (B.eq? '\n') 0)
+		build [∅?(~0) (^0 : empty) (^0 : (2 ~(~0)))]
 
 :test (lines "ab\ncd") ("ab" : ("cd" : empty))
 

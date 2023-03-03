@@ -1,7 +1,9 @@
 :import std/Math .
 :import std/String .
 
-main [lmax sums]
+main [answer]
 	numbers number! <$> (lines 0)
-	parts split-at =?‣ numbers
+	parts split-list-by =?‣ numbers
 	sums sum <$> parts
+	answer build (sort-desc sums)
+		build [^0 : ∑(take (+3) 0)]
