@@ -215,6 +215,11 @@ unlistify (Abstraction (Application (Application (Bruijn 0) e) es)) =
   (:) <$> Just e <*> (unlistify es)
 unlistify _ = Nothing
 
+unpairify :: Expression -> Maybe [Expression]
+unpairify (Abstraction (Application (Application (Bruijn 0) e1) e2)) =
+  Just (e1 : [e2])
+unpairify _ = Nothing
+
 decodeByte :: Expression -> Maybe [Bool]
 decodeByte (Abstraction (Abstraction (Abstraction es))) = decodeByte es
 decodeByte (Application (Bruijn 0) es) = (:) <$> Just False <*> (decodeByte es)
@@ -261,12 +266,14 @@ matchingFunctions e (Environment env) =
     env
 
 -- TODO: Show binary as char if in ascii range (=> + humanify strings)
+-- TODO: Show list as pair if not ending with empty
 maybeHumanifyExpression :: Expression -> Maybe String
 maybeHumanifyExpression e =
   unaryToDecimal e
     <|> binaryToDecimal e
     <|> ternaryToDecimal e
     <|> humanifyList e
+    <|> humanifyPair e
 
 humanifyExpression :: Expression -> String
 humanifyExpression e = case maybeHumanifyExpression e of
@@ -279,6 +286,13 @@ humanifyList e = do
   let conv x = maybe (show x) id (maybeHumanifyExpression x)
       m = map conv es
   pure $ "{" <> intercalate ", " m <> "}"
+
+humanifyPair :: Expression -> Maybe String
+humanifyPair e = do
+  es <- unpairify e
+  let conv x = maybe (show x) id (maybeHumanifyExpression x)
+      m = map conv es
+  pure $ "<" <> intercalate " : " m <> ">"
 
 ---
 
@@ -359,3 +373,9 @@ ternaryToDecimal e = do
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n
   resolve _ = Nothing
+
+huh :: (a -> Bool) -> [a] -> ([a], [a])
+huh f s = (left, right)
+ where
+  (left, right') = break f s
+  right          = if null right' then [] else tail right'
