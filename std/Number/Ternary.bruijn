@@ -329,6 +329,10 @@ geq? \leq? ⧗ Number → Number → Boolean
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
 
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+compare [[go (1 - 0)]] ⧗ Number → Number → Number
+	go [=?0 (+0) (>?0 (+1) (-1))]
+
 # negates a balanced ternary number if <0
 abs [<?0 -0 0] ⧗ Number → Number
 
@@ -361,7 +365,8 @@ mul [[1 z a⁻ a⁺ a⁰]] ⧗ Number → Number → Number
 :test ((+3) ⋅ (+11) =? (+33)) (true)
 :test ((+42) ⋅ (-4) =? (-168)) (true)
 
-# divs a balanced ternary number by three (rshifts least significant trit)
+# rshifts least significant trit of a balanced ternary number
+# WARNING: Not necessarily equivalent to (/ (+3)): e.g. /³(+5) == (+2)!
 div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (+0)
 	a⁻ [0 [[↑⁻1 : 1]]]
@@ -374,7 +379,7 @@ div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 :test (/³(-6)) ((-2))
 :test (/³(+5)) ((+2))
 
-# divs a balanced ternary number by two (essentially binary >>1)
+# divs a balanced ternary number by two (binary >>1)
 div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 	rec =?1 case-end case-div
 		case-div 3 /³(2 + 0) /³1 0
@@ -382,58 +387,59 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 
 /²‣ div²
 
-:test (/²(+6)) ((+3))
-:test (/²(-6)) ((-3))
-:test (/²(+5)) ((+2))
+:test (/²(+6) =? (+3)) (true)
+:test (/²(-6) =? (-3)) (true)
+:test (/²(+5) =? (+2)) (true)
 
-# manually counts how many times a balanced ternary number fits into another one
-# TODO: quadratic approximation?
-# TODO: fix for negative numbers
-brute-div \[z [[[[[rec]]]]] (+0) 0 0] ⧗ Number → Number → Number
-	rec (2 >? 0) case-end case-count
-		case-count 4 ++3 (2 + 1) 1 0
-		case-end 3
+# divs a balanced ternary number by three by fixing rshift
+/³*‣ [fix /³0]
+	fix [/²(1 - 0)]
 
-…/!… brute-div
+:test (/³*(+6) =? (+2)) (true)
+:test (/³*(-6) =? (-2)) (true)
+:test (/³*(+5) =? (+1)) (true)
 
-:test ((+4) /! (+2)) ((+2))
-:test ((+4) /! (+4)) ((+1))
-:test ((+4) /! (+5)) ((+0))
+# returns the smallest number in a range such that a predicate is true
+binary-search z [[[[rec]]]] ⧗ (Number → Boolean) → Number → Number → Number
+	rec (0 =? 1) case-end case-search
+		case-search go /²(0 + 1)
+			go [3 0 (4 3 2 0) (4 3 ++0 1)]
+		case-end 0
 
-# TODO: fix for negative numbers
-brute-mod \[z [[[[[rec]]]]] (+0) 0 0] ⧗ Number → Number → Number
-	rec (2 >? 0) case-end case-count
-		case-count 4 ++3 (2 + 1) 1 0
-		case-end 0 - (3 ⋅ 1)
+:test (binary-search [(0 ⋅ 0) >? (+150)] (+0) (+100)) ((+13))
 
-…%!… brute-mod
+# returns the maximum of a unimodal function in a specified domain
+ternary-search z [[[[rec]]]] ⧗ (Number → Number) → Number → Number → Number
+	rec (1 =? 0) case-end case-search
+		case-search go (1 + /³*(0 - 1)) (0 - /³*(0 - 1))
+			go [[call ((4 1) - (4 0))]]
+				call [=?0 (6 5 ++2 --1) (>?0 (6 5 4 --1) (6 5 ++2 3))]
+		case-end 0
 
-# finds quotient and remainder using long division
-# WARNING: don't use; incorrect and slow
+:test ((ternary-search [-((0 - (+3)) ⋅ (0 - (+3)))] (+0) (+5)) =? (+3)) (true)
+
+# finds quotient and remainder using binary search
+# TODO: fix for numbers <=1 (case analysis, q,r<0)
 # TODO: faster algorithm
-# dividend -> divisor -> (quot, rem)
-# 0 divisor, 1 dividend, 2 (quot, rem)
-# align: (quot, divisor)
-quot-rem [[z [[[[rec]]]] ((+1) : (+0)) 1 0]] ⧗ Number → Number → (Pair Number Number)
-	rec (1 =? 0) case-eq ((1 <? 0) case-les case-div)
-		case-div calc (z [[[align]]] ^2 0)
-			align (0 ≤? 4) (1 : 0) (2 ↑⁰1 ↑⁰0)
-			calc [final (4 (^0 : ~3) (2 - ~0) 1)]
-				final [(^4 + ^0) : (~4 + ~0)]
-		case-eq (+0) : (+1)
-		case-les (+1) : 1
+quot-rem [[go --(binary-search [0 ⋅ 1 >? 2] (+0) 1)]] ⧗ Number → Number → (Pair Number Number)
+	go [0 : (2 - (1 ⋅ 0))]
 
 # divs two balanced ternary numbers
-# WARNING: don't use; incorrect and slow
 div ^‣ ∘∘ quot-rem ⧗ Number → Number
 
 …/… div
 
+:test ((+42) / (+4) =? (+10)) (true)
+:test ((+5) / (+3) =? (+1)) (true)
+
 # returns remainder of integer division
-# WARNING: don't use; incorrect and slow
 mod ~‣ ∘∘ quot-rem ⧗ Number → Number
 
 …%… mod
+
+:test ((+42) % (+4) =? (+2)) (true)
+:test ((+7) % (+3) =? (+1)) (true)
+:test ((+8) % (+2) =? (+0)) (true)
 
 # returns true if the number is even (remainder mod 2 == 0)
 # TODO: faster solution (using tupling?)

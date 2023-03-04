@@ -69,11 +69,11 @@ pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number
 
 :test (((+2) ** (+3)) =? (+8)) (true)
 
-# power function using ternary exponentiation (TODO: slow..)
-pow' z [[[rec]]] ⧗ Number → Number → Number
+# power function using ternary exponentiation (TODO: fix, wrong..)
+pow* z [[[rec]]] ⧗ Number → Number → Number
 	rec =?0 case-end case-pow
-		case-pow =?(lst 0) (r ⋅ r ⋅ r) (r ⋅ r ⋅ r ⋅ 1)
-			r 2 1 /³0
+		case-pow =?(lst 0) ³(2 1 /³0) (³(2 1 /³0) ⋅ 1)
+			³‣ [0 ⋅ 0 ⋅ 0]
 		case-end (+1)
 
 # prime number sequence
@@ -106,7 +106,7 @@ pascal iterate [zip-with …+… ({}(+0) ++ 0) (0 ; (+0))] ({}(+1))
 	g z [[[[[calc]]]]]
 		calc b : (4 q r t i)
 			a ↑⁰(↑⁺0 ⋅ (↑⁰0 + (+2)))
-			b (3 ⋅ ↑⁰(↑⁻(↑⁻0)) + ((+5) ⋅ 2)) /! ((+5) ⋅ 1)
+			b (3 ⋅ ↑⁰(↑⁻(↑⁻0)) + ((+5) ⋅ 2)) / ((+5) ⋅ 1)
 			q (+10) ⋅ 3 ⋅ 0 ⋅ --((+2) ⋅ 0)
 			r (+10) ⋅ a ⋅ (3 ⋅ ((+5) ⋅ 0 - (+2)) + 2 - (b ⋅ 1))
 			t 1 ⋅ a
