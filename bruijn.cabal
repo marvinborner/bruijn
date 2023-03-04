@@ -18,6 +18,7 @@ extra-source-files:
     readme.md
 data-files:
     config
+    std/Box.bruijn
     std/Char.bruijn
     std/Combinator.bruijn
     std/Float.bruijn

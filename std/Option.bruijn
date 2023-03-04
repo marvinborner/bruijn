@@ -7,7 +7,7 @@
 none true ⧗ (Option a)
 
 # encapsulates value in option
-some [[[0 2]]] ⧗ (Option a)
+some [[[0 2]]] ⧗ a → (Option a)
 
 # checks whether option is none
 none? [0 true [false]] ⧗ (Option a) → Boolean
