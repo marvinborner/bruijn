@@ -85,7 +85,7 @@ lst [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
 
 # extracts most significant bit from a binary number
 # not really useful for binary numbers, but part of interface
-mst [=?0 b⁰ ^(<~>(list! %0))] ⧗ Binary → Bit
+mst [=?0 b⁰ b¹] ⧗ Binary → Bit
 
 :test (mst (+0b)) (b⁰)
 :test (mst (+1b)) (b¹)
