@@ -25,6 +25,7 @@ data-files:
     std/List.bruijn
     std/Logic.bruijn
     std/Math.bruijn
+    std/Monad.bruijn
     std/Number.bruijn
     std/Option.bruijn
     std/Pair.bruijn

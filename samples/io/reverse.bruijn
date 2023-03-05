@@ -1,6 +1,8 @@
 # "echo tacocat | bruijn reverse.bruijn"
 
 :import std/List .
+:import std/Combinator .
+:import std/Monad .
 
 # stdin is encoded as binary numbers in a list
 # reversing the list reverses the input!

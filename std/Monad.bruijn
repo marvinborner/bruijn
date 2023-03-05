@@ -1,0 +1,27 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# monadic interface for anything based on lists (e.g. IO, strings)
+# afaik originally proposed by John Tromp and inspired by Haskell
+
+:import std/Pair .
+:import std/Combinator .
+
+read [0] ⧗ a → (M a)
+
+return [[1 : 0]] ⧗ a → (M a)
+
+pure return ⧗ a → (M a)
+
+# monadic bind operator
+…>>=… [[[2 0 1]]] ⧗ (M a) → (a → (M b)) → (M a)
+
+:test ((read >>= return) "woa") ("woa")
+
+# monadic reverse bind operator
+…=<<… \…>>=… ⧗ (a → (M b)) → (M a) → (M b)
+
+:test ((return =<< read) "woa") ("woa")
+
+# monadic compose operator
+…>>… [[1 >>= [1]]] ⧗ (M a) → (M b) → (M b)
+
+:test ((read >> (return 'a')) "hah") ("aah")
