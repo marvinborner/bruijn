@@ -1,0 +1,4 @@
+# "bruijn huge.bruijn"
+# 55 bits inflating to 65536 bits, John Tromp
+
+main [[0 0 0 0 [[0 [[0]] 1]]] [[1 (1 0)]]]

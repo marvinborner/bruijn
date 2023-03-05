@@ -1,0 +1,6 @@
+# "bruijn -b quine.bruijn >quine"
+# "cat quine | bruijn -e quine"
+# compare with "od -t u1 quine"
+# duplicates input, John Tromp
+
+main [0 ([0 0] [[[[[0 3 (2 (4 4) 1)]]]]]) 0]

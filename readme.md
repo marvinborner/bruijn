@@ -145,8 +145,7 @@ The script uses the dependencies `rg`, `jq`, `sed` and `awk`.
 You can find more “real world” examples here: [samples](/samples).
 
 You can try these by experimenting in the REPL or by running them as a
-file. You should pipe something into the stdin to receive stdout:
-`cat /dev/null | bruijn test.bruijn` should work for now.
+file.
 
 **Remember** that you need an equal sign between the function name and
 its definition if you’re using the REPL.
