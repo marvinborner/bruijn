@@ -9,17 +9,17 @@ sum foldl add (+0) ⧗ (List Number) → Number
 
 ∑‣ sum
 
-:test (∑((+1) : ((+2) : ((+3) : empty)))) ((+6))
+:test (∑((+1) : ((+2) : {}(+3)))) ((+6))
 
 # returns max value of list
 lmax foldl1 max ⧗ (List Number) → Number
 
-:test (lmax ((+1) : ((+3) : ((+2) : empty)))) ((+3))
+:test (lmax ((+1) : ((+3) : {}(+2)))) ((+3))
 
 # returns min value of list
 lmin foldl1 min ⧗ (List Number) → Number
 
-:test (lmin ((+2) : ((+1) : ((+0) : empty)))) ((+0))
+:test (lmin ((+2) : ((+1) : {}(+0)))) ((+0))
 
 # list from num to num
 {…→…} z [[[rec]]] ⧗ Number → Number → (List Number)
@@ -27,7 +27,7 @@ lmin foldl1 min ⧗ (List Number) → Number
 		case-list 1 : (2 ++1 0)
 		case-end empty
 
-:test ({ (+0) → (+2) }) ((+0) : ((+1) : ((+2) : empty)))
+:test ({ (+0) → (+2) }) ((+0) : ((+1) : {}(+2)))
 
 # equivalent of mathematical sum function
 ∑…→…|… z [[[[[rec]]]]] (+0) ⧗ Number → Number → (Number → Number) → Number
@@ -42,7 +42,7 @@ product foldl mul (+1) ⧗ (List Number) → Number
 
 Π product
 
-:test (Π ((+1) : ((+2) : ((+3) : empty)))) ((+6))
+:test (Π ((+1) : ((+2) : {}(+3)))) ((+6))
 
 # equivalent of mathematical product function
 ∏…→…|… z [[[[[rec]]]]] (+1) ⧗ Number → Number → (Number → Number) → Number

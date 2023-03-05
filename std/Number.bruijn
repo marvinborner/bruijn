@@ -11,6 +11,6 @@
 # converts a list of digits into a balanced ternary number
 from-digits foldl [[(+10) ⋅ 1 + 0]] (+0)
 
-:test (from-digits ((+4) : ((+2) : ((+0) : empty)))) ((+420))
+:test (from-digits ((+4) : ((+2) : {}(+0)))) ((+420))
 :test (from-digits empty) ((+0))
 

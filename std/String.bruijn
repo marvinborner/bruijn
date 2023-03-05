@@ -7,7 +7,7 @@
 :input std/List
 
 # returns true if two strings are the same
-eq? eq? B.eq?
+eq? eq? B.eq? ⧗ String → String → Boolean
 
 …=?… eq?
 
@@ -15,11 +15,11 @@ eq? eq? B.eq?
 :test ("ab" =? "aa") (false)
 
 # returns true if character is part of a string
-in? in? B.eq?
+in? in? B.eq? ⧗ Char → String → Boolean
 
 …∈… in?
 
-ni? \in?
+ni? \in? ⧗ String → Char → Boolean
 
 …∋… ni?
 
@@ -29,18 +29,18 @@ ni? \in?
 :test ("ab" ∋ 'c') (false)
 
 # converts a string of digits into a number
-number! from-digits ∘ (map C.number!)
+number! from-digits ∘ (map C.number!) ⧗ String → Number
 
 :test ((number! "123") =? (+123)) (true)
 
 # splits string by newline character
-lines z [[rec]]
+lines z [[rec]] ⧗ String → (List String)
 	rec build (break (B.eq? '\n') 0)
-		build [∅?(~0) (^0 : empty) (^0 : (2 ~(~0)))]
+		build [∅?(~0) {}(^0) (^0 : (2 ~(~0)))]
 
-:test (lines "ab\ncd") ("ab" : ("cd" : empty))
+:test (lines "ab\ncd") ("ab" : {}"cd")
 
 # concats list of strings with newline character
-unlines concat-map (\(…;…) '\n')
+unlines concat-map (\(…;…) '\n') ⧗ (List String) → String
 
-:test (unlines ("ab" : ("cd" : empty))) ("ab\ncd\n")
+:test (unlines ("ab" : {}"cd")) ("ab\ncd\n")

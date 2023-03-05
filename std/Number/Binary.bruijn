@@ -47,7 +47,7 @@ list! [0 z a¹ a⁰] ⧗ Binary → (List Bit)
 	a⁰ [b⁰ : 0]
 
 :test (list! (+0b)) (empty)
-:test (list! (+6b)) (b⁰ : (b¹ : (b¹ : empty)))
+:test (list! (+6b)) (b⁰ : (b¹ : {}b¹))
 
 # converts a list of bits to a binary number
 binary! foldr up (+0b) ⧗ (List Bit) → Binary
