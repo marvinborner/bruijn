@@ -127,15 +127,25 @@ instance Show Mixfix where
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
 data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
   deriving (Ord, Eq)
-instance Show Expression where
-  show (Bruijn      x    ) = "\ESC[91m" <> show x <> "\ESC[0m"
-  show (Function    ident) = "\ESC[95m" <> show ident <> "\ESC[0m"
-  show (Abstraction e    ) = "\ESC[36m[\ESC[0m" <> show e <> "\ESC[36m]\ESC[0m"
-  show (Application exp1 exp2) =
-    "\ESC[33m(\ESC[0m" <> show exp1 <> " " <> show exp2 <> "\ESC[33m)\ESC[0m"
-  show (MixfixChain ms) =
-    "\ESC[33m(\ESC[0m" <> (intercalate " " $ map show ms) <> "\ESC[33m)\ESC[0m"
-  show (Prefix p e) = show p <> " " <> show e
+instance Show Expression where -- TODO: make use of precedence value?
+  showsPrec _ (Bruijn x) =
+    showString "\ESC[91m" . shows x . showString "\ESC[0m"
+  showsPrec _ (Function ident) =
+    showString "\ESC[95m" . shows ident . showString "\ESC[0m"
+  showsPrec _ (Abstraction e) =
+    showString "\ESC[36m[\ESC[0m" . showsPrec 0 e . showString
+      "\ESC[36m]\ESC[0m"
+  showsPrec _ (Application exp1 exp2) =
+    showString "\ESC[33m(\ESC[0m"
+      . showsPrec 0 exp1
+      . showString " "
+      . showsPrec 0 exp2
+      . showString "\ESC[33m)\ESC[0m"
+  showsPrec _ (MixfixChain ms) =
+    showString "\ESC[33m(\ESC[0m"
+      . foldr (.) id (map (showsPrec 0) ms)
+      . showString "\ESC[33m)\ESC[0m"
+  showsPrec _ (Prefix p e) = shows p . showString " " . showsPrec 0 e
 data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression
   deriving (Show)
 data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
