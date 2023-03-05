@@ -1,0 +1,6 @@
+# "cat /dev/random | bruijn random.bruijn"
+# prints number between 0 and 255 - stdin laziness!
+
+:import std/Pair .
+
+main [^0]

@@ -9,6 +9,7 @@ import           Data.List                      ( elemIndex )
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as Map
 import           Helper
+import           System.IO.Unsafe               ( unsafePerformIO )
 import           System.Random                  ( randomIO )
 
 type Store = Map Int Box
@@ -20,30 +21,32 @@ data Rvar = Num Int | Hole
 data Redex = Rabs Int Redex | Rapp Redex Redex | Rvar Rvar | Rclosure Redex Store | Rcache Box Redex
 data Conf = Econf Redex Store Stack | Cconf Stack Redex | End
 
-toRedex :: Expression -> IO Redex
+-- TODO: unsafePerformIO is very unpure and ugly!! Unfortunately IO seems to
+--       make this function and therefore the entire reduction strict :/
+toRedex :: Expression -> Redex
 toRedex = convertWorker []
  where
-  convertWorker ns (Abstraction e) = do
-    v <- randomIO :: IO Int
-    t <- convertWorker (v : ns) e
-    pure $ Rabs v t
-  convertWorker ns (Application l r) = do
-    lhs <- convertWorker ns l
-    rhs <- convertWorker ns r
-    pure $ Rapp lhs rhs
+  convertWorker ns (Abstraction e) =
+    let v = unsafePerformIO randomIO :: Int
+        t = convertWorker (v : ns) e
+    in  Rabs v t
+  convertWorker ns (Application l r) =
+    let lhs = convertWorker ns l
+        rhs = convertWorker ns r
+    in  Rapp lhs rhs
   convertWorker ns (Bruijn i) =
-    pure $ Rvar $ Num (if i < 0 || i >= length ns then i else ns !! i)
+    Rvar $ Num (if i < 0 || i >= length ns then i else ns !! i)
   convertWorker _ _ = invalidProgramState
 
-fromRedex :: Redex -> IO Expression
+fromRedex :: Redex -> Expression
 fromRedex = convertWorker []
  where
-  convertWorker es (Rabs n e) = Abstraction <$> convertWorker (n : es) e
-  convertWorker es (Rapp l r) = do
-    lhs <- convertWorker es l
-    rhs <- convertWorker es r
-    pure $ Application lhs rhs
-  convertWorker es (Rvar (Num n)) = pure $ Bruijn $ maybe n id (elemIndex n es)
+  convertWorker es (Rabs n e) = Abstraction $ convertWorker (n : es) e
+  convertWorker es (Rapp l r) =
+    let lhs = convertWorker es l
+        rhs = convertWorker es r
+    in  Application lhs rhs
+  convertWorker es (Rvar (Num n)) = Bruijn $ maybe n id (elemIndex n es)
   convertWorker _  _              = invalidProgramState
 
 transition :: Conf -> IO Conf
@@ -95,7 +98,7 @@ loadTerm t = Econf t Map.empty []
 
 reduce :: Expression -> IO Expression
 reduce e = do
-  redex <- toRedex e
+  redex <- pure $ toRedex e
   forEachState (loadTerm redex) transition >>= \case
-    Cconf [] v -> fromRedex v
+    Cconf [] v -> pure $ fromRedex v
     _          -> invalidProgramState

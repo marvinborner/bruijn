@@ -10,7 +10,6 @@ import           Data.Binary                    ( decode
                                                 , encode
                                                 )
 import qualified Data.BitString                as Bit
-import qualified Data.ByteString.Lazy          as Byte
 import           Data.Word                      ( Word8 )
 import           Helper
 
@@ -43,8 +42,7 @@ fromBinary = fst . fromBinary'
 -- TODO: technically only 1 nibble is needed (use other nibble for versioning/sth?)
 toBitString :: String -> Bit.BitString
 toBitString str = Bit.concat
-  [ Bit.bitString $ Byte.toStrict $ encode
-    (fromIntegral $ length str `mod` 8 :: Word8)
+  [ Bit.bitStringLazy $ encode (fromIntegral $ length str `mod` 8 :: Word8)
   , Bit.fromList $ map
     (\case
       '0' -> False

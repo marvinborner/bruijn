@@ -9,7 +9,7 @@ import           Control.Exception
 import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
-import qualified Data.ByteString               as Byte
+import qualified Data.ByteString.Lazy          as Byte
 import           Data.Function                  ( on )
 import           Data.List
 import qualified Data.Map                      as M
@@ -448,11 +448,11 @@ evalMain = do
   case args of
     []           -> runRepl
     ["-b", path] -> dumpFile path
-                             (Byte.putStr . Bit.realizeBitStringStrict)
+                             (Byte.putStr . Bit.realizeBitStringLazy)
                              (toBitString . toBinary)
     ["-B", path] -> dumpFile path putStrLn toBinary
     ["-e", path] ->
-      exec path (try . Byte.readFile) (fromBitString . Bit.bitString)
+      exec path (try . Byte.readFile) (fromBitString . Bit.bitStringLazy)
     ["-E", path] -> exec path (try . readFile) id
     ["-y", path] -> evalYolo path
     ['-' : _]    -> usage

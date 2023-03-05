@@ -9,8 +9,8 @@ module Helper where
 import qualified Control.Monad.State           as S
 import           Data.Array
 import qualified Data.BitString                as Bit
-import qualified Data.ByteString               as Byte
-import qualified Data.ByteString.Char8         as C
+import qualified Data.ByteString.Lazy          as Byte
+import qualified Data.ByteString.Lazy.Char8    as C
 import           Data.List
 import qualified Data.Map                      as M
 import           Text.Megaparsec
@@ -195,14 +195,14 @@ encodeByte bits = Abstraction $ Abstraction $ Abstraction $ binarify
 -- TODO: There must be a better way to do this :D
 encodeBytes :: Byte.ByteString -> Expression
 encodeBytes bytes = listify $ map
-  (encodeByte . Bit.toList . Bit.bitString . Byte.pack . (: []))
+  (encodeByte . Bit.toList . Bit.bitStringLazy . Byte.pack . (: []))
   (Byte.unpack bytes)
 
 stringToExpression :: String -> Expression
 stringToExpression = encodeBytes . C.pack
 
 charToExpression :: Char -> Expression
-charToExpression ch = encodeByte $ Bit.toList $ Bit.bitString $ C.pack [ch]
+charToExpression ch = encodeByte $ Bit.toList $ Bit.bitStringLazy $ C.pack [ch]
 
 encodeStdin :: IO Expression
 encodeStdin = do
@@ -232,7 +232,7 @@ decodeStdout e = do
   u <- unlistify e
   pure $ C.unpack $ Byte.concat $ map
     (\m -> case decodeByte m of
-      Just b  -> Bit.realizeBitStringStrict $ Bit.fromList b
+      Just b  -> Bit.realizeBitStringLazy $ Bit.fromList b
       Nothing -> Byte.empty
     )
     u
@@ -373,9 +373,3 @@ ternaryToDecimal e = do
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n
   resolve _ = Nothing
-
-huh :: (a -> Bool) -> [a] -> ([a], [a])
-huh f s = (left, right)
- where
-  (left, right') = break f s
-  right          = if null right' then [] else tail right'
