@@ -1,0 +1,10 @@
+:import std/List .
+:import std/Number .
+:import std/Char C
+
+walk scanl floor (+0)
+	floor [[(C.eq? 0 '(') ++1 --1]]
+
+main [parts (walk instructions)]
+	instructions init 0
+	parts [(last 0) : (find-index <?‣ 0)]

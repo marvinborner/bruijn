@@ -1,0 +1,31 @@
+# vim first: :s/ //g
+
+:import std/Combinator .
+:import std/Char C
+:import std/String S
+:import std/Pair P
+:import std/Number .
+:import std/List .
+
+direction! [^0 : (S.number! ~0)] ⧗ (List Char) → Direction
+
+:test (direction! "R42") ('R' : (+42))
+
+# north=0, east=1, south=2, west=3
+# rotation : (x : y)
+start ((+0) : ((+0) : (+0))) ⧗ State
+
+move [[go ((C.eq? ^0 'R' ++‣ --‣) ^1)]] ⧗ State → Direction → State
+	go [0 : (even? 0 y x)]
+		x (^(~2) + (p ~1)) : ~(~2)
+			p ((0 % (+4)) =? (+3)) -‣ [0]
+		y ^(~2) : (~(~2) + (p ~1))
+			p ((0 % (+4)) =? (+2)) -‣ [0]
+
+:test (move start (direction! "R42")) ((+1) : ((+42) : (+0)))
+
+part1 (P.uncurry …+…) ∘ ~‣ ∘ (foldl move start) ⧗ (List Direction) → State
+
+main [parts coords]
+	coords direction! <$> (split-list-by [C.eq? 0 ','] (init 0))
+	parts [(part1 0)]

@@ -1,0 +1,27 @@
+:import std/Combinator .
+:import std/Logic .
+:import std/String .
+:import std/Math .
+
+fuel [/³*0 - (+2)] ⧗ Mass → Fuel
+
+:test ((fuel (+12)) =? (+2)) (true)
+:test ((fuel (+14)) =? (+2)) (true)
+:test ((fuel (+1969)) =? (+654)) (true)
+:test ((fuel (+100756)) =? (+33583)) (true)
+
+fuelfuel z [[rec]] ⧗ Mass → Fuel
+	rec go (fuel 0)
+		go [>?0 (0 + (2 0)) (+0)]
+
+:test ((fuelfuel (+14)) =? (+2)) (true)
+:test ((fuelfuel (+1969)) =? (+966)) (true)
+:test ((fuelfuel (+100756)) =? (+50346)) (true)
+
+part1 ∑‣ ∘ (map fuel) ⧗ (List Mass) → Fuel
+
+part2 ∑‣ ∘ (map fuelfuel) ⧗ (List Mass) → Fuel
+
+main [parts nums]
+	nums number! <$> ~(<~>(lines 0))
+	parts [(part1 0) : (part2 0)]

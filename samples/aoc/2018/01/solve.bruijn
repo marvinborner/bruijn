@@ -1,0 +1,15 @@
+:import std/Combinator .
+:import std/String .
+:import std/Math .
+:import std/Set S
+
+part1 ∑‣ ⧗ (List FrequencyDiff) → Frequency
+
+part2 z [[[[rec]]]] S.empty (+0) ⧗ (List FrequencyDiff) → Frequency
+	rec (S.has? 1 2) case-end case-cont
+		case-cont 3 (S.add 1 2) (1 + ^0) ~0
+		case-end 1
+
+main [parts nums]
+	nums signed-number! <$> (init (lines 0))
+	parts [(part1 0) : (part2 (cycle 0))]
