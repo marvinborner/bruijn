@@ -1,5 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # Lists in Church/Boehm-Berarducci encoding using pairs
+# implementations are generally lazy (except when they're broken)
 # TODO: Replace fold/map/etc. with faster LC native logic
 
 :import std/Combinator .
@@ -68,6 +69,14 @@ index z [[[rec]]] ⧗ (List a) → Number → a
 :test (((+1) : ((+2) : {}(+3))) !! (-1)) (empty)
 :test (((+1) : ((+2) : {}(+3))) !! (+3)) (empty)
 
+# constructs a list of successively reduced values
+scanl z [[[[1 : rec]]]] ⧗ (b → a → b) → b → (List a) → (List b)
+	rec ∅?0 case-end case-scan
+		case-scan 3 2 (2 1 ^0) ~0
+		case-end 0
+
+:test (scanl …+… (+0) ((+1) : ((+2) : {}(+3)))) ((+0) : ((+1) : ((+3) : {}(+6))))
+
 # applies a left fold on a list
 foldl z [[[[rec]]]] ⧗ (b → a → b) → b → (List a) → b
 	rec ∅?0 case-end case-fold
@@ -130,6 +139,9 @@ append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
 
 …++… append
 
+:test ({}(+1) ++ empty) ({}(+1))
+:test (empty ++ {}(+1)) ({}(+1))
+:test (empty ++ empty) (empty)
 :test (((+1) : ((+2) : {}(+3))) ++ {}(+4)) ((+1) : ((+2) : ((+3) : {}(+4))))
 
 # appends an element to a list
@@ -194,11 +206,20 @@ concat-map concat ∘∘ map ⧗ (a → (List b)) → (List a) → (List b)
 
 # zips two lists discarding excess elements
 zip z [[[rec]]] ⧗ (List a) → (List b) → (List (Pair a b))
-	rec ∅?1 case-end case-zip
-		case-zip ∅?0 empty ((^1 : ^0) : (2 ~1 ~0))
+	rec (∅?1 ⋁? ∅?0) case-end case-zip
+		case-zip (^1 : ^0) : (2 ~1 ~0)
 		case-end empty
 
 :test (zip ((+1) : {}(+2)) ((+2) : {}(+1))) (((+1) : (+2)) : {}((+2) : (+1)))
+
+# zips three lists discarding excess elements
+# TODO: add/use triple type (list element types can be different)
+zip3 z [[[[rec]]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
+	rec (∅?2 ⋁? ∅?1 ⋁? ∅?0) case-end case-zip
+		case-zip (^2 : (^1 : {}(^0))) : (3 ~2 ~1 ~0)
+		case-end empty
+
+:test (zip3 ((+1) : {}(+2)) ((+2) : {}(+1)) ((+3) : {}(+0))) (((+1) : ((+2) : {}(+3))) : {}((+2) : ((+1) : {}(+0))))
 
 # applies pairs of the zipped list as arguments to a function
 zip-with z [[[[rec]]]] ⧗ (a → b → c) → (List a) → (List b) → (List c)
@@ -249,6 +270,17 @@ drop-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
 		case-end empty
 
 :test (drop-while zero? ((+0) : ((+0) : {}(+1)))) ({}(+1))
+
+# returns all combinations of two lists
+cross [[concat-map [map [1 : 0] 1] 1]] ⧗ (List a) → (List b) → (List (Pair a b))
+
+:test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
+
+# returns all combinations of three lists
+# TODO: add/use triple type (list element types can be different)
+cross3 [[[concat-map [concat-map [map [2 : (1 : {}0)] 2] 2] 2]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
+
+# :test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
 
 # returns pair of take-while and drop-while
 span [[(take-while 1 0) : (drop-while 1 0)]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
@@ -309,6 +341,12 @@ sort-desc z [[rec]]
 
 :test (sort-desc ((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
 
+# inserts an element into a ascendingly sorted list
+insert-sorted [go ∘ (span (\les? 0))]
+	go [^0 ++ (1 : ~0)]
+
+:test (insert-sorted (+3) ((+1) : ((+2) : {}(+4)))) ((+1) : ((+2) : ((+3) : {}(+4))))
+
 # returns true if any element in a list matches a predicate
 any? ⋁?‣ ∘∘ map ⧗ (a → Boolean) → (List a) → Boolean
 
@@ -333,6 +371,16 @@ eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolea
 :test (eq? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
 :test (eq? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
 :test (eq? …=?… empty empty) (true)
+
+# finds the first index that matches a predicate
+find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
+	rec ∅?0 case-end case-find
+		case-find (1 ^0) (+0) !(2 1 ~0)
+			!‣ [<?0 0 ++0]
+		case-end (-1)
+
+:test (find-index (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
+:test (find-index (…=?… (+4)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((-1))
 
 # removes first element that match an eq predicate
 remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)

@@ -40,9 +40,9 @@ lmin foldl1 min ⧗ (List Number) → Number
 # multiplies all values in list
 product foldl mul (+1) ⧗ (List Number) → Number
 
-Π product
+∏‣ product
 
-:test (Π ((+1) : ((+2) : {}(+3)))) ((+6))
+:test (∏((+1) : ((+2) : {}(+3)))) ((+6))
 
 # equivalent of mathematical product function
 ∏…→…|… z [[[[[rec]]]]] (+1) ⧗ Number → Number → (Number → Number) → Number

@@ -30,6 +30,7 @@ data-files:
     std/Option.bruijn
     std/Pair.bruijn
     std/Result.bruijn
+    std/Set.bruijn
     std/String.bruijn
     std/Number/Binary.bruijn
     std/Number/Ternary.bruijn

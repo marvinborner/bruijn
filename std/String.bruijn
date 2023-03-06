@@ -31,7 +31,14 @@ ni? \in? ⧗ String → Char → Boolean
 # converts a string of digits into a number
 number! from-digits ∘ (map C.number!) ⧗ String → Number
 
-:test ((number! "123") =? (+123)) (true)
+:test (%(number! "123")) ((+123))
+
+# converts a signed string of digits into a number
+signed-number! [(sign ^0) (number! ~0)] ⧗ String → Number
+	sign [(B.eq? 0 '-') -‣ i]
+
+:test (%(signed-number! "+123")) ((+123))
+:test (%(signed-number! "-123")) ((-123))
 
 # splits string by newline character
 lines z [[rec]] ⧗ String → (List String)

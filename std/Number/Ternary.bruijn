@@ -322,9 +322,16 @@ geq? \leq? ⧗ Number → Number → Boolean
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
 
+# returns eq, lt, gt depending on comparison of two functions
+compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
+	go [=?0 5 (>?0 4 3)]
+
 # returns 1 if a>b, -1 if a<b and 0 if a=b
-compare [[go (1 - 0)]] ⧗ Number → Number → Number
-	go [=?0 (+0) (>?0 (+1) (-1))]
+compare compare-case (+0) (+1) (-1) ⧗ Number → Number → Number
+
+:test (compare (+2) (+2)) ((+0))
+:test (compare (+2) (+1)) ((+1))
+:test (compare (+1) (+2)) ((-1))
 
 # negates a balanced ternary number if <0
 abs [<?0 -0 0] ⧗ Number → Number

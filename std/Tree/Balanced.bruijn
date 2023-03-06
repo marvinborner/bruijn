@@ -5,6 +5,7 @@
 
 :import std/Combinator .
 :import std/List L
+:import std/Logic .
 :import std/Number .
 :import std/Option .
 :import std/Pair .
@@ -82,13 +83,25 @@ insert z [[[rec]]] ⧗ Number → (Option BalancedTree) → (Option BalancedTree
 			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
 			gt some (node //(!0) ?(!0) (2 1 \\(!0)))
 
+# returns true if a number is in a tree
+has? z [[[rec]]] ⧗ Number → (Option BalancedTree) → Boolean
+	rec none? 0 false (u 1 ?(!0))
+		u compare-case eq lt gt
+			eq true
+			lt 2 1 //(!0)
+			gt 2 1 \\(!0)
+
+:test (has? (+42) empty) (false)
+
 # number of elements in tree (slow)
 size z [[rec]] ⧗ (Option BalancedTree) → Number
 	rec none? 0 case-empty case-full
 		case-full (1 //(!0)) + (1 \\(!0)) + (+1)
 		case-empty (+0)
 
+# converts a tree to a list
 list! z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number)
 	go [L.append (L.append (2 //0) L.{}(?0)) (2 \\0)]
 
+# converts a list to a tree
 from-list L.foldr insert empty ⧗ (List Number) → (Option BalancedTree)

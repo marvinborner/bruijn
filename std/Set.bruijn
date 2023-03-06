@@ -1,0 +1,20 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# Set implementation using AVL trees
+# can currently only store Numbers (due to std/Tree/Balanced)
+
+:import std/Tree/Balanced T
+
+# empty set
+empty T.empty ⧗ Set
+
+# adds a number of a set
+add T.insert ⧗ Number → Set → Set
+
+# returns true if a number is in a set
+has? T.has? ⧗ Number → Set → Boolean
+
+# converts a set to a list
+list! T.list! ⧗ Set → (List Number)
+
+# converts a list to a set
+from-list T.from-list ⧗ (List Number) → Set
