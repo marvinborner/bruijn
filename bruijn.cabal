@@ -31,10 +31,11 @@ data-files:
     std/Pair.bruijn
     std/Result.bruijn
     std/String.bruijn
-    std/Tree.bruijn
     std/Number/Binary.bruijn
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn
+    std/Tree/Balanced.bruijn
+    std/Tree/Rose.bruijn
 
 source-repository head
   type: git

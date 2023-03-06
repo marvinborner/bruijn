@@ -1,0 +1,58 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# Rose trees based on std/List
+
+:import std/Combinator .
+:import std/List L
+:import std/Logic .
+:import std/Math .
+:import std/Pair .
+
+# a tree node has a label as its head and subtrees as its tail
+
+# constructs a tree with a label and no branches
+leaf [0 : L.empty] ⧗ a → (RoseTree a)
+
+{:}‣ leaf
+
+# constructs a node with subnodes
+node [[1 : 0]] ⧗ a → (List (RoseTree a)) → (RoseTree a)
+
+{…:…} node
+
+# returns the root label of a tree
+label ^‣ ⧗ (RoseTree a) → a
+
+^‣ label
+
+# returns the branches of a tree
+branches ~‣ ⧗ (RoseTree a) → (List (RoseTree a))
+
+~‣ branches
+
+# returns true if a tree is empty
+empty? [L.empty? ~0] ⧗ (RoseTree a) → Boolean
+
+∅?‣ empty?
+
+:test (∅?({ 'a' : (({:}'b') : L.empty) })) (false)
+:test (∅?({:}'a')) (true)
+
+# applies a function to leaf and the leafs of all branches
+map z [[[rec]]] ⧗ (a → b) → (RoseTree a) → (RoseTree b)
+	rec { (1 ^0) : (L.map (2 1) ~0) }
+
+…<$>… map
+
+:test (map ^‣ ({ "woo" : ({:}"oof" : (({ "aah" : (({:}"huh" : L.empty)) }) : L.empty)) })) ({ 'w' : ({:}'o' : (({ 'a' : ({:}'h' : L.empty) }) : L.empty)) })
+
+# maps a function returning list of trees and concatenates
+concat-map L.concat ∘∘ map ⧗ ((RoseTree a) → (List (RoseTree b))) → (List (RoseTree a)) → (List (RoseTree b))
+
+# folds a tree
+# TODO: fix
+fold [[[z [[rec]] 0]]] ⧗ (a → (List b) → b) → (RoseTree a) → b
+	rec ∅?0 case-end case-fold
+		case-fold 4 ^0 (1 ~0)
+		case-end 3
+
+# :test (fold [[∅?0 (+1) (sum 0)]] ({ 'w' : ({:}'o' : (({ 'a' : ({:}'h' : L.empty) }) : L.empty)) })) ((+4))

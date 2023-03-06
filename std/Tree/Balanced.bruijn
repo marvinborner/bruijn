@@ -1,0 +1,94 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# Balanced AVL tree for numerical leafs, inspired by Rudy Matela's implementation
+# TODO: Extend for arbitrary orderable types?
+# TODO: More tests
+
+:import std/Combinator .
+:import std/List L
+:import std/Number .
+:import std/Option .
+:import std/Pair .
+
+# tree ⧗ (height : (lbranch? : (label : rbranch?)))
+
+# error return that can't happen (in theory)
+error Ω
+
+# unwrap tree from option (only use if not empty!)
+unwrap unwrap-or error ⧗ (Option BalancedTree) → BalancedTree
+
+!‣ unwrap
+
+# empty tree
+empty none ⧗ (Option BalancedTree)
+
+# returns height of tree
+height map-or (-1) ^‣ ⧗ (Option BalancedTree) → Number
+
+:test (height empty) ((-1))
+:test (height (some ((+5) : ((+42) : (none : none))))) ((+5))
+
+# constructs a tree with a label and no branches
+node [[[(max (height 0) ++(height 2)) : (2 : (1 : 0))]]] ⧗ (Option BalancedTree) → Number → (Option BalancedTree) → BalancedTree
+
+# constructs a leaf node
+leaf [node none 0 none] ⧗ Number → BalancedTree
+
+:test (leaf (+42)) (++(-1) : (none : ((+42) : none)))
+
+# returns the label of a tree
+label [^(~(~0))] ⧗ BalancedTree → Number
+
+?‣ label
+
+:test (?(leaf (+42))) ((+42))
+
+# returns the left branch of a tree
+left [^(~0)] ⧗ BalancedTree → (Option BalancedTree)
+
+//‣ left 
+
+# returns the right branch of a tree
+right [~(~(~0))] ⧗ BalancedTree → (Option BalancedTree)
+
+\\‣ right 
+
+# returns the balancing factor of a tree
+factor map-or (+0) d ⧗ (Option BalancedTree) → Number
+	d [(height //0) - (height \\0)]
+
+:test (factor (some (leaf (+42)))) (++(-1))
+
+rotate-ll [node //(!(//0)) ?(//0) (some (node \\(!(//0)))) ?0 \\0] ⧗ BalancedTree → BalancedTree
+
+rotate-rr [node (some (node //0 ?0 //(!(\\0)))) ?(\\0) \\(!(\\0))] ⧗ BalancedTree → BalancedTree
+
+rotate-lr [rotate-ll (node (some (rotate-rr !(//0))) ?0 \\0)] ⧗ BalancedTree → BalancedTree
+
+rotate-rl [rotate-rr (node //0 ?0 (some (rotate-ll !(\\0))))] ⧗ BalancedTree → BalancedTree
+
+# balance a tree
+balance [go (factor 0)] ⧗ (Option BalancedTree) → (Option BalancedTree)
+	go [(0 >? (+1)) left ((0 <? (-1)) right else)]
+		left some (((factor //(!1)) =? (-1)) (rotate-lr !1) (rotate-ll !1))
+		right some (((factor \\(!1)) =? (+1)) (rotate-rl !1) (rotate-rr !1))
+		else 1
+
+# inserts a number into a tree
+insert z [[[rec]]] ⧗ Number → (Option BalancedTree) → (Option BalancedTree)
+	rec none? 0 (some (leaf 1)) (balance (u 1 ?(!0)))
+		u compare-case eq lt gt
+			eq 0
+			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
+			gt some (node //(!0) ?(!0) (2 1 \\(!0)))
+
+# number of elements in tree (slow)
+size z [[rec]] ⧗ (Option BalancedTree) → Number
+	rec none? 0 case-empty case-full
+		case-full (1 //(!0)) + (1 \\(!0)) + (+1)
+		case-empty (+0)
+
+list! z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number)
+	go [L.append (L.append (2 //0) L.{}(?0)) (2 \\0)]
+
+from-list L.foldr insert empty ⧗ (List Number) → (Option BalancedTree)
