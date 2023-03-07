@@ -9,8 +9,7 @@ import           Data.List                      ( elemIndex )
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as Map
 import           Helper
-import           System.IO.Unsafe               ( unsafePerformIO )
-import           System.Random                  ( randomIO )
+import           System.Random           hiding ( next )
 
 type Store = Map Int Box
 type Stack = [Redex]
@@ -21,22 +20,20 @@ data Rvar = Num Int | Hole
 data Redex = Rabs Int Redex | Rapp Redex Redex | Rvar Rvar | Rclosure Redex Store | Rcache Box Redex
 data Conf = Econf Redex Store Stack | Cconf Stack Redex | End
 
--- TODO: unsafePerformIO is very unpure and ugly!! Unfortunately IO seems to
---       make this function and therefore the entire reduction strict :/
 toRedex :: Expression -> Redex
-toRedex = convertWorker []
+toRedex = convertWorker (mkStdGen 42) []
  where
-  convertWorker ns (Abstraction e) =
-    let v = unsafePerformIO randomIO :: Int
-        t = convertWorker (v : ns) e
+  convertWorker g ns (Abstraction e) =
+    let (v, g') = uniform g :: (Int, StdGen)
+        t       = convertWorker g' (v : ns) e
     in  Rabs v t
-  convertWorker ns (Application l r) =
-    let lhs = convertWorker ns l
-        rhs = convertWorker ns r
+  convertWorker g ns (Application l r) =
+    let lhs = convertWorker g ns l
+        rhs = convertWorker g ns r
     in  Rapp lhs rhs
-  convertWorker ns (Bruijn i) =
+  convertWorker _ ns (Bruijn i) =
     Rvar $ Num (if i < 0 || i >= length ns then i else ns !! i)
-  convertWorker _ _ = invalidProgramState
+  convertWorker _ _ _ = invalidProgramState
 
 fromRedex :: Redex -> Expression
 fromRedex = convertWorker []

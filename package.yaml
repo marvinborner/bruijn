@@ -45,6 +45,7 @@ dependencies:
 library:
   source-dirs: src
   ghc-options:
+  - -O3
   - -Wall
   - -Wextra
   - -Wincomplete-uni-patterns

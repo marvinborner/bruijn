@@ -9,4 +9,4 @@ Code](https://adventofcode.com) problems.
 
 **Be aware** that lambda calculus is generally incredibly inefficient.
 For example, the obvious solution for the very simple problem 2022/01
-takes around 60s and 4GB of memory using the full input.
+takes around 30s and 3GB of memory using the full input.

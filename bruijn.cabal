@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -55,7 +55,7 @@ library
       src
   default-extensions:
       LambdaCase
-  ghc-options: -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
+  ghc-options: -O3 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       array
     , base >=4.7 && <5
