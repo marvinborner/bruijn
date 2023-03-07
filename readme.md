@@ -1,4 +1,9 @@
-# Bruijn
+<p align="center">
+<img width="200" src="https://raw.githubusercontent.com/marvinborner/bruijn/main/docs/res/logo.png" alt="Bruijn logo"/>
+</p>
+<h1 align="center">
+bruijn
+</h1>
 
 > A purely academic programming language based on lambda calculus and De
 > Bruijn indices written in Haskell.
