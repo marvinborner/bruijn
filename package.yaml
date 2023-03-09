@@ -33,13 +33,14 @@ dependencies:
 - bitstring
 - bytestring
 - clock
-- time
 - containers
+- deepseq
 - directory
 - filepath
 - haskeline
 - megaparsec
 - mtl
+- time
 - random
 
 library:

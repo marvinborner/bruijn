@@ -3,9 +3,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards #-}
 -- extensions above are only used because of printBundle from megaparsec
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Helper where
 
+import           Control.DeepSeq                ( NFData )
 import qualified Control.Monad.State           as S
 import           Data.Array
 import qualified Data.BitString                as Bit
@@ -13,6 +16,7 @@ import qualified Data.ByteString.Lazy          as Byte
 import qualified Data.ByteString.Lazy.Char8    as C
 import           Data.List
 import qualified Data.Map                      as M
+import           GHC.Generics                   ( Generic )
 import           Text.Megaparsec
 
 invalidProgramState :: a
@@ -104,12 +108,12 @@ printBundle ParseErrorBundle {..} =
               <> "\n"
 
 data MixfixIdentifierKind = MixfixSome String | MixfixNone
-  deriving (Ord, Eq)
+  deriving (Ord, Eq, Generic, NFData)
 instance Show MixfixIdentifierKind where -- don't colorize (due to map)
   show (MixfixSome e) = e
   show _              = "…"
 data Identifier = NormalFunction String | MixfixFunction [MixfixIdentifierKind] | PrefixFunction String | NamespacedFunction String Identifier
-  deriving (Ord, Eq)
+  deriving (Ord, Eq, Generic, NFData)
 functionName :: Identifier -> String
 functionName = \case
   NormalFunction f       -> f
@@ -120,13 +124,13 @@ instance Show Identifier where
   show ident = "\ESC[95m" <> functionName ident <> "\ESC[0m"
 
 data Mixfix = MixfixOperator Identifier | MixfixExpression Expression
-  deriving (Ord, Eq)
+  deriving (Ord, Eq, Generic, NFData)
 instance Show Mixfix where
   show (MixfixOperator   i) = show i
   show (MixfixExpression e) = show e
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
 data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
-  deriving (Ord, Eq)
+  deriving (Ord, Eq, Generic, NFData)
 instance Show Expression where -- TODO: make use of precedence value?
   showsPrec _ (Bruijn x) =
     showString "\ESC[91m" . shows x . showString "\ESC[0m"

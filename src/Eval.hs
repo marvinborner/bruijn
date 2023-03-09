@@ -5,6 +5,7 @@ module Eval
 
 import           Binary
 import           Control.Concurrent
+import           Control.DeepSeq                ( deepseq )
 import           Control.Exception
 import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
@@ -266,10 +267,12 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     pure $ EnvState (Environment M.empty) conf (EnvCache M.empty)
   Time e -> do
     start <- getTime Monotonic
-    _     <- evalInstruction (ContextualInstruction (Evaluate e) inp)
-                             s
-                             (const $ pure s)
-    end <- getTime Monotonic
+    let (res, _) = evalExp e (Environment M.empty) `runState` env
+    end <- case res of
+      Left  err -> print err >> getTime Monotonic
+      Right e'  -> do
+        red <- reduce e'
+        deepseq red (getTime Monotonic)
     let roundSecs x =
           (fromIntegral (round $ x * 1e6 :: Integer)) / 1e6 :: Double
     putStr

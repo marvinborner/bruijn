@@ -64,6 +64,7 @@ library
     , bytestring
     , clock
     , containers
+    , deepseq
     , directory
     , filepath
     , haskeline
@@ -91,6 +92,7 @@ executable bruijn
     , bytestring
     , clock
     , containers
+    , deepseq
     , directory
     , filepath
     , haskeline
@@ -119,6 +121,7 @@ test-suite bruijn-test
     , bytestring
     , clock
     , containers
+    , deepseq
     , directory
     , filepath
     , haskeline
