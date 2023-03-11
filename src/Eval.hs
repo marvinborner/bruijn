@@ -266,6 +266,24 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     putStrLn " Byte"
     performGC
     pure $ EnvState (Environment M.empty) conf (EnvCache M.empty)
+  Length e -> do
+    let (res, _) = evalExp e (Environment M.empty) `runState` env
+    case res of
+      Left  err -> print err
+      Right e'  -> do
+        red <- reduce e'
+        print $ length $ toBinary e'
+        print $ length $ toBinary red
+    pure s
+  Blc e -> do
+    let (res, _) = evalExp e (Environment M.empty) `runState` env
+    case res of
+      Left  err -> print err
+      Right e'  -> do
+        red <- reduce e'
+        putStrLn $ toBinary e'
+        putStrLn $ toBinary red
+    pure s
   Time e -> do
     start <- getTime Monotonic
     let (res, _) = evalExp e (Environment M.empty) `runState` env

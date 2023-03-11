@@ -147,7 +147,7 @@ instance Show Expression where
       . foldr1 (\x y -> x . showString " " . y) (map shows ms)
       . showString "\ESC[33m)\ESC[0m"
   showsPrec _ (Prefix p e) = shows p . showString " " . shows e
-data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression
+data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression | Length Expression | Blc Expression
   deriving (Show)
 data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)

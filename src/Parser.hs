@@ -269,6 +269,18 @@ parseTime = do
   e <- parseExpression
   pure $ Time e
 
+parseLength :: Parser Command
+parseLength = do
+  _ <- string ":length" <* sc <?> "length instruction"
+  e <- parseExpression
+  pure $ Length e
+
+parseBlc :: Parser Command
+parseBlc = do
+  _ <- string ":blc" <* sc <?> "blc instruction"
+  e <- parseExpression
+  pure $ Blc e
+
 parseClearState :: Parser Command
 parseClearState = do
   _ <- string ":free" <?> "free instruction"
@@ -334,5 +346,7 @@ parseReplLine =
     <|> (Commands . (: []) <$> try parseWatch)
     <|> (Commands . (: []) <$> try parseImport)
     <|> (Commands . (: []) <$> try parseTime)
+    <|> (Commands . (: []) <$> try parseLength)
+    <|> (Commands . (: []) <$> try parseBlc)
     <|> (Commands . (: []) <$> try parseClearState)
     <|> try parseEvaluate
