@@ -1,0 +1,10 @@
+# printf 10 | bruijn thue-morse.bruijn
+# using tromp's solution, prints thue morse sequence
+
+:import std/Combinator .
+:import std/Logic .
+:import std/String .
+
+main [take (number! 0) tm]
+	xpd z [[[[0 2 [0 [[5 0 1]] (2 4)]]]]]
+	tm z [xpd true (0 false)]

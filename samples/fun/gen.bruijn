@@ -1,0 +1,12 @@
+# generates long expressions from short ones
+
+# TODO: This should be linear time according to RKNL paper
+#       possible reasons: box/map copying, GC
+
+:import std/Math .
+
+seed (+23u)
+
+dup [0 0]
+
+main [seed dup 0] ⧗ Unary → Woah
