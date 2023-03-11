@@ -49,6 +49,7 @@ library
       Helper
       Parser
       Reducer
+      Scbn
   other-modules:
       Paths_bruijn
   hs-source-dirs:

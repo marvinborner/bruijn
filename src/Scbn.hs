@@ -93,7 +93,7 @@ isNF :: Bool -> STerm -> Bool
 isNF at t =
   let cont     = context at t
       listEval = Set.fold
-        (\(i, c, at') acc -> (map (\z -> assemble z c) (eval at' i)) ++ acc)
+        (\(i, c, at') acc -> (map (\z -> assemble z c) (eval i)) ++ acc)
         []
         cont
   in  not $ any (\i -> i /= t) listEval
@@ -134,13 +134,13 @@ context inert w = Set.map (\(a, b, at) -> (a, reverse b, at))
             _ -> newT1
       in  Set.insert (ES t1 x t2, c, at) (Set.union c1 c2)
 
-eval :: Bool -> STerm -> [STerm]
-eval _ (SApp t1 t2) =
+eval :: STerm -> [STerm]
+eval (SApp t1 t2) =
   let r = case findLambda (\i -> i) t1 of
         Just (f, SAbs x t) -> f (ES t x t2)
         _                  -> SApp t1 t2
   in  [r]
-eval _ (ES t1 x t2) =
+eval (ES t1 x t2) =
   let isVal = findLambda (\i -> i) t2
   in  case isVal of
         Just (cont, term)
@@ -154,7 +154,7 @@ eval _ (ES t1 x t2) =
           | otherwise
           -> [ES t1 x t2]
         _ -> [ES t1 x t2]
-eval _ x = [x]
+eval x = [x]
 
 assemble :: STerm -> [Scbn.Context] -> STerm
 assemble = foldr
@@ -171,7 +171,7 @@ allEval :: STerm -> [STerm]
 allEval t =
   let cont     = context False t
       listEval = Set.fold
-        (\(i, c, at) acc -> (map (\z -> assemble z c) (eval at i)) ++ acc)
+        (\(i, c, at) acc -> (map (\z -> assemble z c) (eval i)) ++ acc)
         []
         cont
   in  filter (\i -> i /= t) listEval
@@ -211,13 +211,14 @@ star (SApp l r) = SApp (star l) (star r)
 star (ES t x s) = star $ subst (star t) x s
 star t          = t
 
-reduce :: Expression -> Expression
-reduce term =
-  let go t gen =
-        let (t', _, gen') = clear gen Set.empty t
-            mapgen (k : ts) genm =
-              let (g, genm') = go k genm in g : (mapgen ts genm')
-            mapgen [] _ = []
-        in  (t' : (concat $ mapgen (allEval t') gen'), gen')
-      (red, _) = go (toRedex term) (NameGen 100000)
-  in  fromRedex $ star $ last red
+converge :: Eq a => (a -> a) -> a -> a
+converge = until =<< ((==) =<<)
+
+reduce :: Expression -> IO Expression
+reduce t =
+  let (t', _, _) = clear (NameGen 100000) Set.empty (toRedex t)
+      go term = case allEval term of
+        []        -> term
+        [red    ] -> red
+        (red : _) -> red
+  in  pure $ fromRedex $ star $ converge go t'
