@@ -12,6 +12,7 @@ import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString.Lazy          as Byte
 import           Data.Function                  ( on )
+import           Data.Functor
 import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe
@@ -64,7 +65,7 @@ loadFile path conf cache = do
       (filter (not . null) $ split "\n\n" f')
       (EnvState
         (Environment M.empty)
-        (conf { _isRepl = False, _evalPaths = (path : (_evalPaths conf)) })
+        (conf { _isRepl = False, _evalPaths = path : _evalPaths conf })
         cache
       )
 
@@ -86,7 +87,7 @@ evalFun fun (Environment sub) = state $ \env@(Environment e) ->
         _           -> (suggest $ lookup' e, env) -- search in global env
 
 evalAbs :: Expression -> Environment -> EvalState (Failable Expression)
-evalAbs e sub = evalExp e sub >>= pure . fmap Abstraction
+evalAbs e sub = evalExp e sub <&> fmap Abstraction
 
 evalApp
   :: Expression -> Expression -> Environment -> EvalState (Failable Expression)
@@ -102,7 +103,7 @@ evalMixfix m sub = resolve (mixfixKind m) mixfixArgs
   longestMatching x  = evalFun (MixfixFunction x) sub >>= \case
     Left  _ -> longestMatching $ init x
     Right _ -> pure $ Right $ Function $ MixfixFunction x
-  holeCount f = length [ h | h@(MixfixNone) <- f ]
+  holeCount f = length [ h | h@MixfixNone <- f ]
   resolve f args
     | null [ s | s@(MixfixSome _) <- f ] = evalExp (foldl1 Application args) sub
     | otherwise = longestMatching f >>= \case
@@ -114,7 +115,7 @@ evalMixfix m sub = resolve (mixfixKind m) mixfixArgs
               [] -> evalExp (foldl1 Application $ l : splitted) sub
               _  -> evalExp
                 ( MixfixChain
-                $ (MixfixExpression $ foldl1 Application $ l : splitted)
+                $ MixfixExpression (foldl1 Application $ l : splitted)
                 : chainRst
                 )
                 sub
@@ -183,10 +184,10 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             full
             (conf { _nicePath = path })
             cache -- TODO: Fix wrong `within` in import error
-          cache'' <- pure $ cache
-            { _imported = M.insert path (Environment env')
-                            $ M.union (_imported cache) (_imported cache')
-            }
+          let cache'' = cache
+                { _imported = M.insert path (Environment env')
+                                $ M.union (_imported cache) (_imported cache')
+                }
           pure $ EnvState (Environment $ M.union env' envDefs) conf cache'' -- import => _isRepl = False
   Watch path ->
     let
@@ -220,7 +221,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             rewriteFuns =
               M.map $ \d -> d { _flags = (_flags d) { _isImported = True } }
             filterImported =
-              M.filter $ \(EnvDef { _flags = f }) -> _isImported f == False
+              M.filter $ \(EnvDef { _flags = f }) -> not $ _isImported f
             env'' = rewriteFuns $ rewriteKeys prefix $ filterImported env'
           in
             pure $ s { _env = Environment $ M.union env'' envDefs }
@@ -229,11 +230,11 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             full
             (conf { _nicePath = path })
             cache -- TODO: Fix wrong `within` in import error
-          cache'' <- pure $ cache
-            { _imported = M.insert path (Environment env')
-                            $ M.union (_imported cache) (_imported cache')
-            }
           let
+            cache'' = cache
+              { _imported = M.insert path (Environment env')
+                              $ M.union (_imported cache) (_imported cache')
+              }
             prefix | null namespace   = takeBaseName path ++ "."
                    | namespace == "." = ""
                    | otherwise        = namespace ++ "."
@@ -242,8 +243,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             rewriteFuns =
               M.map $ \d -> d { _flags = (_flags d) { _isImported = True } }
             filterImported =
-              M.filter $ \(EnvDef { _flags = f }) -> _isImported f == False
-          env'' <- pure $ rewriteFuns $ rewriteKeys prefix $ filterImported env'
+              M.filter $ \(EnvDef { _flags = f }) -> not $ _isImported f
+            env'' = rewriteFuns $ rewriteKeys prefix $ filterImported env'
           pure $ EnvState (Environment $ M.union env'' envDefs) conf cache'' -- import => _isRepl = False
   Test e1 e2
     | _evalTests conf
@@ -273,8 +274,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
       Right e'  -> do
         red <- reduce e'
         deepseq red (getTime Monotonic)
-    let roundSecs x =
-          (fromIntegral (round $ x * 1e6 :: Integer)) / 1e6 :: Double
+    let roundSecs x = fromIntegral (round $ x * 1e6 :: Integer) / 1e6 :: Double
     putStr
       $ show
       $ roundSecs
@@ -290,7 +290,7 @@ showResult reduced env =
       humanified = humanifyExpression reduced
   in  putStrLn
         $  "*> "
-        <> (show reduced)
+        <> show reduced
         <> (if null humanified then "" else "\n?> " <> humanified)
         <> (if null matching then "" else "\n#> " <> matching)
 
@@ -305,7 +305,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
         Left err ->
           print (ContextualError err $ Context inp $ _nicePath conf) >> pure s -- don't continue
         Right _
-          | _isRepl conf -> (putStrLn $ show i <> " = " <> show e)
+          | _isRepl conf -> putStrLn (show i <> " = " <> show e)
           >> return s { _env = env' }
           | otherwise -> rec s { _env = env' }
     Evaluate e ->
@@ -385,9 +385,8 @@ exec path rd conv = do
 
 repl :: EnvState -> InputT M ()
 repl (EnvState env conf cache) =
-  (handleInterrupt (return $ Just "") $ withInterrupt $ getInputLine
-      "\ESC[36mλ\ESC[0m "
-    )
+  handleInterrupt (return $ Just "")
+                  (withInterrupt $ getInputLine "\ESC[36mλ\ESC[0m ")
     >>= \case -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
           Just line -> do -- setting imported [] for better debugging
@@ -428,10 +427,9 @@ runRepl = do
                                          conf
                                          (EnvCache M.empty)
         )
-  code <- StrictState.evalStateT
+  StrictState.evalStateT
     looper
     (EnvState (Environment M.empty) conf (EnvCache M.empty))
-  return code
 
 usage :: IO ()
 usage = do

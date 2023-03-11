@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy          as Byte
 import qualified Data.ByteString.Lazy.Char8    as C
 import           Data.List
 import qualified Data.Map                      as M
+import           Data.Maybe                     ( fromMaybe )
 import           GHC.Generics                   ( Generic )
 import           Text.Megaparsec
 
@@ -37,16 +38,13 @@ printContext (Context inp path) = p $ lines inp
   p []  = withinText <> show path <> "\n"
   p [l] = inText <> l <> "\n" <> withinText <> path <> "\n"
   p (l : ls) =
-    (p [l])
-      <> nearText
-      <> (intercalate "\n" $ map ("  | " ++) $ take 3 $ ls)
-      <> "\n"
+    p [l] <> nearText <> intercalate "\n" (map ("  | " ++) $ take 3 ls) <> "\n"
 
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
 data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
 instance Show Error where
-  show (ContextualError err ctx) = show err <> "\n" <> (printContext ctx)
+  show (ContextualError err ctx) = show err <> "\n" <> printContext ctx
   show (SuggestSolution err sol) =
     show err <> "\n\ESC[102m\ESC[30msuggestion\ESC[0m Perhaps you meant " <> sol
   show (SyntaxError err) =
@@ -56,9 +54,9 @@ instance Show Error where
   show (UnmatchedMixfix ks ms) =
     errPrefix
       <> "couldn't find matching mixfix for "
-      <> (intercalate "" (map show ks))
+      <> intercalate "" (map show ks)
       <> "\n\ESC[105m\ESC[30mnear\ESC[0m "
-      <> (intercalate " " (map show ms))
+      <> unwords (map show ms)
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
@@ -87,7 +85,7 @@ printBundle ParseErrorBundle {..} =
    where
     (msline, pst') = reachOffset (errorOffset e) pst
     epos           = pstateSourcePos pst'
-    outChunk       = "\n\n" <> offendingLine <> (init $ parseErrorTextPretty e)
+    outChunk       = "\n\n" <> offendingLine <> init (parseErrorTextPretty e)
     offendingLine  = case msline of
       Nothing -> ""
       Just sline ->
@@ -131,25 +129,24 @@ instance Show Mixfix where
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
 data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
   deriving (Ord, Eq, Generic, NFData)
-instance Show Expression where -- TODO: make use of precedence value?
+instance Show Expression where
   showsPrec _ (Bruijn x) =
     showString "\ESC[91m" . shows x . showString "\ESC[0m"
   showsPrec _ (Function ident) =
     showString "\ESC[95m" . shows ident . showString "\ESC[0m"
   showsPrec _ (Abstraction e) =
-    showString "\ESC[36m[\ESC[0m" . showsPrec 0 e . showString
-      "\ESC[36m]\ESC[0m"
+    showString "\ESC[36m[\ESC[0m" . shows e . showString "\ESC[36m]\ESC[0m"
   showsPrec _ (Application exp1 exp2) =
     showString "\ESC[33m(\ESC[0m"
-      . showsPrec 0 exp1
+      . shows exp1
       . showString " "
-      . showsPrec 0 exp2
+      . shows exp2
       . showString "\ESC[33m)\ESC[0m"
   showsPrec _ (MixfixChain ms) =
     showString "\ESC[33m(\ESC[0m"
-      . foldr (.) id (map (showsPrec 0) ms)
+      . foldr1 (\x y -> x . showString " " . y) (map shows ms)
       . showString "\ESC[33m)\ESC[0m"
-  showsPrec _ (Prefix p e) = shows p . showString " " . showsPrec 0 e
+  showsPrec _ (Prefix p e) = shows p . showString " " . shows e
 data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression
   deriving (Show)
 data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
@@ -161,7 +158,7 @@ data EvalConf = EvalConf
   , _nicePath  :: String
   , _evalPaths :: [String]
   }
-data ExpFlags = ExpFlags
+newtype ExpFlags = ExpFlags
   { _isImported :: Bool
   }
   deriving Show
@@ -171,9 +168,9 @@ data EnvDef = EnvDef
   , _flags :: ExpFlags
   }
   deriving Show
-data Environment = Environment (M.Map Identifier EnvDef)
+newtype Environment = Environment (M.Map Identifier EnvDef)
   deriving Show
-data EnvCache = EnvCache
+newtype EnvCache = EnvCache
   { _imported :: M.Map String Environment
   }
 type EvalState = S.State Environment
@@ -196,8 +193,7 @@ listify (e : es) =
   Abstraction (Application (Application (Bruijn 0) e) (listify es))
 
 binarify :: [Expression] -> Expression
-binarify []       = Bruijn 2
-binarify (e : es) = Application e (binarify es)
+binarify = foldr Application (Bruijn 2)
 
 encodeByte :: [Bool] -> Expression
 encodeByte bits = Abstraction $ Abstraction $ Abstraction $ binarify
@@ -219,14 +215,12 @@ charToExpression :: Char -> Expression
 charToExpression ch = encodeByte $ Bit.toList $ Bit.bitStringLazy $ C.pack [ch]
 
 encodeStdin :: IO Expression
-encodeStdin = do
-  bytes <- Byte.getContents
-  pure $ encodeBytes bytes
+encodeStdin = encodeBytes <$> Byte.getContents
 
 unlistify :: Expression -> Maybe [Expression]
 unlistify (Abstraction (Abstraction (Bruijn 0))) = Just []
 unlistify (Abstraction (Application (Application (Bruijn 0) e) es)) =
-  (:) <$> Just e <*> (unlistify es)
+  (:) <$> Just e <*> unlistify es
 unlistify _ = Nothing
 
 unpairify :: Expression -> Maybe [Expression]
@@ -236,8 +230,8 @@ unpairify _ = Nothing
 
 decodeByte :: Expression -> Maybe [Bool]
 decodeByte (Abstraction (Abstraction (Abstraction es))) = decodeByte es
-decodeByte (Application (Bruijn 0) es) = (:) <$> Just False <*> (decodeByte es)
-decodeByte (Application (Bruijn 1) es) = (:) <$> Just True <*> (decodeByte es)
+decodeByte (Application (Bruijn 0) es) = (:) <$> Just False <*> decodeByte es
+decodeByte (Application (Bruijn 1) es) = (:) <$> Just True <*> decodeByte es
 decodeByte (Bruijn 2                 ) = Just []
 decodeByte _                           = Nothing
 
@@ -290,21 +284,19 @@ maybeHumanifyExpression e =
     <|> humanifyPair e
 
 humanifyExpression :: Expression -> String
-humanifyExpression e = case maybeHumanifyExpression e of
-  Nothing -> ""
-  Just h  -> h
+humanifyExpression e = fromMaybe "" (maybeHumanifyExpression e)
 
 humanifyList :: Expression -> Maybe String
 humanifyList e = do
   es <- unlistify e
-  let conv x = maybe (show x) id (maybeHumanifyExpression x)
+  let conv x = fromMaybe (show x) (maybeHumanifyExpression x)
       m = map conv es
   pure $ "{" <> intercalate ", " m <> "}"
 
 humanifyPair :: Expression -> Maybe String
 humanifyPair e = do
   es <- unpairify e
-  let conv x = maybe (show x) id (maybeHumanifyExpression x)
+  let conv x = fromMaybe (show x) (maybeHumanifyExpression x)
       m = map conv es
   pure $ "<" <> intercalate " : " m <> ">"
 
@@ -323,7 +315,7 @@ decimalToTernary n =
 -- Decimal to binary encoding
 decimalToBinary :: Integer -> Expression
 decimalToBinary n | n < 0     = decimalToBinary 0
-decimalToBinary n | otherwise = Abstraction $ Abstraction $ Abstraction $ gen n
+                  | otherwise = Abstraction $ Abstraction $ Abstraction $ gen n
  where
   gen 0  = Bruijn 2
   gen n' = Application (Bruijn $ fromIntegral $ mod n' 2) (gen $ div n' 2)
@@ -331,7 +323,7 @@ decimalToBinary n | otherwise = Abstraction $ Abstraction $ Abstraction $ gen n
 -- Decimal to unary (church) encoding
 decimalToUnary :: Integer -> Expression
 decimalToUnary n | n < 0     = decimalToUnary 0
-decimalToUnary n | otherwise = Abstraction $ Abstraction $ gen n
+                 | otherwise = Abstraction $ Abstraction $ gen n
  where
   gen 0  = Bruijn 0
   gen n' = Application (Bruijn 1) (gen (n' - 1))
@@ -347,7 +339,7 @@ unaryToDecimal e = do
   resolve' (Application x@(Bruijn _) (Bruijn 0)) =
     (:) <$> multiplier x <*> Just []
   resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
-    (:) <$> (multiplier x) <*> (resolve' xs)
+    (:) <$> multiplier x <*> resolve' xs
   resolve' _ = Nothing
   resolve (Abstraction (Abstraction n)) = resolve' n
   resolve _                             = Nothing
@@ -364,7 +356,7 @@ binaryToDecimal e = do
   resolve' (Application x@(Bruijn _) (Bruijn 2)) =
     (:) <$> multiplier x <*> Just []
   resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
-    (:) <$> (multiplier x) <*> (resolve' xs)
+    (:) <$> multiplier x <*> resolve' xs
   resolve' _ = Nothing
   resolve (Abstraction (Abstraction (Abstraction n))) = resolve' n
   resolve _ = Nothing
@@ -382,7 +374,7 @@ ternaryToDecimal e = do
   resolve' (Application x@(Bruijn _) (Bruijn 3)) =
     (:) <$> multiplier x <*> Just []
   resolve' (Application x@(Bruijn _) xs@(Application _ _)) =
-    (:) <$> (multiplier x) <*> (resolve' xs)
+    (:) <$> multiplier x <*> resolve' xs
   resolve' _ = Nothing
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n

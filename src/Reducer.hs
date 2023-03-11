@@ -8,14 +8,15 @@ import           Control.Concurrent.MVar
 import           Data.List                      ( elemIndex )
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as Map
+import           Data.Maybe                     ( fromMaybe )
 import           Helper
 
 type Store = Map Int Box
 type Stack = [Redex]
 
-data NameGen = NameGen Int
+newtype NameGen = NameGen Int
 data BoxValue = Todo Redex | Done Redex | Empty
-data Box = Box (MVar BoxValue)
+newtype Box = Box (MVar BoxValue)
 data Rvar = Num Int | Hole
 data Redex = Rabs Int Redex | Rapp Redex Redex | Rvar Rvar | Rclosure Redex Store | Rcache Box Redex
 data Conf = Econf NameGen Redex Store Stack | Cconf NameGen Stack Redex | End
@@ -46,12 +47,12 @@ fromRedex = convertWorker []
     let lhs = convertWorker es l
         rhs = convertWorker es r
     in  Application lhs rhs
-  convertWorker es (Rvar (Num n)) = Bruijn $ maybe n id (elemIndex n es)
+  convertWorker es (Rvar (Num n)) = Bruijn $ fromMaybe n (elemIndex n es)
   convertWorker _  _              = invalidProgramState
 
 transition :: Conf -> IO Conf
 transition (Econf g (Rapp u v) e s) =
-  pure $ Econf g u e ((Rapp (Rvar Hole) (Rclosure v e)) : s)
+  pure $ Econf g u e (Rapp (Rvar Hole) (Rclosure v e) : s)
 transition (Econf g (Rabs x t) e s) = do
   box <- newMVar Empty
   pure $ Cconf g s (Rcache (Box box) (Rclosure (Rabs x t) e))
@@ -60,7 +61,7 @@ transition (Econf g (Rvar (Num x)) e s) = do
   let b@(Box m) = Map.findWithDefault (Box def) x e
   rd <- readMVar m
   case rd of
-    Todo (Rclosure v e') -> pure $ Econf g v e' ((Rcache b (Rvar Hole)) : s)
+    Todo (Rclosure v e') -> pure $ Econf g v e' (Rcache b (Rvar Hole) : s)
     Done t               -> pure $ Cconf g s t
     _                    -> invalidProgramState
 transition (Cconf g ((Rcache (Box m) (Rvar Hole)) : s) t) = do
@@ -80,10 +81,10 @@ transition (Cconf g s (Rcache (Box m) (Rclosure (Rabs x t) e))) = do
       pure $ Econf g'
                    t
                    (Map.insert x (Box box) e)
-                   ((Rabs x1 (Rvar Hole)) : (Rcache (Box m) (Rvar Hole)) : s)
+                   (Rabs x1 (Rvar Hole) : Rcache (Box m) (Rvar Hole) : s)
     Todo _ -> invalidProgramState
 transition (Cconf g ((Rapp (Rvar Hole) (Rclosure v e)) : s) t) =
-  pure $ Econf g v e ((Rapp t (Rvar Hole)) : s)
+  pure $ Econf g v e (Rapp t (Rvar Hole) : s)
 transition (Cconf g ((Rapp t (Rvar Hole)) : s) v) = pure $ Cconf g s (Rapp t v)
 transition (Cconf g ((Rabs x1 (Rvar Hole)) : s) v) =
   pure $ Cconf g s (Rabs x1 v)
@@ -101,7 +102,7 @@ loadTerm t = Econf (NameGen 1000000) t Map.empty []
 
 reduce :: Expression -> IO Expression
 reduce e = do
-  redex <- pure $ toRedex e
+  let redex = toRedex e
   forEachState (loadTerm redex) transition >>= \case
     Cconf _ [] v -> pure $ fromRedex v
     _            -> invalidProgramState

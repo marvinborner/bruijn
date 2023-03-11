@@ -14,9 +14,9 @@ import           Data.Word                      ( Word8 )
 import           Helper
 
 toBinary :: Expression -> String
-toBinary (Bruijn      x        ) = (replicate (x + 1) '1') ++ "0"
+toBinary (Bruijn      x        ) = replicate (x + 1) '1' ++ "0"
 toBinary (Abstraction e        ) = "00" ++ toBinary e
-toBinary (Application exp1 exp2) = "01" ++ (toBinary exp1) ++ (toBinary exp2)
+toBinary (Application exp1 exp2) = "01" ++ toBinary exp1 ++ toBinary exp2
 toBinary _                       = invalidProgramState
 
 fromBinary' :: String -> (Expression, String)
@@ -30,10 +30,10 @@ fromBinary' inp = case inp of
   _             -> invalidProgramState
  where
   binaryBruijn rst =
-    let idx = (length $ takeWhile (== '1') $ inp) - 1
+    let idx = length (takeWhile (== '1') inp) - 1
     in  case rst of
-          "" -> (Bruijn $ idx, "")
-          _  -> (Bruijn $ idx, drop idx rst)
+          "" -> (Bruijn idx, "")
+          _  -> (Bruijn idx, drop idx rst)
 
 fromBinary :: String -> Expression
 fromBinary = fst . fromBinary'
@@ -60,7 +60,7 @@ fromBitString bits =
         True  -> '1'
       )
     $ Bit.toList
-    $ Bit.take (Bit.length bits - (fromIntegral $ pad bits))
+    $ Bit.take (Bit.length bits - fromIntegral (pad bits))
     $ Bit.drop 8 bits
  where
   pad :: Bit.BitString -> Word8

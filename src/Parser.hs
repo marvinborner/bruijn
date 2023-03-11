@@ -25,7 +25,7 @@ greekLetter = satisfy isGreek
 
 emoticon :: Parser Char
 emoticon = satisfy isEmoticon
-  where isEmoticon c = ('\128512' <= c && c <= '\128591')
+  where isEmoticon c = '\128512' <= c && c <= '\128591'
 
 mathematicalOperator :: Parser Char
 mathematicalOperator =
@@ -33,8 +33,8 @@ mathematicalOperator =
     <|> satisfy isMiscMathematicalAUnicodeBlock
     <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
  where
-  isMathematicalUnicodeBlock c = ('∀' <= c && c <= '⋿')
-  isMiscMathematicalAUnicodeBlock c = ('⟀' <= c && c <= '⟯')
+  isMathematicalUnicodeBlock c = '∀' <= c && c <= '⋿'
+  isMiscMathematicalAUnicodeBlock c = '⟀' <= c && c <= '⟯'
 
 mathematicalArrow :: Parser Char
 mathematicalArrow = satisfy isMathematicalOperator
@@ -51,12 +51,12 @@ mixfixNone :: Parser MixfixIdentifierKind
 mixfixNone = char '…' >> pure MixfixNone
 
 mixfixSome :: Parser MixfixIdentifierKind
-mixfixSome = MixfixSome <$> (some specialChar)
+mixfixSome = MixfixSome <$> some specialChar
 
 mixfixOperator :: Parser Identifier
 mixfixOperator = normalMixfix <|> namespacedMixfix
  where
-  normalMixfix     = MixfixFunction <$> (some $ mixfixNone <|> mixfixSome)
+  normalMixfix     = MixfixFunction <$> some (mixfixNone <|> mixfixSome)
   namespacedMixfix = NamespacedFunction <$> dottedNamespace <*> mixfixOperator
 
 prefixOperator :: Parser Identifier
@@ -117,9 +117,9 @@ parseNumeral :: Parser Expression
 parseNumeral = do
   _    <- string "(" <?> "number start"
   num  <- number <?> "signed number"
-  base <- (try (oneOf "ubt") <|> return 't')
+  base <- try (oneOf "ubt") <|> return 't'
   _    <- string ")" <?> "number end"
-  pure $ (f base) num
+  pure $ f base num
  where
   f 't' = decimalToTernary
   f 'b' = decimalToBinary
@@ -142,7 +142,7 @@ parseString = do
     between
         (char '\"')
         (char '\"')
-        (some $ (char '\\' *> specialEscape) <|> (satisfy (`notElem` "\"\\")))
+        (some $ (char '\\' *> specialEscape) <|> satisfy (`notElem` "\"\\"))
       <?> "quoted string"
   pure $ stringToExpression str
 
@@ -156,9 +156,7 @@ parseChar = do
   pure $ charToExpression ch
 
 parseFunction :: Parser Expression
-parseFunction = do
-  var <- identifier
-  pure $ Function var
+parseFunction = Function <$> identifier
 
 parseMixfix :: Parser Expression
 parseMixfix = do
@@ -237,7 +235,7 @@ parseTypeExpression = parseFunctionType <?> "type expression"
 
 parseDefineType :: Parser ()
 parseDefineType = do
-  (try $ char '⧗' <* sc *> parseTypeExpression) <|> (return ())
+  try (char '⧗' <* sc *> parseTypeExpression) <|> return ()
 
 parseDefine :: Int -> Parser Instruction
 parseDefine lvl = do
@@ -247,7 +245,7 @@ parseDefine lvl = do
   e    <- parseExpression
   _    <- parseDefineType
   subs <-
-    (try $ newline *> (many $ parseBlock $ lvl + 1)) <|> (try eof >> return [])
+    try (newline *> many (parseBlock $ lvl + 1)) <|> (try eof >> return [])
   pure $ ContextualInstruction (Define var e subs) inp
 
 parseReplDefine :: Parser Instruction
@@ -280,7 +278,7 @@ parseImport :: Parser Command
 parseImport = do
   _    <- string ":import" <* sc <?> "import instruction"
   path <- importPath
-  ns   <- (try $ sc *> (namespace <|> string ".")) <|> (eof >> return "")
+  ns   <- try (sc *> (namespace <|> string ".")) <|> (eof >> return "")
   pure $ Import (path ++ ".bruijn") ns
 
 parseInput :: Parser Command
@@ -321,9 +319,8 @@ parseCommandBlock = do
 
 parseDefBlock :: Int -> Parser Instruction
 parseDefBlock lvl =
-  (sepEndBy parseComment newline)
-    *> string (replicate lvl '\t')
-    *> (try $ parseDefine lvl)
+  sepEndBy parseComment newline *> string (replicate lvl '\t') *> try
+    (parseDefine lvl)
 
 parseBlock :: Int -> Parser Instruction
 parseBlock lvl =
@@ -332,10 +329,10 @@ parseBlock lvl =
 parseReplLine :: Parser Instruction
 parseReplLine =
   try parseReplDefine -- TODO: This is kinda hacky
-    <|> ((Commands . (: [])) <$> try parseTest)
-    <|> ((Commands . (: [])) <$> try parseInput)
-    <|> ((Commands . (: [])) <$> try parseWatch)
-    <|> ((Commands . (: [])) <$> try parseImport)
-    <|> ((Commands . (: [])) <$> try parseTime)
-    <|> ((Commands . (: [])) <$> try parseClearState)
+    <|> (Commands . (: []) <$> try parseTest)
+    <|> (Commands . (: []) <$> try parseInput)
+    <|> (Commands . (: []) <$> try parseWatch)
+    <|> (Commands . (: []) <$> try parseImport)
+    <|> (Commands . (: []) <$> try parseTime)
+    <|> (Commands . (: []) <$> try parseClearState)
     <|> try parseEvaluate
