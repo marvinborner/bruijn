@@ -1,0 +1,6 @@
+# bruijn graham.bruijn
+# beats Graham's number in less than 8 byte blc
+# https://codegolf.stackexchange.com/a/219734
+# (probably won't finish :D)
+
+main [[0 (0 [[[0 2 1 0]]] 0) 0 0] (+2u)]
