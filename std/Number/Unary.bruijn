@@ -86,7 +86,7 @@ les? \gre? ⧗ Unary → Unary → Boolean
 :test ((+2u) <? (+2u)) (false)
 :test ((+3u) <? (+2u)) (false)
 
-# returns true if two balanced ternary numbers are equal
+# returns true if two unary numbers are equal
 eq? [[(0 ≥? 1) ⋀? (0 ≤? 1)]] ⧗ Unary → Unary → Boolean
 
 …=?… eq?
@@ -95,7 +95,7 @@ eq? [[(0 ≥? 1) ⋀? (0 ≤? 1)]] ⧗ Unary → Unary → Boolean
 :test ((+1u) =? (+1u)) (true)
 :test ((+42u) =? (+42u)) (true)
 
-# returns true if two balanced ternary numbers are not equal
+# returns true if two unary numbers are not equal
 not-eq? not! ∘∘ eq? ⧗ Unary → Unary → Boolean
 
 …≠?… not-eq?

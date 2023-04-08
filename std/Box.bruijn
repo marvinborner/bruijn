@@ -29,7 +29,7 @@ store! [[empty? 1 (box 0) 1]] ⧗ (Box a) → a → (Box a)
 :test (store! empty [[1]]) (box [[1]])
 
 # sets/overrides the value of a box
-set! [[(box 0)]] ⧗ (Box a) → a → (Box a)
+set! [[box 0]] ⧗ (Box a) → a → (Box a)
 
 :test (set! (box [[0]]) [[1]]) (box [[1]])
 :test (set! empty [[1]]) (box [[1]])

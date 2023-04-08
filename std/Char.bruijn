@@ -1,5 +1,6 @@
 # MIT License, Copyright (c) 2023 Marvin Borner
 
-:input std/Number/Binary .
+:input std/Number/Binary
 
+# converts a char to a balanced ternary number
 number! [ternary! (0 - '0')] ⧗ Char → Number

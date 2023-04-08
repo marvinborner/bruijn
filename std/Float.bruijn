@@ -2,9 +2,13 @@
 # Arbitrary-precision floating-point arithmetic implementation using
 #   (+3.14) = pair (+3) (+14)
 
+# This is completely WIP and only intended as a proof of concept
+
 :import std/Combinator .
 :import std/Number .
 :import std/Pair P
+
+pi (+3) : (+14159)
 
 # generates a float from a normal balanced ternary number
 float! \(P.…:…) (+0)

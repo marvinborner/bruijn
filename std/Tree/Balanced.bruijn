@@ -1,6 +1,7 @@
 # MIT License, Copyright (c) 2023 Marvin Borner
 # Balanced AVL tree for numerical leafs, inspired by Rudy Matela's implementation
 # TODO: Extend for arbitrary orderable types?
+# TODO: Analyze performance bottlenecks
 # TODO: More tests
 
 :import std/Combinator .
@@ -10,12 +11,10 @@
 :import std/Option .
 :import std/Pair .
 
-# tree ⧗ (height : (lbranch? : (label : rbranch?)))
-
 # error return that can't happen (in theory)
 error Ω
 
-# unwrap tree from option (only use if not empty!)
+# unwraps tree from option (only use if not empty!)
 unwrap unwrap-or error ⧗ (Option BalancedTree) → BalancedTree
 
 !‣ unwrap
@@ -68,9 +67,9 @@ rotate-lr [rotate-ll (node (some (rotate-rr !(//0))) ?0 \\0)] ⧗ BalancedTree �
 
 rotate-rl [rotate-rr (node //0 ?0 (some (rotate-ll !(\\0))))] ⧗ BalancedTree → BalancedTree
 
-# balance a tree
+# balances a tree
 balance [go (factor 0)] ⧗ (Option BalancedTree) → (Option BalancedTree)
-	go [(0 >? (+1)) left ((0 <? (-1)) right else)]
+	go [=?0 else ((0 >? (+1)) left ((0 <? (-1)) right else))]
 		left some (((factor //(!1)) =? (-1)) (rotate-lr !1) (rotate-ll !1))
 		right some (((factor \\(!1)) =? (+1)) (rotate-rl !1) (rotate-rr !1))
 		else 1
