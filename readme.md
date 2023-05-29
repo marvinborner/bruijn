@@ -11,7 +11,7 @@ bruijn
 [Jump to examples](#Examples) or use the navigation tree to jump to
 other sections.
 
-Docs, examples and more: [website](https://bruijn.marvinborner.de).
+Docs, articles, examples and more: [website](https://bruijn.marvinborner.de).
 
 ## Features
 
@@ -19,7 +19,7 @@ Docs, examples and more: [website](https://bruijn.marvinborner.de).
   α-equivalence and α-conversion
 - Unique **bracket-style representation** for lambda abstractions
   enables improved human-readability and faster syntactic perception
-- **Call-by-need** reduction with mostly linear time/memory complexity
+- **Call-by-need** reduction with great time/memory complexity
   by using the RKNL[\[4\]](#References) abstract machine (similar to
   [calm](https://github.com/marvinborner/calm/))
 - **Syntactic sugar** for unary/binary/ternary numerals and

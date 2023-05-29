@@ -53,6 +53,12 @@ a {
 	margin: 0 auto;
 }
 
+@media(max-width: 768px) {
+	body {
+		font-size: 1.1em;
+	}
+}
+
 @media(min-width: 768px) {
 	.example {
 		flex-flow: row nowrap;
