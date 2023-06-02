@@ -451,18 +451,22 @@ even? z [[rec]] ⧗ Number → Boolean
 		case-rec t⁰? (lst 0) (1 /³0) ¬(1 /³0)
 		case-end true
 
-:test (even? (+0)) (true)
-:test (even? (+1)) (false)
-:test (even? (+41)) (false)
-:test (even? (+42)) (true)
+=²?‣ even?
+
+:test (=²?(+0)) (true)
+:test (=²?(+1)) (false)
+:test (=²?(+41)) (false)
+:test (=²?(+42)) (true)
 
 # returns true if the number is odd (remainder mod 2 == 1)
 odd? ¬‣ ∘ even? ⧗ Number → Boolean
 
-:test (odd? (+0)) (false)
-:test (odd? (+1)) (true)
-:test (odd? (+41)) (true)
-:test (odd? (+42)) (false)
+≠²?‣ odd?
+
+:test (≠²?(+0)) (false)
+:test (≠²?(+1)) (true)
+:test (≠²?(+41)) (true)
+:test (≠²?(+42)) (false)
 
 # returns max number of two
 max [[(1 ≤? 0) 0 1]] ⧗ Number → Number → Number

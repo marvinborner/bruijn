@@ -194,15 +194,15 @@ ternary! z [[[rec]]] (+0t) ⧗ Binary → Ternary
 # flips the bits of a binary number (1's complement)
 complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
 
-~‣ complement
+-*‣ complement
 
-:test (~(+0b) =? (+0b)) (true)
-:test (~(+1b) =? (+0b)) (true)
-:test (~(+42b)) ([[[1 (0 (1 (0 (1 (0 2)))))]]])
+:test (-*(+0b) =? (+0b)) (true)
+:test (-*(+1b) =? (+0b)) (true)
+:test (-*(+42b)) ([[[1 (0 (1 (0 (1 (0 2)))))]]])
 
 # inverts a binary number by complementing and incrementing (2's complement)
 # don't forget to pad the number with zeroes if needed
-invert ++‣ ∘ ~‣ ⧗ Binary → Binary
+invert ++‣ ∘ -*‣ ⧗ Binary → Binary
 
 -‣ invert
 
@@ -261,3 +261,36 @@ sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binar
 :test ((+42b) - (+12b) =? (+30b)) (true)
 :test ((+3b) - (+0b) =? (+3b)) (true)
 :test ((+3b) - (+2b) =? (+1b)) (true)
+
+# TODO: mul/div
+
+# rshifts least significant bit of a binary number
+div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+0b)
+	a¹ [0 [[↑¹1 : 1]]]
+	a⁰ [0 [[↑⁰1 : 1]]]
+
+/²‣ div²
+
+:test (/²(+6b) =? (+3b)) (true)
+:test (/²(+5b) =? (+2b)) (true)
+
+# returns true if the number is even (remainder mod 2 == 0)
+even? ¬‣ ∘ lst ⧗ Binary → Boolean
+
+=²?‣ even?
+
+:test (even? (+0b)) (true)
+:test (even? (+1b)) (false)
+:test (even? (+41b)) (false)
+:test (even? (+42b)) (true)
+
+# returns true if the number is odd (remainder mod 2 == 1)
+odd? lst ⧗ Binary → Boolean
+
+≠²?‣ odd?
+
+:test (odd? (+0b)) (false)
+:test (odd? (+1b)) (true)
+:test (odd? (+41b)) (true)
+:test (odd? (+42b)) (false)
