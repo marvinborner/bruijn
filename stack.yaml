@@ -42,7 +42,7 @@ packages:
 #
 # extra-deps: []
 extra-deps:
-- bitstring-0.0.0@sha256:7638c1c515d728a84507e33c830854cfd141a5bcabec6963e68f52baf27979e9,1248
+- bitstring-0.0.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

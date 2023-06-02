@@ -47,6 +47,9 @@ library:
   source-dirs: src
   ghc-options:
   - -O3
+  - -optc-O3
+  - -funfolding-use-threshold=16
+  - -fllvm
   - -Wall
   - -Wextra
   - -Wincomplete-uni-patterns
