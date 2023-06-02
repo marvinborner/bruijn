@@ -1,0 +1,16 @@
+# bruijn collatz.bruijn
+# fun collatz implementation using binary abstract machine
+
+:import std/Combinator .
+:import std/Number/Binary .
+
+# TODO: add String → Binary function for reading from stdin
+start (+01189998819991197253b)
+
+collatz [z [[rec]] (=²?0 ≠²!(/²0) 0)] ⧗ Binary → Boolean
+	≠²!‣ z [[=²?0 (1 /²0) 0]]
+	rec (0 =? (+1b)) case-end case-rec
+		case-rec 1 ≠²!(↑¹0 + 0)
+		case-end [[1]]
+
+main [collatz start]
