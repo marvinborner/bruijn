@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language kateversion="5.0" name="bruijn" section="Sources" extensions="*.bruijn">
+	<highlighting>
+		<list name="commands">
+			<item>import</item>
+		</list>
+		<contexts>
+			<context attribute="Text" lineEndContext="#pop" name="text" >
+				<RegExpr attribute="Command" String="^:" context="command" beginRegion="Command" />
+				<Detect2Chars attribute="Comment" char="#" char1=" " context="comment" beginRegion="Comment"/>
+				<RegExpr attribute="Definition" String="^[^ [(:#]+ " context="#pop" />
+				<Detect2Chars attribute="Number" char="(" char1="+" context="number" beginRegion="Number"/>
+				<Detect2Chars attribute="Number" char="(" char1="-" context="number" beginRegion="Number"/>
+				<RegExpr attribute="Index" String="[0-9]" />
+				<RegExpr attribute="Namespace" String="[α-ωΑ-ΩA-Z]+[α-ωΑ-Ωa-zA-Z]*" context="#stay"/>
+				<RegExpr attribute="Identifier" String="(…|[α-ωΑ-Ωa-z])+[^ \])]*" context="#stay"/>
+				<AnyChar attribute="Mixfix" String="!?*@.,:;+-_#$%^&amp;&lt;&gt;/\\|{}~=" context="#stay" />
+				<DetectChar attribute="String" context="string" char="&quot;" />
+				<DetectChar attribute="Char" context="char" char="&apos;" />
+				<DetectChar attribute="Abstraction" context="#stay" char="[" />
+				<DetectChar attribute="Abstraction" context="#stay" char="]" />
+				<DetectChar attribute="Application" context="#stay" char="(" />
+				<DetectChar attribute="Application" context="#stay" char=")" />
+			</context>
+			<context attribute="String" lineEndContext="#stay" name="string" >
+				<DetectChar attribute="String" context="#pop" char="&quot;" />
+			</context>
+			<context attribute="Char" lineEndContext="#stay" name="char" >
+				<DetectChar attribute="Char" context="#pop" char="&apos;" />
+			</context>
+			<context attribute="Number" lineEndContext="#stay" name="number" >
+				<DetectChar attribute="Number" context="#pop" char=")" />
+			</context>
+			<context attribute="Comment" lineEndContext="#pop" name="comment">
+			</context>
+			<context attribute="Command" lineEndContext="#pop" name="command">
+			</context>
+		</contexts>
+		<itemDatas>
+			<itemData name="Abstraction" defStyleNum="dsControlFlow" />
+			<itemData name="Application" defStyleNum="dsKeyword" />
+			<itemData name="Char" defStyleNum="dsChar" />
+			<itemData name="Command" defStyleNum="dsPreprocessor" />
+			<itemData name="Comment" defStyleNum="dsComment" />
+			<itemData name="Definition" defStyleNum="dsVariable" />
+			<itemData name="Identifier" defStyleNum="dsFunction" />
+			<itemData name="Index" defStyleNum="dsSpecialChar" />
+			<itemData name="Mixfix" defStyleNum="dsOperator" />
+			<itemData name="Namespace" defStyleNum="dsExtension" />
+			<itemData name="Number" defStyleNum="dsBaseN" />
+			<itemData name="String" defStyleNum="dsString" />
+			<itemData name="Text" defStyleNum="dsNormal" />
+		</itemDatas>
+	</highlighting>
+</language>
