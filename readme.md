@@ -11,7 +11,8 @@ bruijn
 [Jump to examples](#Examples) or use the navigation tree to jump to
 other sections.
 
-Docs, articles, examples and more: [website](https://bruijn.marvinborner.de).
+Docs, articles, examples and more:
+[website](https://bruijn.marvinborner.de).
 
 ## Features
 
@@ -19,8 +20,8 @@ Docs, articles, examples and more: [website](https://bruijn.marvinborner.de).
   α-equivalence and α-conversion
 - Unique **bracket-style representation** for lambda abstractions
   enables improved human-readability and faster syntactic perception
-- **Call-by-need** reduction with great time/memory complexity
-  by using the RKNL[\[4\]](#References) abstract machine (similar to
+- **Call-by-need** reduction with great time/memory complexity by using
+  the RKNL[\[4\]](#References) abstract machine (similar to
   [calm](https://github.com/marvinborner/calm/))
 - **Syntactic sugar** for unary/binary/ternary numerals and
   binary-encoded strings and chars
@@ -283,7 +284,7 @@ Some other great functions:
 Read the files in `std/` for an overview of all functions/libraries or
 visit the interactive [website](https://bruijn.marvinborner.de).
 
-### Compilation to BLC
+### Compilation
 
 You can compile bruijn to John Tromp’s
 BLC[\[2\]](#References)[\[3\]](#References). Only the used functions
@@ -296,6 +297,13 @@ BLC uses the following encoding:
 | abstraction  | λM     | \[M\]  | 00M              |
 | application  | MN     | MN     | 01MN             |
 | bruijn index | i      | i      | 1<sup>i+1</sup>0 |
+
+You may also want to use my [BLoC](https://github.com/marvinborner/bloc)
+format, which removes redundant duplicates – very useful to reduce the
+size of typical bruijn programs. Typical workflow using the `bloc` util:
+
+    bruijn -B program.bruijn | bloc --from-blc -i - -o out.bloc
+    cat input | bruijn -E <(bloc --from-bloc -i out.bloc)
 
 ## Installation
 
