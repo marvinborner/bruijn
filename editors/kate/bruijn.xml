@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <language kateversion="5.0" name="bruijn" section="Sources" extensions="*.bruijn">
 	<highlighting>
-		<list name="commands">
-			<item>import</item>
-		</list>
 		<contexts>
 			<context attribute="Text" lineEndContext="#pop" name="text" >
 				<RegExpr attribute="Command" String="^:" context="command" beginRegion="Command" />
