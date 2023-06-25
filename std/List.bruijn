@@ -56,6 +56,20 @@ length z [[[rec]]] (+0) ⧗ (List a) → Number
 :test (∀((+1) : {}(+2))) ((+2))
 :test (∀empty) ((+0))
 
+# applies each element of a list to a function
+# TODO: Fix variadicity in signature
+apply z [[[rec]]] ⧗ (a → b) → (List a) → b
+	rec ∅?0 case-end case-app
+		case-app 2 (1 ^0) ~0
+		case-end 1
+
+:test (apply …+… ((+1) : {}(+2))) ((+3))
+
+# applies each element of the tail to the head
+eval [apply ^0 ~0] ⧗ (Pair (a → b) (List a)) → b
+
+:test (eval (…+… : ((+1) : {}(+2)))) ((+3))
+
 # returns the element at index in list
 index z [[[rec]]] ⧗ (List a) → Number → a
 	rec ∅?0 case-end case-index
