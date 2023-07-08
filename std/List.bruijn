@@ -7,6 +7,7 @@
 :import std/Pair P
 :import std/Logic .
 :import std/Number/Ternary .
+:import std/Box B
 
 # empty list element
 empty false ⧗ (List a)
@@ -63,12 +64,16 @@ apply z [[[rec]]] ⧗ (a → b) → (List a) → b
 		case-app 2 (1 ^0) ~0
 		case-end 1
 
-:test (apply …+… ((+1) : {}(+2))) ((+3))
+…<!… apply
+
+:test (…+… <! ((+1) : {}(+2))) ((+3))
 
 # applies each element of the tail to the head
-eval [apply ^0 ~0] ⧗ (Pair (a → b) (List a)) → b
+eval [^0 <! ~0] ⧗ (Pair (a → b) (List a)) → b
 
-:test (eval (…+… : ((+1) : {}(+2)))) ((+3))
+!‣ eval
+
+:test (!(…+… : ((+1) : {}(+2)))) ((+3))
 
 # returns the element at index in list
 index z [[[rec]]] ⧗ (List a) → Number → a
@@ -140,11 +145,6 @@ reverse foldl \cons empty ⧗ (List a) → (List a)
 
 :test (<~>((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
 
-# creates list out of n terms
-# TODO: use balanced ternary
-# TODO: fix/remove incorrect type?
-list [0 [[[2 (0 : 1)]]] reverse empty] ⧗ (List a) → Unary → b → (List b)
-
 # appends two lists
 append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
 	rec ∅?1 case-end case-append
@@ -165,6 +165,21 @@ snoc [[1 ++ {}0]] ⧗ (List a) → a → (List a)
 
 :test (empty ; (+1)) ({}(+1))
 :test ({}(+1) ; (+2)) ((+1) : {}(+2))
+
+# generates a variadic variation of a list-based function
+# TODO: Fix variadicity in signature
+# TODO: Find a solution that does not require boxed terms
+variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a) → (Box c) → b)
+	rec B.∅?1 (2 0) [4 3 0 (1 ; (B.get i 2))]
+
+:test (variadic reverse B.<>(+1) B.<>(+2) B.<>(+3) B.empty) ((+3) : ((+2) : {}(+1)))
+
+# constructs list out of boxed terms, ended with an empty box
+# TODO: Fix variadicity in signature
+list variadic i ⧗ a → (List a)
+
+:test (list B.<>(+2) B.<>(+3) B.empty) ((+2) : {}(+3))
+:test (^(list B.<>(+2) B.<>(+3))) ((+2) : {}(+3))
 
 # maps each element to a function
 map z [[[rec]]] ⧗ (a → b) → (List a) → (List b)
@@ -448,3 +463,4 @@ iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
 :test (take (+2) (iterate (%‣ ∘ dec) (+5))) (((+5) : {}(+4)))
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
 :test (take (+0) (iterate ++‣ (+0))) (empty)
+

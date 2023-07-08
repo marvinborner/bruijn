@@ -11,31 +11,35 @@ empty true ⧗ (Box a)
 # returns true if the box is empty
 empty? [0 true [false]] ⧗ (Box a) → Boolean
 
-:test (empty? empty) (true)
+∅?‣ empty?
+
+:test (∅?empty) (true)
 
 # builds a box out of a value
 box [[[0 2]]] ⧗ a → (Box a)
 
+<>‣ box
+
 # returns true if the box is set
 set? [0 false [true]] ⧗ (Box a) → Boolean
 
-:test (set? (box [0])) (true)
+:test (set? <>[0]) (true)
 :test (set? empty) (false)
 
 # sets the value of a empty box, ignores argument if already set
-store! [[empty? 1 (box 0) 1]] ⧗ (Box a) → a → (Box a)
+store! [[∅?1 <>0 1]] ⧗ (Box a) → a → (Box a)
 
-:test (store! (box [[0]]) [[1]]) (box [[0]])
-:test (store! empty [[1]]) (box [[1]])
+:test (store! <>[[0]] [[1]]) (<>[[0]])
+:test (store! empty [[1]]) (<>[[1]])
 
 # sets/overrides the value of a box
-set! [[box 0]] ⧗ (Box a) → a → (Box a)
+set! [[<>0]] ⧗ (Box a) → a → (Box a)
 
-:test (set! (box [[0]]) [[1]]) (box [[1]])
-:test (set! empty [[1]]) (box [[1]])
+:test (set! <>[[0]] [[1]]) (<>[[1]])
+:test (set! empty [[1]]) (<>[[1]])
 
 # extracts value from a box or returns first argument if none
 get [[0 1 i]] ⧗ a → (Box b) → c
 
-:test (get [[0]] (box [[1]])) ([[1]])
+:test (get [[0]] <>[[1]]) ([[1]])
 :test (get [[0]] empty) ([[0]])
