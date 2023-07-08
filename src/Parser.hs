@@ -205,7 +205,7 @@ parseEvaluate = do
 
 parseFunctionType :: Parser ()
 parseFunctionType =
-  sepBy1 parseTypeSingleton (sc *> char '→' <* sc)
+  sepBy1 (parseTypeSingleton <* optional (char '*')) (sc *> char '→' <* sc)
     >>  return ()
     <?> "function type"
 

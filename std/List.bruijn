@@ -58,8 +58,7 @@ length z [[[rec]]] (+0) ⧗ (List a) → Number
 :test (∀empty) ((+0))
 
 # applies each element of a list to a function
-# TODO: Fix variadicity in signature
-apply z [[[rec]]] ⧗ (a → b) → (List a) → b
+apply z [[[rec]]] ⧗ (a* → b) → (List a) → b
 	rec ∅?0 case-end case-app
 		case-app 2 (1 ^0) ~0
 		case-end 1
@@ -167,16 +166,14 @@ snoc [[1 ++ {}0]] ⧗ (List a) → a → (List a)
 :test ({}(+1) ; (+2)) ((+1) : {}(+2))
 
 # generates a variadic variation of a list-based function
-# TODO: Fix variadicity in signature
 # TODO: Find a solution that does not require boxed terms
-variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a) → (Box c) → b)
+variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a)* → (Box c) → b)
 	rec B.∅?1 (2 0) [4 3 0 (1 ; (B.get i 2))]
 
 :test (variadic reverse B.<>(+1) B.<>(+2) B.<>(+3) B.empty) ((+3) : ((+2) : {}(+1)))
 
 # constructs list out of boxed terms, ended with an empty box
-# TODO: Fix variadicity in signature
-list variadic i ⧗ a → (List a)
+list variadic i ⧗ (Box a)* → (List a)
 
 :test (list B.<>(+2) B.<>(+3) B.empty) ((+2) : {}(+3))
 :test (^(list B.<>(+2) B.<>(+3))) ((+2) : {}(+3))
