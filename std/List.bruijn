@@ -165,7 +165,7 @@ snoc [[1 ++ {}0]] ⧗ (List a) → a → (List a)
 :test (empty ; (+1)) ({}(+1))
 :test ({}(+1) ; (+2)) ((+1) : {}(+2))
 
-# generates a variadic variation of a list-based function
+# generates a variadic box-based function from a list-based function
 # TODO: Find a solution that does not require boxed terms
 variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a)* → (Box c) → b)
 	rec B.∅?1 (2 0) [4 3 0 (1 ; (B.get i 2))]
@@ -173,7 +173,7 @@ variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a)* → (Box
 :test (variadic reverse B.<>(+1) B.<>(+2) B.<>(+3) B.empty) ((+3) : ((+2) : {}(+1)))
 
 # constructs list out of boxed terms, ended with an empty box
-list variadic i ⧗ (Box a)* → (List a)
+list variadic i ⧗ (Box a)* → (Box b) → (List a)
 
 :test (list B.<>(+2) B.<>(+3) B.empty) ((+2) : {}(+3))
 :test (^(list B.<>(+2) B.<>(+3))) ((+2) : {}(+3))
@@ -461,3 +461,8 @@ iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
 :test (take (+0) (iterate ++‣ (+0))) (empty)
 
+# calculates all fixed points of a given function as a list
+y* [[[0 1] <$> 0] xs] ⧗ a → (List b)
+	xs [[1 <! ([[1 2 0]] <$> 0)]] <$> 0
+
+:test ([0 (+5)] <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)
