@@ -93,7 +93,38 @@ fib [fibs !! ++0] ⧗ Number
 
 :test (fib (+5)) ((+8))
 
+# integer logarithm
+log z [[[[rec]]]] (+1) ⧗ Number → Number → Number
+	rec [((3 ≤? 1) ⋀? (1 <? 0)) case-end case-rec] (2 ⋅ 1)
+		case-end (+0)
+		case-rec ++(4 0 2 1)
+
+:test ((log (+2) (+1)) =? (+0)) (true)
+:test ((log (+2) (+2)) =? (+1)) (true)
+:test ((log (+2) (+3)) =? (+1)) (true)
+:test ((log (+2) (+4)) =? (+2)) (true)
+:test ((log (+2) (+32)) =? (+5)) (true)
+:test ((log (+2) (+48)) =? (+5)) (true)
+
+# iterated logarithm
+# note that log* 1 is defined as 1
+log* [z [[rec]] --0] ⧗ Number → Number
+	rec (0 ≤? (+1)) case-end case-rec
+		case-end (+1)
+		case-rec ++(1 (log (+2) 0))
+
+:test ((log* (+1)) =? (+1)) (true)
+:test ((log* (+2)) =? (+1)) (true)
+:test ((log* (+3)) =? (+2)) (true)
+:test ((log* (+4)) =? (+2)) (true)
+:test ((log* (+5)) =? (+3)) (true)
+:test ((log* (+16)) =? (+3)) (true)
+:test ((log* (+17)) =? (+4)) (true)
+:test ((log* (+65536)) =? (+4)) (true)
+:test ((log* (+65537)) =? (+5)) (true)
+
 # pascal triangle
+
 # TODO: something is wrong in here
 pascal iterate [zip-with …+… ({}(+0) ++ 0) (0 ; (+0))] ({}(+1))
 
