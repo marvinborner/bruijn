@@ -85,6 +85,35 @@ fac [∏ (+1) → 0 | i] ⧗ Number → Number
 
 :test ((fac (+3)) =? (+6)) (true)
 
+# hyper factorial function
+fac! [∏ (+1) → 0 | [0 ** 0]] ⧗ Number → Number
+
+:test ((fac! (+2)) =? (+4)) (true)
+:test ((fac! (+3)) =? (+108)) (true)
+
+# calculates a powertower
+# also: [[foldr pow (+1) (replicate 0 1)]]
+powertower z [[[rec]]] ⧗ Number → Number → Number
+	rec =?0 case-end case-rec
+		case-end (+1)
+		case-rec 1 ** (2 1 --0)
+
+:test ((powertower (+2) (+1)) =? (+2)) (true)
+:test ((powertower (+2) (+2)) =? (+4)) (true)
+:test ((powertower (+2) (+3)) =? (+16)) (true)
+:test ((powertower (+2) (+4)) =? (+65536)) (true)
+
+# knuth's up-arrow notation
+# arrow count → base → exponent
+arrow z [[[[rec]]]] ⧗ Number → Number → Number → Number
+	rec =?2 case-end case-rec
+		case-end 1 ⋅ 0
+		case-rec foldr (3 --2) 1 (replicate --0 1)
+
+:test ((arrow (+1) (+1) (+1)) =? (+1)) (true)
+:test ((arrow (+1) (+2) (+4)) =? (+16)) (true)
+:test ((arrow (+2) (+2) (+4)) =? (+65536)) (true)
+
 # fibonacci sequence
 # TODO: faster fib?
 fibs head <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1))) ⧗ (List Number)
@@ -124,7 +153,6 @@ log* [z [[rec]] --0] ⧗ Number → Number
 :test ((log* (+65537)) =? (+5)) (true)
 
 # pascal triangle
-
 # TODO: something is wrong in here
 pascal iterate [zip-with …+… ({}(+0) ++ 0) (0 ; (+0))] ({}(+1))
 
