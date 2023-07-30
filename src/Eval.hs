@@ -30,11 +30,13 @@ import           System.Mem
 import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
+
 data EnvState = EnvState
   { _env   :: Environment
   , _conf  :: EvalConf
   , _cache :: EnvCache
   }
+
 type M = StrictState.StateT EnvState IO
 
 entryFunction :: Identifier
@@ -202,7 +204,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             >> monitor t
           else monitor t
     in  getCurrentTime >>= monitor
-  Import path namespace -> do -- TODO: Merge with Input (very similar)
+  Import path namespace -> do
+    -- TODO: Merge with Input (very similar)
     full <- fullPath path
     if full `elem` _evalPaths conf
       then
@@ -211,6 +214,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
           >> pure s
       else if M.member path (_imported cache)
         then -- load from cache
+
           let
             (Environment env') = fromJust $ M.lookup path (_imported cache)
             prefix | null namespace   = takeBaseName path ++ "."
@@ -260,7 +264,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
              _ -> pure s
     | otherwise
     -> pure s
-  ClearState -> do -- TODO: actually free memory :/
+  ClearState -> do
+    -- TODO: actually free memory :/
     putStr "Currently allocated: "
     getAllocationCounter >>= putStr . show . (0 -)
     putStrLn " Byte"
@@ -271,8 +276,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     case res of
       Left  err -> print err
       Right e'  -> do
-        red <- reduce e'
         print $ length $ toBinary e'
+        red <- reduce e'
         print $ length $ toBinary red
     pure s
   Blc e -> do
@@ -336,7 +341,8 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
               rec s
           )
     Commands cs -> yeet (pure s) cs >>= rec
-     where -- TODO: sus
+     where
+        -- TODO: sus
       yeet s' []        = s'
       yeet s' (c : cs') = do
         s'' <- s'
@@ -405,9 +411,11 @@ repl :: EnvState -> InputT M ()
 repl (EnvState env conf cache) =
   handleInterrupt (return $ Just "")
                   (withInterrupt $ getInputLine "\ESC[36mλ\ESC[0m ")
-    >>= \case -- TODO: Add non-parser error support for REPL
+    >>= \case
+      -- TODO: Add non-parser error support for REPL
           Nothing   -> return ()
-          Just line -> do -- setting imported [] for better debugging
+          Just line -> do
+            -- setting imported [] for better debugging
             s' <- liftIO
               $ eval [line] (EnvState env conf cache { _imported = M.empty })
             lift $ StrictState.put s'
