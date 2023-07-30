@@ -41,9 +41,10 @@ mathematicalArrow = satisfy isMathematicalOperator
   where isMathematicalOperator c = '←' <= c && c <= '⇿'
 
 -- "'" can't be in special chars because of 'c' char notation and prefixation
+-- "." can't be in special chars because of namespaced functions and UFCS syntax
 specialChar :: Parser Char
 specialChar =
-  oneOf "!?*@.,:;+-_#$%^&<>/\\|{}~="
+  oneOf "!?*@,:;+-_#$%^&<>/\\|{}~="
     <|> mathematicalOperator
     <|> mathematicalArrow
 
@@ -183,14 +184,20 @@ parsePrefix = do
 
 parseSingleton :: Parser Expression
 parseSingleton =
-  parseBruijn
-    <|> try parseNumeral
-    <|> parseString
-    <|> parseChar
-    <|> parseAbstraction
-    <|> try parseFunction
-    <|> parsePrefix
-    <|> try (parens parseMixfix <?> "enclosed mixfix chain")
+  let parseSingletonExpression =
+        parseBruijn
+          <|> try parseNumeral
+          <|> parseString
+          <|> parseChar
+          <|> parseAbstraction
+          <|> try parseFunction
+          <|> parsePrefix
+          <|> try (parens parseMixfix <?> "enclosed mixfix chain")
+      parseUniformCall = do
+        g <- parseSingletonExpression
+        f <- some $ char '.' >> parseSingletonExpression
+        pure $ foldr1 Application (reverse (g : f))
+  in  try parseUniformCall <|> parseSingletonExpression
 
 parseExpression :: Parser Expression
 parseExpression = do
