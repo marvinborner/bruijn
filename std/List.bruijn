@@ -13,6 +13,7 @@
 empty false ⧗ (List a)
 
 # returns true if a list is empty
+# can generally be omitted: ∅?c foo bar = c [[[bar]]] foo
 empty? [0 [[[false]]] true] ⧗ (List a) → Boolean
 
 ∅?‣ empty?
@@ -48,8 +49,8 @@ tail P.snd ⧗ (List a) → (List a)
 
 # returns the length of a list in balanced ternary
 length z [[[rec]]] (+0) ⧗ (List a) → Number
-	rec ∅?0 case-end case-inc
-		case-inc 2 ++1 ~0
+	rec 0 [[[case-inc]]] case-end
+		case-inc 5 ++4 1
 		case-end 1
 
 ∀‣ length
@@ -59,8 +60,8 @@ length z [[[rec]]] (+0) ⧗ (List a) → Number
 
 # applies each element of a list to a function
 apply z [[[rec]]] ⧗ (a* → b) → (List a) → b
-	rec ∅?0 case-end case-app
-		case-app 2 (1 ^0) ~0
+	rec 0 [[[case-app]]] case-end
+		case-app 5 (4 2) 1
 		case-end 1
 
 …<!… apply
@@ -68,7 +69,7 @@ apply z [[[rec]]] ⧗ (a* → b) → (List a) → b
 :test (…+… <! ((+1) : {}(+2))) ((+3))
 
 # applies each element of the tail to the head
-eval [^0 <! ~0] ⧗ (Pair (a → b) (List a)) → b
+eval [0 apply] ⧗ (Pair (a → b) (List a)) → b
 
 !‣ eval
 
@@ -76,8 +77,8 @@ eval [^0 <! ~0] ⧗ (Pair (a → b) (List a)) → b
 
 # returns the element at index in list
 index z [[[rec]]] ⧗ (List a) → Number → a
-	rec ∅?0 case-end case-index
-		case-index =?1 ^0 (2 --1 ~0)
+	rec 0 [[[case-index]]] case-end
+		case-index =?4 2 (5 --4 1)
 		case-end empty
 
 …!!… \index
@@ -89,16 +90,16 @@ index z [[[rec]]] ⧗ (List a) → Number → a
 
 # constructs a list of successively reduced values
 scanl z [[[[1 : rec]]]] ⧗ (b → a → b) → b → (List a) → (List b)
-	rec ∅?0 case-end case-scan
-		case-scan 3 2 (2 1 ^0) ~0
+	rec 0 [[[case-scan]]] case-end
+		case-scan 6 5 (5 4 2) 1
 		case-end 0
 
 :test (scanl …+… (+0) ((+1) : ((+2) : {}(+3)))) ((+0) : ((+1) : ((+3) : {}(+6))))
 
 # applies a left fold on a list
 foldl z [[[[rec]]]] ⧗ (b → a → b) → b → (List a) → b
-	rec ∅?0 case-end case-fold
-		case-fold 3 2 (2 1 ^0) ~0
+	rec 0 [[[case-fold]]] case-end
+		case-fold 6 5 (5 4 2) 1
 		case-end 1
 
 :test ((foldl …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
@@ -109,8 +110,8 @@ foldl1 [[foldl 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
 
 # applies a right fold on a list
 foldr [[[z [[rec]] 0]]] ⧗ (a → b → b) → b → (List b) → b
-	rec ∅?0 case-end case-fold
-		case-fold 4 ^0 (1 ~0)
+	rec 0 [[[case-fold]]] case-end
+		case-fold 7 2 (4 1)
 		case-end 3
 
 :test ((foldr …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
@@ -146,8 +147,8 @@ reverse foldl \cons empty ⧗ (List a) → (List a)
 
 # appends two lists
 append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
-	rec ∅?1 case-end case-append
-		case-append ^1 : (2 ~1 0)
+	rec 1 [[[case-append]]] case-end
+		case-append 2 : (5 1 3)
 		case-end 0
 
 …++… append
@@ -180,8 +181,8 @@ list variadic i ⧗ (Box a)* → (Box b) → (List a)
 
 # maps each element to a function
 map z [[[rec]]] ⧗ (a → b) → (List a) → (List b)
-	rec ∅?0 case-end case-map
-		case-map (1 ^0) : (2 1 ~0)
+	rec 0 [[[case-map]]] case-end
+		case-map (4 2) : (5 4 1)
 		case-end empty
 
 …<$>… map
@@ -190,8 +191,8 @@ map z [[[rec]]] ⧗ (a → b) → (List a) → (List b)
 
 # filters a list based on a predicate
 filter z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
-	rec ∅?0 case-end case-filter
-		case-filter 1 ^0 (cons ^0) i (2 1 ~0)
+	rec 0 [[[case-filter]]] case-end
+		case-filter 4 2 (cons 2) i (5 4 1)
 		case-end empty
 
 …<#>… \filter
@@ -199,12 +200,6 @@ filter z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
 :test (((+1) : ((+0) : {}(+3))) <#> zero?) ({}(+0))
 
 # returns the last element of a list
-# - slow algorithm:
-#   last z [[rec]]
-#   	rec ∅?0 case-end case-last
-#   		case-last ∅?(~0) ^0 (1 ~0)
-#   		case-end empty
-# - taking the first element of the reversed list is actually way faster because laziness
 last ^‣ ∘ <~>‣ ⧗ (List a) → a
 
 _‣ last
@@ -213,8 +208,8 @@ _‣ last
 
 # returns everything but the last element of a list
 init z [[rec]] ⧗ (List a) → (List a)
-	rec ∅?0 case-end case-init
-		case-init ∅?(~0) empty (^0 : (1 ~0))
+	rec 0 [[[case-init]]] case-end
+		case-init 1 [[[5 : (7 4)]]] empty
 		case-end empty
 
 :test (init ((+1) : ((+2) : {}(+3)))) ((+1) : {}(+2))
@@ -249,8 +244,8 @@ zip3 z [[[[rec]]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
 
 # applies pairs of the zipped list as arguments to a function
 zip-with z [[[[rec]]]] ⧗ (a → b → c) → (List a) → (List b) → (List c)
-	rec ∅?1 case-end case-zip
-		case-zip ∅?0 empty ((2 ^1 ^0) : (3 2 ~1 ~0))
+	rec 1 [[[case-zip]]] case-end
+		case-zip 3 [[[(8 5 2) : (9 8 4 1)]]] empty
 		case-end empty
 
 :test (zip-with …+… ((+1) : {}(+2)) ((+2) : {}(+1))) ((+3) : {}(+3))
@@ -267,32 +262,32 @@ zip-with z [[[[rec]]]] ⧗ (a → b → c) → (List a) → (List b) → (List c
 
 # returns first n elements of a list
 take z [[[rec]]] ⧗ Number → (List a) → (List a)
-	rec ∅?0 case-end case-take
-		case-take =?1 empty (^0 : (2 --1 ~0))
+	rec 0 [[[case-take]]] case-end
+		case-take =?4 empty (2 : (5 --4 1))
 		case-end empty
 
 :test (take (+2) ((+1) : ((+2) : {}(+3)))) ((+1) : {}(+2))
 
 # takes elements while a predicate is satisfied
 take-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
-	rec ∅?0 case-end case-take
-		case-take 1 ^0 (^0 : (2 1 ~0)) empty
+	rec 0 [[[case-take]]] case-end
+		case-take 4 2 (2 : (5 4 1)) empty
 		case-end empty
 
 :test (take-while zero? ((+0) : ((+0) : {}(+1)))) ((+0) : {}(+0))
 
 # removes first n elements of a list
 drop z [[[rec]]] ⧗ Number → (List a) → (List a)
-	rec ∅?0 case-end case-drop
-		case-drop =?1 0 (2 --1 ~0)
+	rec 0 [[[case-drop]]] case-end
+		case-drop =?4 3 (5 --4 1)
 		case-end empty
 
 :test (drop (+2) ((+1) : ((+2) : {}(+3)))) ({}(+3))
 
 # removes elements from list while a predicate is satisfied
 drop-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
-	rec ∅?0 case-end case-drop
-		case-drop 1 ^0 (2 1 ~0) 0
+	rec 0 [[[case-drop]]] case-end
+		case-drop 4 2 (5 4 1) 3
 		case-end empty
 
 :test (drop-while zero? ((+0) : ((+0) : {}(+1)))) ({}(+1))
@@ -323,9 +318,9 @@ break [[left : right]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List
 
 # groups list by eq predicate
 group-by z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List (List a))
-	rec ∅?0 case-end case-group
-		case-group build (span (1 ^0) ~0)
-			build [(^1 : ^0) : (3 2 ~0)]
+	rec 0 [[[case-group]]] case-end
+		case-group build (span (4 2) 1)
+			build [(3 : ^0) : (6 5 ~0)]
 		case-end empty
 
 :test (group-by [[(0 - 1) <? (+2)]] ((+1) : ((+2) : ((+3) : {}(+4))))) (((+1) : {}(+2)) : {}((+3) : {}(+4)))
@@ -334,35 +329,35 @@ group-by z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List (List a))
 split-by [[left : right]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
 	left take-while (¬‣ ∘ 1) 0
 	right fix (drop-while (¬‣ ∘ 1) 0)
-		fix [∅?0 empty ~0]
+		fix [0 [[[1]]] empty]
 
 :test (split-by (…=?… (+1)) ((+2) : ((+1) : ((+3) : {}(+2))))) ({}(+2) : ((+3) : {}(+2)))
 
 # splits a list into lists based on predicate, drops match
 split-list-by z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List (List a))
-	rec ∅?0 case-end case-split
-		case-split build (split-by 1 0)
-			build [^0 : (3 2 ~0)]
+	rec 0 [[[case-split]]] case-end
+		case-split build (split-by 4 3)
+			build [^0 : (6 5 ~0)]
 		case-end empty
 
 :test (split-list-by (…=?… (+1)) ((+2) : ((+1) : ((+3) : {}(+2))))) ({}(+2) : {}((+3) : {}(+2)))
 
 # sorts a list of numbers in ascending order using non-inplace (obviously) quicksort
 sort-asc z [[rec]]
-	rec ∅?0 case-end case-sort
-		case-sort (1 lesser) ++ {}(^0) ++ (1 greater)
-			lesser ~0 <#> (\les? ^0)
-			greater ~0 <#> (\geq? ^0)
+	rec 0 [[[case-sort]]] case-end
+		case-sort (4 lesser) ++ {}(2) ++ (4 greater)
+			lesser 1 <#> (\les? 2)
+			greater 1 <#> (\geq? 2)
 		case-end empty
 
 :test (sort-asc ((+3) : ((+2) : {}(+1)))) ((+1) : ((+2) : {}(+3)))
 
 # sorts a list of numbers in descending order using non-inplace (obviously) quicksort
 sort-desc z [[rec]]
-	rec ∅?0 case-end case-sort
-		case-sort (1 greater) ++ {}(^0) ++ (1 lesser)
-			greater ~0 <#> (\geq? ^0)
-			lesser ~0 <#> (\les? ^0)
+	rec 0 [[[case-sort]]] case-end
+		case-sort (4 greater) ++ {}(2) ++ (4 lesser)
+			greater 1 <#> (\geq? 2)
+			lesser 1 <#> (\les? 2)
 		case-end empty
 
 :test (sort-desc ((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
@@ -400,8 +395,8 @@ eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolea
 
 # finds the first index that matches a predicate
 find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
-	rec ∅?0 case-end case-find
-		case-find (1 ^0) (+0) !(2 1 ~0)
+	rec 0 [[[case-find]]] case-end
+		case-find (4 2) (+0) !(5 4 1)
 			!‣ [<?0 0 ++0]
 		case-end (-1)
 
@@ -410,16 +405,16 @@ find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
 
 # removes first element that match an eq predicate
 remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)
-	rec ∅?0 case-end case-remove
-		case-remove (2 ^0 1) ~0 (^0 : (3 2 1 ~0))
+	rec 0 [[[case-remove]]] case-end
+		case-remove (5 2 4) 1 (2 : (6 5 4 1))
 		case-end empty
 
 :test (remove …=?… (+2) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1) : ((+3) : {}(+2)))
 
 # removes duplicates from list based on eq predicate (keeps first occurrence)
 nub z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List a)
-	rec ∅?0 case-end case-nub
-		case-nub ^0 : (2 1 (~0 <#> [¬(2 0 ^1)]))
+	rec 0 [[[case-nub]]] case-end
+		case-nub 2 : (5 4 (1 <#> [¬(5 0 3)]))
 		case-end empty
 
 :test (nub …=?… ((+1) : ((+2) : {}(+3)))) ((+1) : ((+2) : {}(+3)))

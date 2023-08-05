@@ -43,7 +43,7 @@ signed-number! [(sign ^0) (number! ~0)] ⧗ String → Number
 # splits string by newline character
 lines z [[rec]] ⧗ String → (List String)
 	rec build (break (B.eq? '\n') 0)
-		build [∅?(~0) {}(^0) (^0 : (2 ~(~0)))]
+		build [(~0) [[[^3 : (5 1)]]] {}(^0) ]
 
 :test (lines "ab\ncd") ("ab" : {}"cd")
 
