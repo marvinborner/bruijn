@@ -8,7 +8,7 @@ endif
 syn match bruijnApplication /[()]/
 syn match bruijnAbstraction /[[\]]/
 syn match bruijnIndex /\([^0-9]\)\@<=\d\([^0-9]\)\@=/
-syn match bruijnNumber /([+-]\d\+[ubt]\?)/
+syn match bruijnNumber /([+-]\d\+[dubt]\?)/
 syn match bruijnDefinition /^\t*\S\+/
 syn match bruijnType /\( ⧗ \)\@<=.*$/
 syn match bruijnTypeDelim / ⧗ /

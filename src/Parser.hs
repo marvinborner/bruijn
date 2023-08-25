@@ -118,13 +118,14 @@ parseNumeral :: Parser Expression
 parseNumeral = do
   _    <- string "(" <?> "number start"
   num  <- number <?> "signed number"
-  base <- try (oneOf "ubt") <|> return 't'
+  base <- try (oneOf "dubt") <|> return 't'
   _    <- string ")" <?> "number end"
   pure $ f base num
  where
   f 't' = decimalToTernary
   f 'b' = decimalToBinary
   f 'u' = decimalToUnary
+  f 'd' = decimalToDeBruijn
   f _   = invalidProgramState
   sign :: Parser (Integer -> Integer)
   sign = (char '-' >> return negate) <|> (char '+' >> return id)

@@ -328,6 +328,14 @@ decimalToUnary n | n < 0     = decimalToUnary 0
   gen 0  = Bruijn 0
   gen n' = Application (Bruijn 1) (gen (n' - 1))
 
+-- Decimal to De Bruijn encoding
+decimalToDeBruijn :: Integer -> Expression
+decimalToDeBruijn n | n < 0     = decimalToDeBruijn 0
+                    | otherwise = gen n
+ where
+  gen 0  = Abstraction $ Bruijn $ fromInteger n
+  gen n' = Abstraction $ gen (n' - 1)
+
 unaryToDecimal :: Expression -> Maybe String
 unaryToDecimal e = do
   res <- resolve e
