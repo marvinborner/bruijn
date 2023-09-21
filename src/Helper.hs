@@ -1,10 +1,9 @@
 -- MIT License, Copyright (c) 2022 Marvin Borner
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE RecordWildCards #-}
--- extensions above are only used because of printBundle from megaparsec
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Helper where
 
@@ -42,7 +41,9 @@ printContext (Context inp path) = p $ lines inp
 
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
+
 data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
+
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> printContext ctx
   show (SuggestSolution err sol) =
@@ -69,6 +70,7 @@ instance Show Error where
       <> " = "
       <> show red2
   show (ImportError path) = errPrefix <> "invalid import " <> show path
+
 type Failable = Either Error
 
 -- Modified from megaparsec's errorBundlePretty
@@ -107,28 +109,35 @@ printBundle ParseErrorBundle {..} =
 
 data MixfixIdentifierKind = MixfixSome String | MixfixNone
   deriving (Ord, Eq, Generic, NFData)
+
 instance Show MixfixIdentifierKind where -- don't colorize (due to map)
   show (MixfixSome e) = e
   show _              = "…"
+
 data Identifier = NormalFunction String | MixfixFunction [MixfixIdentifierKind] | PrefixFunction String | NamespacedFunction String Identifier
   deriving (Ord, Eq, Generic, NFData)
+
 functionName :: Identifier -> String
 functionName = \case
   NormalFunction f       -> f
   MixfixFunction is      -> intercalate "" $ map show is
   PrefixFunction p       -> p <> "‣"
   NamespacedFunction n f -> n <> functionName f
+
 instance Show Identifier where
   show ident = "\ESC[95m" <> functionName ident <> "\ESC[0m"
 
 data Mixfix = MixfixOperator Identifier | MixfixExpression Expression
   deriving (Ord, Eq, Generic, NFData)
+
 instance Show Mixfix where
   show (MixfixOperator   i) = show i
   show (MixfixExpression e) = show e
+
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
 data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
   deriving (Ord, Eq, Generic, NFData)
+
 instance Show Expression where
   showsPrec _ (Bruijn x) =
     showString "\ESC[91m" . shows x . showString "\ESC[0m"
@@ -147,8 +156,10 @@ instance Show Expression where
       . foldr1 (\x y -> x . showString " " . y) (map shows ms)
       . showString "\ESC[33m)\ESC[0m"
   showsPrec _ (Prefix p e) = shows p . showString " " . shows e
-data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression | Length Expression | Blc Expression
+
+data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression | Length Expression | Blc Expression | Jot String
   deriving (Show)
+
 data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)
 
@@ -158,21 +169,26 @@ data EvalConf = EvalConf
   , _nicePath  :: String
   , _evalPaths :: [String]
   }
+
 newtype ExpFlags = ExpFlags
   { _isImported :: Bool
   }
-  deriving Show
+  deriving (Show)
+
 data EnvDef = EnvDef
   { _exp   :: Expression
   , _sub   :: Environment
   , _flags :: ExpFlags
   }
   deriving Show
+
 newtype Environment = Environment (M.Map Identifier EnvDef)
-  deriving Show
+  deriving (Show)
+
 newtype EnvCache = EnvCache
   { _imported :: M.Map String Environment
   }
+
 type EvalState = S.State Environment
 
 defaultConf :: String -> EvalConf

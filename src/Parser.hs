@@ -289,6 +289,12 @@ parseBlc = do
   e <- parseExpression
   pure $ Blc e
 
+parseJot :: Parser Command
+parseJot = do
+  _   <- string ":jot" <* sc <?> "jot binary string"
+  str <- some $ noneOf "\r\n"
+  pure $ Jot str
+
 parseClearState :: Parser Command
 parseClearState = do
   _ <- string ":free" <?> "free instruction"
@@ -356,5 +362,6 @@ parseReplLine =
     <|> (Commands . (: []) <$> try parseTime)
     <|> (Commands . (: []) <$> try parseLength)
     <|> (Commands . (: []) <$> try parseBlc)
+    <|> (Commands . (: []) <$> try parseJot)
     <|> (Commands . (: []) <$> try parseClearState)
     <|> try parseEvaluate

@@ -285,9 +285,22 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     case res of
       Left  err -> print err
       Right e'  -> do
-        red <- reduce e'
         putStrLn $ toBinary e'
+        red <- reduce e'
         putStrLn $ toBinary red
+    pure s
+  Jot str -> do
+    let e = fromJot str
+    let (res, _) = evalExp e (Environment M.empty) `runState` env
+    case res of
+      Left  err -> print err
+      Right e'  -> do
+        print e
+        print e'
+        print $ length $ toBinary e'
+        red <- reduce e'
+        print red
+        print $ length $ toBinary red
     pure s
   Time e -> do
     start <- getTime Monotonic

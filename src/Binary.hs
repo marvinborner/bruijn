@@ -4,13 +4,10 @@ module Binary
   , fromBinary
   , toBitString
   , fromBitString
+  , fromJot
   ) where
 
-import           Data.Binary                    ( decode
-                                                , encode
-                                                )
 import qualified Data.BitString                as Bit
-import           Data.Word                      ( Word8 )
 import           Helper
 
 toBinary :: Expression -> String
@@ -38,30 +35,34 @@ fromBinary' inp = case inp of
 fromBinary :: String -> Expression
 fromBinary = fst . fromBinary'
 
--- 1 byte indicating bit-padding at end + n bytes filled with bits
--- TODO: technically only 1 nibble is needed (use other nibble for versioning/sth?)
 toBitString :: String -> Bit.BitString
-toBitString str = Bit.concat
-  [ Bit.bitStringLazy $ encode (fromIntegral $ length str `mod` 8 :: Word8)
-  , Bit.fromList $ map
-    (\case
-      '0' -> False
-      '1' -> True
-      _   -> invalidProgramState
-    )
-    str
-  ]
+toBitString = Bit.fromList . map
+  (\case
+    '0' -> False
+    '1' -> True
+    _   -> invalidProgramState
+  )
 
 fromBitString :: Bit.BitString -> String
-fromBitString bits =
+fromBitString =
   map
       (\case
         False -> '0'
         True  -> '1'
       )
-    $ Bit.toList
-    $ Bit.take (Bit.length bits - fromIntegral (pad bits))
-    $ Bit.drop 8 bits
+    . Bit.toList
+
+---
+
+fromJot :: String -> Expression
+fromJot = worker . reverse
  where
-  pad :: Bit.BitString -> Word8
-  pad = decode . Bit.realizeBitStringLazy . Bit.take 8
+  s = Function $ NormalFunction "s"
+  k = Function $ NormalFunction "k"
+  worker ('0' : xs) = Application (Application (worker xs) s) k
+  worker ('1' : xs) = Application s (Application k (worker xs))
+  -- worker ('1' : xs) = Abstraction
+  --   (Abstraction (Application (worker xs) (Application (Bruijn 1) (Bruijn 0))))
+  worker _          = Abstraction (Bruijn 0)
+
+
