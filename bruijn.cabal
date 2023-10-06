@@ -32,6 +32,7 @@ data-files:
     std/Result.bruijn
     std/Set.bruijn
     std/String.bruijn
+    std/AIT/Beavers.bruijn
     std/Number/Binary.bruijn
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn
@@ -55,7 +56,7 @@ library
       src
   default-extensions:
       LambdaCase
-  ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -fllvm -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
+  ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       array
     , base >=4.7 && <5

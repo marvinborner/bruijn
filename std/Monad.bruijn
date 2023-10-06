@@ -2,7 +2,7 @@
 # monadic interface for anything based on lists (e.g. IO, strings)
 # afaik originally proposed by John Tromp and inspired by Haskell
 
-:import std/Pair .
+:import std/List .
 :import std/Combinator .
 
 read [0] ⧗ a → (M a)
@@ -25,3 +25,20 @@ pure return ⧗ a → (M a)
 …>>… [[1 >>= [1]]] ⧗ (M a) → (M b) → (M b)
 
 :test ((read >> (return 'a')) "hah") ("aah")
+
+# monadifies a list
+lift-m map ⧗ (a → b) → (M a) → (M b)
+
+# monadifies a list with two monadic arguments
+lift-m2 [[[concat ([[4 1 0] <$> 1] <$> 1)]]] ⧗ (a → b → c) → (M a) → (M b) → (M c)
+
+# evaluates monadic actions
+sequence foldr (lift-m2 cons) {}empty ⧗ (List (M a)) → (M (List a))
+
+>‣ [sequence ∘∘ 0]
+
+# performs action n times
+replicate-m >replicate ⧗ Number → (M a) → (M (List a))
+
+# maps elements to a monadic action
+map-m >map ⧗ (a → (M b)) → (List a) → (M (List b))

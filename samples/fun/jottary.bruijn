@@ -1,0 +1,25 @@
+# a small Jottary (unary Jot) interpreter
+# also serves as example usage of monadic list operations
+# run with "printf 1...1 | bruijn jottary.bruijn"
+
+:import std/Combinator .
+:import std/List .
+:import std/Monad .
+:import std/Number .
+
+go [eval-r (<~>((concat huh) !! 0) ; i)]
+	huh (\replicate-m (l : {}r)) <$> (iterate ++‣ (+0))
+		l [(0 s) k]
+		r [s (k 0)]
+
+:test (go (+0)) (i)
+:test (go (+1)) ((i s) k)
+:test (go (+2)) (s (k i))
+:test (go (+3)) (i s k s k)
+:test (go (+4)) (s (k (i s k)))
+:test (go (+5)) (((s (k i)) s) k)
+:test (go (+6)) (s (k (s (k i))))
+:test (go (+59)) (k)
+:test (go (+503)) (s)
+
+main go ∘ length
