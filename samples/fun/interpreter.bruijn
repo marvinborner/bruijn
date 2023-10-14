@@ -1,0 +1,41 @@
+# originally written in obfuscated form by John Tromp for IOCCC 2012
+# run with `printf 000010 | bruijn interpreter.bruijn`
+# note that Tromp's IO uses an additional abstraction at the beginning ("00" ++ ...)
+
+:import std/Combinator .
+:import std/Number .
+:import std/List .
+:import std/Char C
+
+# TODO: finish types
+uni [0 0] int [0 Ω] ⧗ (List Bit) → Term
+	int [[[0 go (2 2) 1]]]
+		go [[[[2 match]]]]
+			match [4 case-0 case-1]
+				case-0 2 exp
+					exp [1 case-00 case-01]
+						case-00 2 abs
+							abs [[2 [0 1 2]]]
+						case-01 3 [3 app]
+							app [2 0 (1 0)]
+				case-1 0 case-10 case-11
+					case-10 1 cont
+						cont [0 1]
+					case-11 [3 [3 var] 4]
+						var [1 (0 3)]
+
+str→blc map (=?‣ ∘ C.number!)
+
+:test (str→blc "0010") ([[1]] : ([[1]] : ([[0]] : {}[[1]])))
+
+exec uni ∘ str→blc
+
+:test (exec "0011") ([0])
+:test (exec "001111") ([0])
+:test (exec "000010") ([0])
+:test (exec "00000001110011100111010") ((+3u))
+:test (exec "0001010000000001011111011001011110110100000011100111001110100000011100111001110011100111010") ((+8u))
+:test (exec "00010000010101110000001100111000000101111011001110100011000100000011100111001110011100111010") ((+120u))
+:test (exec "000101010100010001110000101110110100001110000101110110100000000001011000000001010111111110111111001011111110111110111011011001000000010111101011000000001011011101100000100001011000000001110011001100110011001110011100110111000010110000000011001110011001100110011100111001101110000101100000000111001110011001100110011100111001101110000010") ("cba")
+
+main exec
