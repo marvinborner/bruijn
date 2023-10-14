@@ -1,10 +1,21 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# with help from Justine Tunney
+# with implicit help from Justine Tunney and John Tromp
 # classic Church style numerals
 
 :import std/Logic .
 :import std/Combinator .
 :import std/Pair .
+
+# id for church numerals
+# generic base for dec/fib/fac/etc.
+uid [[[extract (2 inc init)]]] ⧗ Unary → Unary
+	extract [0 [0]]
+	inc [[0 (1 3)]]
+	init [0 1]
+
+:test (uid (+0u)) ((+0u))
+:test (uid (+1u)) ((+1u))
+:test (uid (+5u)) ((+5u))
 
 # returns true if a unary number is zero
 zero? [0 [(+0u)] true] ⧗ Unary → Boolean
@@ -24,7 +35,10 @@ inc [[[1 (2 1 0)]]] ⧗ Unary → Unary
 :test (++(+42u)) ((+43u))
 
 # subs 1 from a unary number
-dec [[[2 [[0 (1 3)]] [1] [0]]]] ⧗ Unary → Unary
+dec [[[extract (2 inc const)]]] ⧗ Unary → Unary
+	extract [0 [0]]
+	inc [[0 (1 3)]]
+	const [1]
 
 --‣ dec
 
@@ -161,3 +175,8 @@ fib [0 [[[2 0 [2 (1 0)]]]] [[1]] [0]] ⧗ Unary → Unary
 fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] [0]]] ⧗ Unary → Unary
 
 :test (fac (+3u)) ((+6u))
+
+# hyperfactorial function
+hyperfac [[1 [[(0 0) (1 [[2 1 (1 0)]])]] [1] [0]]] ⧗ Unary → Unary
+
+:test (hyperfac (+3u)) ((+108u))
