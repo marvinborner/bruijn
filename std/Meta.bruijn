@@ -1,0 +1,121 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# utilities for meta programming with quoted terms
+
+:import std/Logic .
+:import std/Combinator .
+:import std/Number/Unary .
+:import std/List .
+
+# constructor of meta abstraction
+abs [[[[0 3]]]] ⧗ Meta → Meta
+
+:test (abs '0) ('[0])
+
+# true if abstraction
+abs? [0 [false] [[false]] [true]] ⧗ Meta → Bool
+
+:test (abs? '[0]) (true)
+:test (abs? '([0] [0])) (false)
+:test (abs? '0) (false)
+
+# extracts meta term from meta abstraction
+abs! [0 0 0 [0]] ⧗ Meta → Meta
+
+:test (abs! '[[0]]) ('[0])
+
+# constructor of meta application
+app [[[[[1 4 3]]]]] ⧗ Meta → Meta → Meta
+
+# TODO: parser bug without lhs application
+
+:test ((app '[[1]]) '[0]) ('([[1]] [0]))
+
+# true if application
+app? [0 [false] [[true]] [false]] ⧗ Meta → Bool
+
+:test (app? '[0]) (false)
+:test (app? '([0] [0])) (true)
+:test (app? '0) (false)
+
+# extracts both meta terms from meta application
+app! [0 0 [[1 : 0]] 0] ⧗ Meta → (Pair Meta Meta)
+
+# TODO: parser bug with mixfix application
+
+:test (app! '([[1]] [[0]])) ((cons '[[1]]) '[[0]])
+
+# extracts lhs meta term from meta application
+app-lhs! ^‣ ∘ app! ⧗ Meta → Meta
+
+:test (app-lhs! '([[1]] [[0]])) ('[[1]])
+
+# extracts rhs meta term from meta application
+app-rhs! ~‣ ∘ app! ⧗ Meta → Meta
+
+:test (app-rhs! '([[1]] [[0]])) ('[[0]])
+
+# constructor of meta variable/index
+idx [[[[2 3]]]] ⧗ Unary → Meta
+
+:test (idx (+0u)) ('0)
+
+# true if variable/index
+idx? [0 [true] [[false]] [false]] ⧗ Meta → Bool
+
+:test (idx? '[0]) (false)
+:test (idx? '([0] [0])) (false)
+:test (idx? '0) (true)
+
+# extracts index from meta index
+idx! [0 [0] 0 0] ⧗ Meta → Unary
+
+:test (idx! '0) ((+0u))
+:test (idx! '3) ((+3u))
+
+# traverses meta term
+fold y [[[[[rec]]]]] ⧗ (Unary → a) → (a → a → a) → (a → a) → Meta → a
+	rec 0 case-idx case-app case-abs
+		case-idx 3
+		case-app ψ 2 (4 3 2 1)
+		case-abs 1 ∘ (4 3 2 1)
+
+# calculates blc length of meta term
+length fold idx-cb app-cb abs-cb ⧗ Meta → Unary
+	idx-cb add (+2u)
+	app-cb (add (+2u)) ∘∘ add
+	abs-cb add (+2u)
+
+:test (length '[0]) ((+4u))
+:test (length '[[1 1]]) ((+12u))
+
+# true bit
+blc1 [[0]] ⧗ LcBit
+
+# false bit
+blc0 [[1]] ⧗ LcBit
+
+# converts meta term to blc list
+blc fold idx-cb app-cb abs-cb ⧗ Meta → (List LcBit)
+	idx-cb [++0 (cons blc1) {}blc0]
+	app-cb (cons blc0) ∘ (cons blc1) ∘∘ append
+	abs-cb (cons blc0) ∘ (cons blc0)
+
+:test (blc '[0]) (blc0 : (blc0 : (blc1 : {}blc0)))
+:test (blc '[[1 1]]) (blc0 : (blc0 : (blc0 : (blc0 : (blc0 : (blc1 : (blc1 : (blc1 : (blc0 : (blc1 : (blc1 : {}blc0)))))))))))
+
+α-eq? y [[[rec]]] ⧗ Meta → Meta → Bool
+	rec 1 case-idx case-app case-abs
+		case-idx [(idx? 1) ⋀? (0 =? (idx! 1))]
+		case-app [[(app? 2) ⋀? (4 1 (app-lhs! 2)) ⋀? (4 0 (app-rhs! 2))]]
+		case-abs [(abs? 1) ⋀? (3 (abs! 1) 0)]
+
+# TODO: parser bug
+
+:test ((α-eq? '0) '1) ([[0]])
+:test ((α-eq? '1) '1) ([[1]])
+:test ((α-eq? '(0 0)) '1) ([[0]])
+:test ((α-eq? '(0 0)) '(1 0)) ([[0]])
+:test ((α-eq? '(0 0)) '(0 0)) ([[1]])
+:test ((α-eq? '(0 1)) '(0 1)) ([[1]])
+:test ((α-eq? '[0]) '[1]) ([[0]])
+:test ((α-eq? '[0]) '[0]) ([[1]])
