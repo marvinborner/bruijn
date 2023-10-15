@@ -7,7 +7,8 @@ endif
 
 syn match bruijnApplication /[()]/
 syn match bruijnAbstraction /[[\]]/
-syn match bruijnIndex /\([^0-9]\)\@<=\d\([^0-9]\)\@=/
+syn match bruijnIndex /\([^0-9A-Za-z]\)\@<=\d\([^0-9]\)\@=/
+syn match bruijnChar /'\@<=.'\@=/
 syn match bruijnNumber /([+-]\d\+[dubt]\?)/
 syn match bruijnDefinition /^\t*\S\+/
 syn match bruijnType /\( ⧗ \)\@<=.*$/
@@ -18,7 +19,6 @@ syn match bruijnNamespaceDelim /\([A-Z][a-z]*\)\@<=\./
 
 syn region bruijnCommentLine start="^# " end="$" oneline
 syn region bruijnString start=+"+ end=+"+ oneline
-syn region bruijnChar start=+'+ end=+'+ oneline
 
 hi def link bruijnIndex Special
 hi def link bruijnNumber Number
