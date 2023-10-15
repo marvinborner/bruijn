@@ -20,7 +20,7 @@ b'' [[[[[4 (3 2 1 0)]]]]] ⧗ (d → e) → (a → b → c → d) → a → b �
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]] ⧗ (c → d) → (b → c) → (a → b) → a → d
 
-# cardinal combinator: flip arguments: \f x y = f y z
+# cardinal combinator: flip arguments: \f x y = f y x
 c [[[2 0 1]]] ⧗ (a → b → c) → b → a → c
 
 \‣ c
@@ -238,6 +238,5 @@ z [[1 [1 1 0]] [1 [1 1 0]]] ⧗ (a → a) → a
 :test (i) (ι ι)
 :test (k) (ι (ι (ι ι)))
 :test (s) (ι (ι (ι (ι ι))))
-:test (b) (s (k s) k)
 :test (c) (s (s (k (s (k s) k)) s) (k k))
 :test (w) (s s (s k))

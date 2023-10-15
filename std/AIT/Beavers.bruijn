@@ -2,6 +2,8 @@
 # all currently known binary busy beavers
 # originally proposed and calculated by John Tromp
 
+# reduction results in OEIS sequence A333479
+
 invalid [0 0] [0 0]
 
 # not possible
