@@ -1,0 +1,32 @@
+# some example usage of the variadic fixed point combinator
+
+:import std/List .
+:import std/Logic .
+:import std/Number .
+
+# generates odd? and even? function as list
+odd-even? y* (even? : {}odd?)
+	even? [[[=?0 true (1 --0)]]]
+	odd? [[[=?0 false (2 --0)]]]
+
+:test (^odd-even? (+5)) (false)
+:test (_odd-even? (+5)) (true)
+
+# calculates n % 3
+mod3 ^(y* (a : (b : {}c)))
+	a [[[[=?0 (+0) (2 --0)]]]]
+	b [[[[=?0 (+1) (1 --0)]]]]
+	c [[[[=?0 (+2) (3 --0)]]]]
+
+:test ((mod3 (+0)) =? (+0)) (true)
+:test ((mod3 (+1)) =? (+1)) (true)
+:test ((mod3 (+2)) =? (+2)) (true)
+:test ((mod3 (+3)) =? (+0)) (true)
+:test ((mod3 (+4)) =? (+1)) (true)
+:test ((mod3 (+5)) =? (+2)) (true)
+:test ((mod3 (+6)) =? (+0)) (true)
+:test ((mod3 (+7)) =? (+1)) (true)
+:test ((mod3 (+8)) =? (+2)) (true)
+:test ((mod3 (+9)) =? (+0)) (true)
+
+main [[0]]
