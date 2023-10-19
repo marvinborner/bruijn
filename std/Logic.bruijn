@@ -10,7 +10,7 @@ false ki ⧗ Boolean
 
 # inverts boolean value
 # equivalent of [0 ⇒ false]
-not! [0 false true] ⧗ Boolean → Boolean
+not! c ⧗ Boolean → Boolean
 
 ¬‣ not!
 
@@ -18,7 +18,7 @@ not! [0 false true] ⧗ Boolean → Boolean
 :test (¬false) (true)
 
 # true if both args are true
-and? [[1 0 false]] ⧗ Boolean → Boolean → Boolean
+and? [[0 1 0]] ⧗ Boolean → Boolean → Boolean
 
 …⋀?… and?
 
@@ -36,7 +36,7 @@ nand? [[1 0 1 false true]] ⧗ Boolean → Boolean → Boolean
 :test (nand? false false) (true)
 
 # true if one of the args is true
-or? [[1 true 0]] ⧗ Boolean → Boolean → Boolean
+or? m ⧗ Boolean → Boolean → Boolean
 
 …⋁?… or?
 
@@ -54,7 +54,7 @@ nor? [[1 1 0 false true]] ⧗ Boolean → Boolean → Boolean
 :test (nor? false false) (true)
 
 # true if args are not same bools
-xor? [[1 ¬0 0]] ⧗ Boolean → Boolean → Boolean
+xor? [[0 (1 false 0) 1]] ⧗ Boolean → Boolean → Boolean
 
 :test (xor? true true) (false)
 :test (xor? true false) (true)
@@ -62,7 +62,7 @@ xor? [[1 ¬0 0]] ⧗ Boolean → Boolean → Boolean
 :test (xor? false false) (false)
 
 # true if both args are same bools
-xnor? [[1 0 ¬0]] ⧗ Boolean → Boolean → Boolean
+xnor? [[0 1 (1 0 true)]] ⧗ Boolean → Boolean → Boolean
 
 :test (xnor? true true) (true)
 :test (xnor? true false) (false)
@@ -82,7 +82,7 @@ if [[[2 1 0]]] ⧗ Boolean → a → b → c
 :test (false ? true : false) (false)
 
 # mathematical implies definition
-implies [[¬1 ⋁? 0]] ⧗ Boolean → Boolean → Boolean
+implies [[1 0 true]] ⧗ Boolean → Boolean → Boolean
 
 …⇒?… implies
 
@@ -92,7 +92,7 @@ implies [[¬1 ⋁? 0]] ⧗ Boolean → Boolean → Boolean
 :test (false ⇒? false) (true)
 
 # mathematical iff (if and only if) definition
-iff [[(1 ⇒? 0) ⋀? (0 ⇒? 1)]] ⧗ Boolean → Boolean → Boolean
+iff xnor? ⧗ Boolean → Boolean → Boolean
 
 …⇔?… iff
 
