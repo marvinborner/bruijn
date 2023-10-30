@@ -8,13 +8,13 @@
 :import std/Logic .
 :import std/Pair .
 
-# negative trit indicating coeffecient of (-1)
+# negative trit indicating coefficient of (-1)
 t⁻ [[[2]]] ⧗ Trit
 
-# positive trit indicating coeffecient of (+1)
+# positive trit indicating coefficient of (+1)
 t⁺ [[[1]]] ⧗ Trit
 
-# zero trit indicating coeffecient of 0
+# zero trit indicating coefficient of 0
 t⁰ [[[0]]] ⧗ Trit
 
 # returns true if a trit is negative
@@ -111,7 +111,7 @@ zero? [0 true [false] [false] i] ⧗ Number → Boolean
 :test (=?(+1)) (false)
 :test (=?(+42)) (false)
 
-# returns true if balanced ternary number is not
+# returns true if balanced ternary number is not zero
 not-zero? [0 false [true] [true] i] ⧗ Number → Boolean
 
 ≠?‣ not-zero?
@@ -215,11 +215,6 @@ not-eq? not! ∘∘ eq? ⧗ Number → Number → Boolean
 :test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (true)
 :test ((+1) ≠? (+0)) (true)
 :test ((-42) ≠? (+42)) (true)
-
-# I believe Mogensen's Paper has an error in its inc/dec/add/mul/eq definitions.
-# They use 3 instead of 2 abstractions in the functions, also we use switched
-# +/0 in comparison to their implementation, yet the order of neg/pos/zero is
-# the same. Something's weird.
 
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
 inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
