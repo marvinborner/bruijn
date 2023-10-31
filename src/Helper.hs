@@ -319,7 +319,7 @@ humanifyPair e = do
 ---
 
 -- Dec to Bal3 in Bruijn encoding: reversed application with 0=>0; 1=>1; T=>2; end=>3
--- e.g. 0=0=[[[[3]]]]; 2=1T=[[[[2 (0 3)]]]] -5=T11=[[[[0 (0 (2 3))]]]]
+-- e.g. 0=0=[[[[3]]]]; 2=1T=[[[[2 (1 3)]]]] -5=T11=[[[[1 (1 (2 3))]]]]
 decimalToTernary :: Integer -> Expression
 decimalToTernary n =
   Abstraction $ Abstraction $ Abstraction $ Abstraction $ gen n
