@@ -18,3 +18,8 @@ done
 sed -e "s@LINKS@$links@g" index.template >std/index.html
 
 cp res/* content.js content.css index.css std/
+
+echo "std done"
+
+mkdocs build
+echo "wiki done"

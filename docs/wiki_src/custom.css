@@ -1,0 +1,56 @@
+.headerlink {
+	display: none;
+}
+
+h2,h3,h4,h5,h6 {
+	line-height: var(--global-line-height);
+	margin-bottom: 0.5em;
+}
+
+.terminal h1 {
+    font-size: 2.33em;
+}
+
+.terminal h1 > * {
+	font-size: inherit;
+}
+
+.terminal h2 {
+    font-size: 1.83em;
+}
+
+.terminal h2 > * {
+	font-size: inherit;
+}
+
+.terminal h3{
+    font-size: 1.50em;
+}
+
+.terminal h3 > * {
+	font-size: inherit;
+}
+
+.terminal h4 {
+    font-size: 1.33em;
+}
+
+.terminal h4 > * {
+	font-size: inherit;
+}
+
+.terminal h5 {
+    font-size: 1.16em;
+}
+
+.terminal h5 > * {
+	font-size: inherit;
+}
+
+.terminal h6 {
+    font-size: 1em;
+}
+
+.terminal h6 > * {
+	font-size: inherit;
+}

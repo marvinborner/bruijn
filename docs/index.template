@@ -8,6 +8,7 @@
 	</head>
 	<body>
 		<h1>bruijn standard library</h1>
+This is the browsable standard library of the bruijn programming language. Follow any of the links below to see the source of the corresponding module.
 		<ol>
 			LINKS
 		</ol>

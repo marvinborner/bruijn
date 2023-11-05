@@ -1,0 +1,59 @@
+site_name: Bruijn Wiki
+docs_dir: wiki_src/
+site_dir: wiki/
+
+extra_css: [custom.css]
+
+theme:
+  name: terminal
+  palette: dark
+  features:
+    - navigation.top.cursor_animation.hide
+    - footer.prev_next
+
+nav:
+  - Index: index.md
+  - Introduction:
+    - introduction/installation.md
+    - introduction/lambda-calculus.md
+    - introduction/setup.md
+    - introduction/syntax.md
+  - Coding:
+    - coding/REPL.md
+    - TDD: coding/test-driven-development.md
+    - coding/mixfix.md
+    - coding/prefix.md
+    - coding/recursion.md
+    - coding/data-structures.md
+    - coding/combinators.md
+    - coding/currying.md
+    - coding/laziness.md
+    - coding/IO.md
+    - coding/meta-programming.md
+    - UFCS: coding/uniform-function-call-syntax.md
+    - coding/style.md
+    - coding/typing.md
+    - coding/compilation.md
+    - coding/performance.md
+    - coding/examples.md
+  - Technical:
+    - technical/arithmetic.md
+    - technical/reduction.md
+  - Landing page: https://bruijn.marvinborner.de
+  - GitHub: https://github.com/marvinborner/bruijn
+
+markdown_extensions:
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - meta
+  - toc:
+      permalink: "#"
+      permalink_title: Anchor link to this section for reference
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.snippets:
+      base_path: 
+        - wiki_src
