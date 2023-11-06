@@ -135,7 +135,7 @@ instance Show Mixfix where
   show (MixfixExpression e) = show e
 
 -- TODO: Remove Application and replace with Chain (renaming of MixfixChain)
-data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression
+data Expression = Bruijn Int | Function Identifier | Abstraction Expression | Application Expression Expression | MixfixChain [Mixfix] | Prefix Identifier Expression | Quote Expression | Unquote Expression
   deriving (Ord, Eq, Generic, NFData)
 
 instance Show Expression where
@@ -156,6 +156,8 @@ instance Show Expression where
       . foldr1 (\x y -> x . showString " " . y) (map shows ms)
       . showString "\ESC[33m)\ESC[0m"
   showsPrec _ (Prefix p e) = shows p . showString " " . shows e
+  showsPrec _ (Quote   e ) = showString "\ESC[36m`\ESC[0m" . shows e
+  showsPrec _ (Unquote e ) = showString "\ESC[36m,\ESC[0m" . shows e
 
 data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression | Length Expression | Blc Expression | Jot String
   deriving (Show)

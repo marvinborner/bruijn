@@ -131,6 +131,24 @@ evalPrefix
   :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
 evalPrefix p e = evalExp $ Application (Function p) e
 
+evalQuote :: Expression -> Environment -> EvalState (Failable Expression)
+evalQuote f sub = evalExp f sub >>= \case
+  Left  e  -> pure $ Left e
+  Right f' -> pure $ Right $ quotify f'
+   where
+    base l r = Abstraction $ Abstraction $ Abstraction $ Application l r
+    quotify (Abstraction e) = base (Bruijn 0) (quotify e)
+    quotify (Application l r) =
+      base (Application (Bruijn 1) (quotify l)) (quotify r)
+    quotify (Bruijn  i) = base (Bruijn 2) (decimalToUnary $ fromIntegral i)
+    quotify (Unquote e) = quotify e
+    quotify _           = invalidProgramState
+
+evalUnquote :: Expression -> Environment -> EvalState (Failable Expression)
+evalUnquote f sub = evalExp f sub >>= \case
+  Left  e  -> pure $ Left e
+  Right f' -> pure $ Right $ Unquote $ unsafeReduce f'
+
 evalExp :: Expression -> Environment -> EvalState (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
 evalExp (    Function    fun) = evalFun fun
@@ -138,6 +156,8 @@ evalExp (    Abstraction e  ) = evalAbs e
 evalExp (    Application f g) = evalApp f g
 evalExp (    MixfixChain es ) = evalMixfix es
 evalExp (    Prefix p e     ) = evalPrefix p e
+evalExp (    Quote   e      ) = evalQuote e
+evalExp (    Unquote e      ) = evalUnquote e
 
 evalDefinition
   :: Identifier -> Expression -> Environment -> EvalState (Failable Expression)
@@ -290,7 +310,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
         putStrLn $ toBinary red
     pure s
   Jot str -> do
-    let e = fromJot str
+    let e        = fromJot str
     let (res, _) = evalExp e (Environment M.empty) `runState` env
     case res of
       Left  err -> print err

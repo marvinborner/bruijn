@@ -42,9 +42,10 @@ mathematicalArrow = satisfy isMathematicalOperator
 
 -- "'" can't be in special chars because of 'c' char notation and prefixation
 -- "." can't be in special chars because of namespaced functions and UFCS syntax
+-- "," can't be in special chars because of unquote
 specialChar :: Parser Char
 specialChar =
-  oneOf "!?*@,:;+-_#$%^&<>/\\|{}~="
+  oneOf "!?*@:;+-_#$%^&<>/\\|{}~="
     <|> mathematicalOperator
     <|> mathematicalArrow
 
@@ -177,6 +178,18 @@ parseMixfix = do
   operatorAsMixfix  = MixfixOperator . MixfixFunction <$> some mixfixSome
   singletonAsMixfix = MixfixExpression <$> parseSingleton
 
+parseQuote :: Parser Expression
+parseQuote = do
+  _ <- char '`' <?> "quote start"
+  e <- parseSingleton
+  pure $ Quote e
+
+parseUnquote :: Parser Expression
+parseUnquote = do
+  _ <- char ',' <?> "unquote start"
+  e <- parseSingleton
+  pure $ Unquote e
+
 parsePrefix :: Parser Expression
 parsePrefix = do
   p <- prefixOperator
@@ -189,7 +202,9 @@ parseSingleton =
         parseBruijn
           <|> try parseNumeral
           <|> parseString
-          <|> parseChar
+          <|> try parseChar
+          <|> parseQuote
+          <|> parseUnquote
           <|> parseAbstraction
           <|> try parseFunction
           <|> parsePrefix
