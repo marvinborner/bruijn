@@ -1,6 +1,6 @@
 # REPL
 
-The REPL is a very helpful feature for functional programming languages
+The REPL is a very helpful tool for functional programming languages
 like bruijn. You can use it to continuously test or execute parts of
 your code.
 
@@ -8,6 +8,8 @@ You can start the REPL using `stack run`{.bash} or (if installed)
 `bruijn`{.bash}.
 
 Any valid term will get reduced to normal form after pressing enter.
+Common [data structures](data-structures.md) will get resolved in a
+seperate line if detected (e.g. numbers, lists or strings).
 
 ## Definitions
 
@@ -82,9 +84,9 @@ unreduced and the reduced expression. Helpful for golfed
 [compilation](compilation.md).
 
 ``` bruijn
-> :blc [0] [0]
-0100100010
-0010
+> :length [0] [0]
+10
+4
 ```
 
 ### `:free`{.bruijn}

@@ -11,7 +11,7 @@ Example:
 
 ``` bruijn
 # defines a negation prefix function called '-'
--‣ [(+0) - 0]
+-‣ [(+0) - 0] ⧗ Number → Number
 
 # returns 0 - 10 = -10
 :test (-(+10)) ((-10))
@@ -23,3 +23,9 @@ literally:
 ``` bruijn
 :test (-‣ (+10)) ((-10))
 ```
+
+## Allowed characters
+
+Prefix functions can use any characters of `!?*@:;+-_#$%^&<>/\|{}~=` as
+well as mathematical unicode operators and arrows. They must be at least
+1 character long.

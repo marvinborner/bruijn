@@ -62,7 +62,8 @@ a-box <>'a'
 
 ## Pairs [`std/Pair`](/std/Pair.bruijn.html)
 
-Pairs (tuples) can store any two terms.
+Pairs (tuples) can store any two terms. Pairs can be constructed using
+the `…:…`{.bruijn} [mixfix](mixfix.md) function.
 
 Example:
 
@@ -82,6 +83,11 @@ Lists are a repeated composition (right-associative) of pairs with a
 (heterogeneous) values and are recursively iterable. The call-by-need
 reduction order of bruijn allows lazy evaluation (i.e. infinite lists).
 
+Due to the right-associativeness, writing lists by hand is slightly
+annoying. The usage of the `…:…`{.bruijn} [mixfix](mixfix.md) and
+`{}‣`{.bruijn} [prefix](prefix.md) functions to denote pairs and the
+final `empty`{.bruijn} symbol is encouraged.
+
 Example:
 
 ``` bruijn
@@ -90,10 +96,19 @@ Example:
 :test ((foldr …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
 ```
 
+The internal structure of the list encoding means that when a list is
+applied to a function, the function is called with the head and tail of
+the list.
+
+``` bruijn
+:test ("abc" [[1]]) ('a')
+:test ("abc" [[0]]) ("bc")
+```
+
 ## Strings [`std/String`](/std/String.bruijn.html)
 
 Strings are just a list of binary encoded bytes. You may use
-[`std/List`](/std/List.bruijn.html) in combinatoin with
+[`std/List`](/std/List.bruijn.html) in combination with
 [`std/Number/Binary`](/std/Binary.bruijn.html) to interact with them.
 
 Example:

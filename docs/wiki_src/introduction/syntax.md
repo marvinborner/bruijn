@@ -5,12 +5,16 @@ an esoteric programming language. Most notably the usage of lambda
 calculus logic, combinators, and De Bruijn indices can be confusing at
 first -- it's definitely possible to get used to them though!
 
-Bruijn uses a [variation of lambda calculus](lambda-calculus.md).
+Bruijn uses a [variation of lambda calculus](lambda-calculus.md). For
+subjective syntax rules, read [coding style](../coding/style.md). Also
+see the [examples](../coding/examples.md).
 
 ## Definitions
 
 Bruijn works by defining named substitution rules, where each usage of
-the identifier will get substituted respectively.
+the identifier will get substituted respectively. You can't use
+definitions before they are defined, every file gets substituted from
+top to bottom.
 
 Since there's no other major syntactic block, bruijn omits the equal
 symbol for definitions.
@@ -55,7 +59,7 @@ closed1 [[[2 0] 1]]
 
 Bruijn does not give warnings for open terms and reduces them as normal.
 In some cases it's actually encouraged to use open terms as sub-terms
-for better readability (see [coding style
+for improved readability (see [coding style
 suggestions](../coding/style.md)).
 
 ## Imports
@@ -101,8 +105,8 @@ After running:
           reduced to [[1]] = [[0]]
 
 Tests are always run for the executed file and any files it contains. If
-they take too long, you can enable the *YOLO* mode by using bruijn's
-`-y` argument.
+they take too long and you're sure your code is correct, you can enable
+the *YOLO* mode to disable tests by using bruijn's `-y` argument.
 
 ## Scoping
 
@@ -145,4 +149,32 @@ structures](../coding/data-structures.md).
 
 ## Types
 
-TODO.
+As of right now, typing is entirely optional and *purely* for
+documentation/aesthetics. Aside from syntax, types do not get checked in
+any way.
+
+We do have plans to implement type checking in the future, unfortunately
+almost all trivial typing mechanisms for pure lambda calculus reduce its
+power immensely.
+
+The current syntax of types is quite simple:
+
+    POLYMORPHIC := [a-z]+
+    CONSTRUCTOR := ([A-Z][a-z]* TYPE)
+    FUNCTION    := (TYPE → ... → TYPE)
+    IDENTIFIER  := [A-Z][a-z]*
+    TYPE        := IDENTIFIER | TYPE-VARIABLE | CONSTRUCTOR | FUNCTION
+    SIGNATURE   := TYPE → ... → Type
+
+The type signature can be written at the end of any bruijn term using
+the `⧗`{.bruijn} symbol.
+
+Examples:
+
+``` bruijn
+# from std/Combinator
+c [[[2 0 1]]] ⧗ (a → b → c) → b → a → c
+
+# from std/List
+empty? [0 [[[false]]] true] ⧗ (List a) → Boolean
+```

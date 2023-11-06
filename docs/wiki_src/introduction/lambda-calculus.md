@@ -4,32 +4,37 @@ Bruijn is based on De Bruijn indexed lambda calculus.
 
 ## Traditional lambda calculus
 
-Lambda calculus basically has three types of expressions:
+Lambda calculus basically has three types of terms:
 
--   *Variable*: `x` represents another expression.
--   *Abstraction*: `λx.E` accepts an argument x and binds it to
-    expression `E` respectively. It's helpful to think of abstractions
-    as anonymous functions.
+-   *Variable*: `x` binds the named variable `x` to an abstraction.
+-   *Abstraction*: `λx.E` accepts an argument `x` and binds it to term
+    `E` respectively. It's helpful to think of abstractions as anonymous
+    functions.
 -   *Application*: `(f x)` applies `f` to `x` -- the standard convention
     allows repeated left-associative application: `(f x y z)` is
     `(((f x) y) z)`.
 
-Combining these expressions and removing redundant parentheses can
-result in expressions like λx.λy.x y, basically representing a function
-with two parameters that uses its second parameter as an argument for
-its first.
+Combining these terms and removing redundant parentheses can result in
+terms like λx.λy.x y, basically representing a function with two
+parameters that uses its second parameter as an argument for its first.
 
-Evaluating expressions is called *reduction*. There's only one rule you
-need to know: `((λx.E) A)` becomes `E[x := A]` -- that is, calling an
-abstraction with an argument substitutes the argument inside the
-expression of the abstraction ("β-reduction"). There are many different
-kinds of reduction techniques, but they basically all come back to this
-simple rule -- mainly because of the "Church-Rosser theorem" that states
-that the order of reduction doesn't change the eventual result.
+Evaluating terms is called *reduction*. There's only one rule you need
+to know: `((λx.E) A)` becomes `E[x := A]` -- that is, calling an
+abstraction with an argument substitutes the argument inside the body of
+the abstraction ("β-reduction"). There are many different kinds of
+reduction techniques, but they basically all come back to this simple
+rule -- mainly because of the "Church-Rosser theorem" that states that
+the order of reduction doesn't change the eventual result.
 
 When we talk about reduction in bruijn, we typically mean "reduction
 until normal form" -- we reduce until the term can't be reduced any
 further (there does not exist any `((λx.E) A)`).
+
+``` bruijn
+((λx.x) (λx.x))    ⤳ (λx.x)
+((λx.x) (λx.λy.x)) ⤳ (λx.λy.x)
+((λx.λy.x) (λx.x)) ⤳ (λy.λx.x)
+```
 
 ## De Bruijn indices
 

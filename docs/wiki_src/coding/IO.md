@@ -11,6 +11,12 @@ You can use [`std/Monad`](/std/Monad.bruijn.html) to interact with the
 input monadically, or simply use [`std/List`](/std/List.bruijn.html)
 operations to work with the input as a normal list.
 
+See [data structures](data-structures.md) to learn more about lists and
+numbers.
+
+If you want your main function to ignore the input, just add an
+additional (unbound) abstraction to your definition.
+
 ## Example
 
 ``` bruijn

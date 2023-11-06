@@ -28,7 +28,7 @@ outer argument is the initial function again.
 Example for using `y`{.bruijn} to find the factorial of 2:
 
 ``` bruijn
-# here, `1` is the outer argument (y g)
+# here, `1` is the induced outer argument `(y g)`
 # `0` is the accumulator (the argument of `factorial`)
 g [[=?0 (+1) (0 ⋅ (1 --0))]]
 
@@ -37,7 +37,7 @@ factorial y g ⧗ Number → Number
 :test ((factorial (+3)) =? (+6)) (true)
 ```
 
-In-the-wild, this could look like this.
+In the wild it might look like this:
 
 ``` bruijn
 # 3 abstractions => two arguments
@@ -50,7 +50,9 @@ length z [[[rec]]] (+0) ⧗ (List a) → Number
         case-end 1
 ```
 
-Also see [coding style](style.md) for other style suggestions.
+Read [list data structure](data-structures.md#lists-stdlist) for more
+information. Also read [coding style](style.md) for other style
+suggestions.
 
 ## Mutual recurrence relations
 
@@ -69,9 +71,9 @@ g [[[=?0 true (1 --0)]]]
 # the even? recursive call will be the first argument (2)
 h [[[=?0 false (2 --0)]]]
 
-even? head (y* g h) ⧗ Number → Bool
+even? head (y* g h) ⧗ Number → Boolean
 
-odd? tail (y* g h) ⧗ Number → Bool
+odd? tail (y* g h) ⧗ Number → Boolean
 ```
 
 Read more about this in the blog post [Variadic fixed-point

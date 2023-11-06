@@ -1,16 +1,59 @@
 # Coding style
 
-## Scoping
+## Program
+
+-   Every function has to be delimited by one empty line.
+-   Every (non-scoped) function must have a comment directly above it.
+-   Tests must appear in a single block (no empty lines) one line under
+    the definition.
+
+See the [standard library](/std/) for inspiration.
+
+## Function naming
+
+De Bruijn indices can be seen as a disadvantage to readability. It's
+therefore much more important to name the functions appropriately.
+
+For functions that return a boolean, we suggest using the suffix `?`. If
+your function has different cases it's recommended to use the `case-`
+prefix in scoped sub-terms.
+
+``` bruijn
+# from std/Ternary
+zero? [0 case-end case-neg case-pos i] ⧗ Number → Boolean
+    case-end true
+    case-neg [false]
+    case-pos [false]
+```
+
+Appropriate [type signatures](../introduction/syntax.md#types) are also
+encouraged.
 
 ## If/else
 
-redundant
+Since booleans are just lambda terms either returning its first or
+second argument, the use of if/else procedures is generally redundant.
+See [bit/boolean data
+structure](data-structures.md#booleansbits-stdlogic).
+
+``` bruijn
+:test (true 'a' 'b') ('a')
+:test (false 'a' 'b') ('b')
+```
 
 ## Head/tail
 
-redundant
+The internal structure of the list encoding means that when a list is
+applied to a function, the function is called with the head and tail of
+the list.
 
-## Type signatures
+``` bruijn
+:test ("abc" [[1]]) ('a')
+:test ("abc" [[0]]) ("bc")
+```
+
+Therefore the recommended style for coding with lists is to use
+`head`{.bruijn}/`tail`{.bruijn} only when truly needed.
 
 ## Recursion
 

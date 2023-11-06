@@ -1,9 +1,9 @@
 # Mixfix
 
 Mixfix functions allow arbitrary infix operations based on "substitution
-holes" by using the `…` symbol in (special character) definitions. The
-symbols and terms always need to be delimited by a space character, else
-they get interpreted as a [prefix](prefix.md).
+holes" by using the `…` symbol in definitions. The symbols and terms
+always need to be delimited by a space character, otherwise they get
+interpreted as a [prefix](prefix.md).
 
 Example:
 
@@ -31,3 +31,24 @@ literally:
 ``` bruijn
 :test (…+… (+4) (+3)) (add (+4) (+3))
 ```
+
+## Associativity
+
+If you write several mixfix operations without parenthesis, they will be
+reduced in left-associative order. Just make sure that the longer mixfix
+chain is not actually overwritten by *another* mixfix chain.
+
+``` bruijn
+:test ((+8) + (-4) ⋅ (-2)) ((-8))
+
+# (don't do this)
+…+…⋅… [[[(+16)]]]
+
+:test ((+8) + (-4) ⋅ (-2)) ((+16))
+```
+
+## Allowed characters
+
+Mixfix functions can use any characters of `!?*@:;+-_#$%^&<>/\|{}~=` as
+well as mathematical unicode operators and arrows. Each part must be at
+least 1 character long.

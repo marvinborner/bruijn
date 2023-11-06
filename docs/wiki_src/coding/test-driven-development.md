@@ -6,21 +6,22 @@ creating functions, we suggest the following procedure:
 -   Write a comment, a type signature, and the head of the function
 
 ``` bruijn
-# measures the length of a list
-length y [[[rec]]] (+0) ⧗ (List a) → Number
+# returns the item at index in a list, starting from 0
+index y [[[rec]]] ⧗ (List a) → Number → a
 ```
 
--   Write several tests including all edge cases
+-   Write several tests including edge cases
 
 ``` bruijn
-# measures the length of a list
-length y [[[rec]]] (+0) ⧗ (List a) → Number
+# returns the item at index in a list, starting from 0
+index y [[[rec]]] ⧗ (List a) → Number → a
 
-:test (length empty) ((+0))
-:test (length "a") ((+1))
-:test (length ({}empty)) ((+1))
-:test (length (empty : {}empty)) ((+2))
-:test (length ("abc")) ((+3))
+:test (empty !! (+0)) (empty)
+:test ({}(+1) !! (+0)) ((+1))
+:test (((+1) : ((+2) : {}(+3))) !! (+0)) ((+1))
+:test (((+1) : ((+2) : {}(+3))) !! (+2)) ((+3))
+:test (((+1) : ((+2) : {}(+3))) !! (-1)) (empty)
+:test (((+1) : ((+2) : {}(+3))) !! (+3)) (empty)
 ```
 
 -   Finish the implementation until all tests pass (e.g. using the
@@ -28,15 +29,16 @@ length y [[[rec]]] (+0) ⧗ (List a) → Number
 -   Refactor and clean up the definition
 
 ``` bruijn
-# measures the length of a list
-length y [[[rec]]] (+0) ⧗ (List a) → Number
-    rec 0 [[[case-inc]]] case-end
-        case-inc 5 ++4 1
-        case-end 1
+# returns the item at index in a list, starting from 0
+index y [[[rec]]] ⧗ (List a) → Number → a
+    rec 0 [[[case-index]]] case-end
+        case-index =?4 2 (5 --4 1)
+        case-end empty
 
-:test (length empty) ((+0))
-:test (length "a") ((+1))
-:test (length ({}empty)) ((+1))
-:test (length (empty : {}empty)) ((+2))
-:test (length ("abc")) ((+3))
+:test (empty !! (+0)) (empty)
+:test ({}(+1) !! (+0)) ((+1))
+:test (((+1) : ((+2) : {}(+3))) !! (+0)) ((+1))
+:test (((+1) : ((+2) : {}(+3))) !! (+2)) ((+3))
+:test (((+1) : ((+2) : {}(+3))) !! (-1)) (empty)
+:test (((+1) : ((+2) : {}(+3))) !! (+3)) (empty)
 ```

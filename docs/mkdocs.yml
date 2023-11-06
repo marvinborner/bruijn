@@ -15,12 +15,11 @@ nav:
   - Index: index.md
   - Introduction:
     - introduction/installation.md
-    - introduction/lambda-calculus.md
     - introduction/setup.md
+    - introduction/lambda-calculus.md
     - introduction/syntax.md
   - Coding:
     - coding/REPL.md
-    - TDD: coding/test-driven-development.md
     - coding/mixfix.md
     - coding/prefix.md
     - coding/recursion.md
@@ -32,13 +31,12 @@ nav:
     - coding/meta-programming.md
     - UFCS: coding/uniform-function-call-syntax.md
     - coding/style.md
-    - coding/typing.md
+    - TDD: coding/test-driven-development.md
     - coding/compilation.md
-    - coding/performance.md
-    - coding/examples.md
   - Technical:
-    - technical/arithmetic.md
+    - technical/performance.md
     - technical/reduction.md
+  - Examples: coding/examples.md
   - Landing page: https://bruijn.marvinborner.de
   - GitHub: https://github.com/marvinborner/bruijn
 
