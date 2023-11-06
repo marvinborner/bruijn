@@ -61,8 +61,6 @@ fromJot = worker . reverse
   k = Function $ NormalFunction "k"
   worker ('0' : xs) = Application (Application (worker xs) s) k
   worker ('1' : xs) = Application s (Application k (worker xs))
-  -- worker ('1' : xs) = Abstraction
-  --   (Abstraction (Application (worker xs) (Application (Bruijn 1) (Bruijn 0))))
   worker _          = Abstraction (Bruijn 0)
 
 

@@ -282,7 +282,7 @@ sub [[1 + -0]] ⧗ Number → Number → Number
 :test ((+42) - (+1) =? (+41)) (true)
 
 # returns true if number is greater than other number
-gre? [[>?(1 - 0)]] ⧗ Number → Number → Boolean
+gre? positive? ∘∘ sub ⧗ Number → Number → Boolean
 
 …>?… gre?
 
@@ -300,7 +300,7 @@ les? \gre? ⧗ Number → Number → Boolean
 :test ((+3) <? (+2)) (false)
 
 # returns true if number is less than or equal to other number
-leq? [[¬(1 >? 0)]] ⧗ Number → Number → Boolean
+leq? not! ∘∘ gre? ⧗ Number → Number → Boolean
 
 …≤?… leq?
 
@@ -317,7 +317,7 @@ geq? \leq? ⧗ Number → Number → Boolean
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
 
-# returns eq, lt, gt depending on comparison of two functions
+# returns eq, lt, gt depending on comparison of two numbers
 compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 	go [=?0 5 (>?0 4 3)]
 

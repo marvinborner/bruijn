@@ -7,7 +7,6 @@
 :import std/List .
 :import std/Char C
 
-# TODO: finish types
 uni [0 0] int [0 Ω] ⧗ (List Bit) → Term
 	int [[[0 go (2 2) 1]]]
 		go [[[[2 match]]]]

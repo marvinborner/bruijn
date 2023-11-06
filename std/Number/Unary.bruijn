@@ -63,7 +63,7 @@ sub [[0 dec 1]] ⧗ Unary → Unary → Unary
 :test ((+5u) - (+3u)) ((+2u))
 
 # returns true if number is less than or equal to other number
-leq? [[=?(1 - 0)]] ⧗ Unary → Unary → Boolean
+leq? zero? ∘∘ sub ⧗ Unary → Unary → Boolean
 
 …≤?… leq?
 
@@ -82,7 +82,7 @@ geq? \leq? ⧗ Unary → Unary → Boolean
 
 # returns true if number is greater than other number
 # larger numbers should be second argument (performance)
-gre? [[¬(1 ≤? 0)]] ⧗ Unary → Unary → Boolean
+gre? not! ∘∘ leq? ⧗ Unary → Unary → Boolean
 
 …>?… gre?
 
@@ -101,12 +101,13 @@ les? \gre? ⧗ Unary → Unary → Boolean
 :test ((+3u) <? (+2u)) (false)
 
 # returns true if two unary numbers are equal
-eq? [[(0 ≥? 1) ⋀? (0 ≤? 1)]] ⧗ Unary → Unary → Boolean
+eq? [[=?(1 - 0) ⋀? =?(0 - 1)]] ⧗ Unary → Unary → Boolean
 
 …=?… eq?
 
 :test ((+1u) =? (+0u)) (false)
 :test ((+1u) =? (+1u)) (true)
+:test ((+1u) =? (+2u)) (false)
 :test ((+42u) =? (+42u)) (true)
 
 # returns true if two unary numbers are not equal
@@ -117,6 +118,20 @@ not-eq? not! ∘∘ eq? ⧗ Unary → Unary → Boolean
 :test ((+1u) ≠? (+0u)) (true)
 :test ((+1u) ≠? (+1u)) (false)
 :test ((+42u) ≠? (+42u)) (false)
+
+# returns eq, lt, gt depending on comparison of two numbers
+compare-case [[[[[go (1 - 0) (0 - 1)]]]]] ⧗ a → b → c → Unary → Unary → d
+	go [[=?0 (=?1 6 5) 4]]
+
+# returns ternary 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare compare-case (+0) (+1) (-1) ⧗ Unary → Unary → Number
+
+:test (compare (+2u) (+2u)) ((+0))
+:test (compare (+2u) (+1u)) ((+1))
+:test (compare (+1u) (+2u)) ((-1))
+
+…<=>… compare
 
 # muls two unary numbers
 mul …∘… ⧗ Unary → Unary → Unary
@@ -136,7 +151,7 @@ div [[[[3 [[0 1]] [1] (3 [3 [[0 1]] [3 (0 1)] [0]] 0)]]]] ⧗ Unary → Unary �
 :test ((+2u) / (+2u)) ((+1u))
 :test ((+2u) / (+3u)) ((+0u))
 
-# slower div
+# slower div (more obvious impl)
 div* [z rec ++0] ⧗ Unary → Unary → Unary
 	rec [[[[[[=?0 ((+0u) 2 1) (2 (5 0 3 2 1))] (3 - 2)]]]]]
 
@@ -148,7 +163,7 @@ mod [[[[3 [0 [[1]]] (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) [[0]]]]]] ⧗ Unary �
 :test ((+10u) % (+3u)) ((+1u))
 :test ((+3u) % (+5u)) ((+3u))
 
-# slower mod
+# slower mod (more obvious impl)
 mod* [[1 [0 [[(0 ⋀? (3 ≤? 1)) case-rec case-end]]] (1 : true) [[1]]]] ⧗ Unary → Unary → Unary
 	case-rec (1 - 3) : true
 	case-end 1 : false

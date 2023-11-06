@@ -7,15 +7,21 @@ b [[[2 (1 0)]]] ⧗ (b → c) → (a → b) → a → c
 
 …∘… b
 
+∘‣ b
+
 # blackbird combinator: 2x function composition: (f ∘∘ g) x y = f (g x y)
 b' [[[[3 (2 1 0)]]]] ⧗ (c → d) → (a → b → c) → a → b → d
 
 …∘∘… b'
 
+∘∘‣ b'
+
 # bunting combinator: 3x function composition: (f ∘∘∘ g) x y z = f (g x y z)
 b'' [[[[[4 (3 2 1 0)]]]]] ⧗ (d → e) → (a → b → c → d) → a → b → c → e
 
 …∘∘∘… b''
+
+∘∘∘‣ b''
 
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]] ⧗ (c → d) → (b → c) → (a → b) → a → d
@@ -117,7 +123,7 @@ o [[0 (1 0)]] ⧗ ((a → b) → a) → (a → b) → b
 
 ψ* [[[[[4 3 (2 1) (2 0)]]]]] ⧗ (c → b → b → d) → c → (a → b) → a → a → d
 
-# queer bird combinator: reverse function composition: (f , g) x = g (f x)
+# queer bird combinator: reverse function composition
 q [[[1 (2 0)]]] ⧗ (a → b) → (b → c) → a → c
 
 # quixotic bird combinator
