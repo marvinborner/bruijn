@@ -2,7 +2,8 @@ site_name: Bruijn Wiki
 docs_dir: wiki_src/
 site_dir: wiki/
 
-extra_css: [custom.css]
+extra_css: [custom.css, ../code.css]
+extra_javascript: [../code.js]
 
 theme:
   name: terminal

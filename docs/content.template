@@ -4,14 +4,17 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="stylesheet" href="content.css" type="text/css" media="all">
+		<link rel="stylesheet" href="code.css" type="text/css" media="all">
 		<title>bruijn std/NAME</title>
 	</head>
 	<body>
 		<h1>NAME</h1>
 <pre>
+<code class="language-bruijn">
 CONTENT
+</code>
 </pre>
 
-	<script src="content.js" charset="utf-8"></script>
+	<script src="code.js" charset="utf-8"></script>
 	</body>
 </html>

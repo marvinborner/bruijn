@@ -2,7 +2,16 @@ pre {
 	width: 100%;
 	white-space: pre;
 	overflow-x: scroll;
-	display: inline-grid;
+	display: grid;
+}
+
+/* to match std */
+pre, pre > code, code.bruijn {
+	background-color: #222222;
+}
+
+pre a {
+	color: var(--font-color);
 }
 
 .headerlink {

@@ -1,0 +1,36 @@
+.com {
+	color: #ff64bd;
+}
+
+.def {
+	color: #13dbee;
+}
+
+.comment {
+	color: #999999;
+}
+
+.type {
+	color: #ffa120;
+}
+
+.left-abs, .right-abs {
+	color: #6b82ff;
+}
+
+.left-app, .right-app {
+	color: #ff8750;
+}
+
+.index {
+	color: #ff5050;
+}
+
+.number {
+	color: #b1ee13;
+}
+
+/* lol */
+.string, .string * {
+	color: #bb73f0 !important;
+}

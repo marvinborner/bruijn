@@ -138,9 +138,9 @@ structures](../coding/data-structures.md).
 
 -   *Numbers*: `(SXB)`{.bruijn} where `S` is `+`/`-`, `X` is a number
     and `B` is the *base* of the encoded number (or `t` by default)
-    -   `u` for unary base (postive, Church): `(+42u)`
-    -   `b` for binary base (positive): `(+42b)`
-    -   `t` for balanced ternary (positive/negative): `(-42t)`
+    -   `u` for unary base (postive, Church): `(+42u)`{.bruijn}
+    -   `b` for binary base (positive): `(+42b)`{.bruijn}
+    -   `t` for balanced ternary (positive/negative): `(-42t)`{.bruijn}
 -   *Characters*: `'C'`{.bruijn} where `C` is any ASCII character
 -   *Strings*: `"X1..XN"`{.bruijn} where `X1...XN` are any ASCII
     characters

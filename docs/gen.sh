@@ -17,7 +17,7 @@ done
 
 sed -e "s@LINKS@$links@g" index.template >std/index.html
 
-cp res/* content.js content.css index.css std/
+cp res/* code.js content.css index.css code.css std/
 
 echo "std done"
 

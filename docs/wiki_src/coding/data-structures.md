@@ -39,7 +39,7 @@ syntactic sugar.
 
 -   default syntactic sugar for numbers (optional suffix `t`),
     e.g. `(+3)`{.bruijn}
--   encoding: `(+4)`{.bruijn}=`[[[[(1 (1 3))]]]]`,
+-   encoding: `(+4)`{.bruijn}=`[[[[(1 (1 3))]]]]`{.bruijn},
     `(-4)`{.bruijn}=`[[[[(2 (2 3))]]]]`{.bruijn}
 -   faster and more compact than binary[^1]
 -   positive and negative numbers

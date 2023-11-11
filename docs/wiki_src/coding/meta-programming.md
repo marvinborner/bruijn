@@ -1,4 +1,4 @@
-# Meta programming
+# Metaprogramming
 
 Bruijn has a homoiconic meta encoding inspired by Lisp's quoting
 feature.
@@ -8,11 +8,9 @@ self-interpretation](https://text.marvinborner.de/2023-09-03-21.html).
 
 ## Encoding
 
-``` bruijn
-`X     ⤳ [[[2 (+Xu)]]]
-`(M N) ⤳ [[[1 `M `N]]]
-`[M]   ⤳ [[[0 `M]]]
-```
+    `X     ⤳ [[[2 (+Xu)]]]
+    `(M N) ⤳ [[[1 `M `N]]]
+    `[M]   ⤳ [[[0 `M]]]
 
 Any quoted term gets converted to this encoding:
 

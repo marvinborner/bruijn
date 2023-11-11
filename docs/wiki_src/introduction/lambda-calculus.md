@@ -30,11 +30,9 @@ When we talk about reduction in bruijn, we typically mean "reduction
 until normal form" -- we reduce until the term can't be reduced any
 further (there does not exist any `((λx.E) A)`).
 
-``` bruijn
-((λx.x) (λx.x))    ⤳ (λx.x)
-((λx.x) (λx.λy.x)) ⤳ (λx.λy.x)
-((λx.λy.x) (λx.x)) ⤳ (λy.λx.x)
-```
+    ((λx.x) (λx.x))    ⤳ (λx.x)
+    ((λx.x) (λx.λy.x)) ⤳ (λx.λy.x)
+    ((λx.λy.x) (λx.x)) ⤳ (λy.λx.x)
 
 ## De Bruijn indices
 
@@ -49,9 +47,9 @@ De Bruijn replace the concept of variables by using numeric references
 to the abstraction layer. Let me explain using an example: The
 expression `λx.x` becomes `λ0` -- the `0` refers to the first parameter
 of the abstraction. Subsequently, the expression `λx.λy.x y` becomes
-`λλ1 0`{.bruijn}. Basically, if you're reading from left to right
-starting at the abstraction you want to bind, you increment on every
-occurring `λ` until you arrive at the index.
+`λλ1 0`. Basically, if you're reading from left to right starting at the
+abstraction you want to bind, you increment on every occurring `λ` until
+you arrive at the index.
 
 While confusing at first, programs written with De Bruijn indices can
 actually be way easier to understand than the equivalent program with
@@ -72,10 +70,10 @@ The application of `λ0` and `λλ1 0` becomes `[0] [[1 0]]`{.bruijn}.
 Random example reductions:
 
 ``` bruijn
-[0] [[1]]       ⤳ [[1]]
-[[0]] [[1]]     ⤳ [0]
-[[1]] [[1]]     ⤳ [[[1]]]
-[[0]] [0] [[1]] ⤳ [[1]]
-[[0 1]] [0]     ⤳ [0 [0]]
-[[1 0]] [0]     ⤳ [0]
+a [0] [[1]]       ⤳ [[1]]
+b [[0]] [[1]]     ⤳ [0]
+c [[1]] [[1]]     ⤳ [[[1]]]
+d [[0]] [0] [[1]] ⤳ [[1]]
+e [[0 1]] [0]     ⤳ [0 [0]]
+f [[1 0]] [0]     ⤳ [0]
 ```
