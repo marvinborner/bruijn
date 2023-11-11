@@ -117,8 +117,8 @@ blc fold idx-cb app-cb abs-cb ⧗ Meta → (List LcBit)
 
 # modified Tromp 232 bit universal machine
 eval-blc y [[[rec]]] [0 Ω] ⧗ (List LcBit) → a
-	rec 0 [[0 [2 case-0 case-1]]] ⧗ Self → Cont → (List LcBit) → a
-		case-0 5 [1 case-00 case-01] ⧗ LcBit → (List LcBit) → Self → Cont → (List LcBit) → a
+	rec 0 [[0 [2 case-0 case-1]]]
+		case-0 5 [1 case-00 case-01]
 			case-00 5 [[2 (0 : 1)]]
 			case-01 6 [6 [2 0 (1 0)]]
 		case-1 0 case-10 case-11
@@ -127,15 +127,17 @@ eval-blc y [[[rec]]] [0 Ω] ⧗ (List LcBit) → a
 
 eval eval-blc ∘ blc ⧗ Meta → Meta
 
-!‣ eval
+# self interpreter for meta encoding
+eval y [[[rec]]] [0 Ω] ⧗ Meta → a
+	rec 0 case-idx case-app case-abs
+		case-idx [2 [head (1 tail 0)]]
+		case-app 2 [3 [3 [2 0 (1 0)]]]
+		case-abs 2 [2 [[2 (0 : 1)]]]
 
 :test (eval `[(α-eq? `α-eq? `α-eq?)]) (true)
 
-eval-meta y [[[rec]]] [0 Ω] ⧗ Meta → a
-	rec 0 case-idx case-app case-abs
-		case-idx [3 (0 k)]
-		case-app [3 [3 [2 0 (1 0)]]]
-		case-abs [2 [[2 [0 1 2]]]]
+:test (!`(α-eq? `α-eq? `α-eq?)) (true)
+:test (!`((+21u) + (+21u))) ((+42u))
 
 # increments indices reaching out of their abstraction depth
 κ y [[[rec]]] ⧗ Meta → Unary → Meta

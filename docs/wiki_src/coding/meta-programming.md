@@ -1,11 +1,10 @@
 # Meta programming
 
-TODO: more (blog)
+Bruijn has a homoiconic meta encoding inspired by Lisp's quoting
+feature.
 
-Bruijn has a homoiconic meta encoding similar to Lisp's quoting feature.
-
-Blog post with more details: [Homoiconic self interpretation of lambda
-calculus](https://text.marvinborner.de/2023-09-03-21.html).
+Blog post with more details: [Metaprogramming and
+self-interpretation](https://text.marvinborner.de/2023-09-03-21.html).
 
 ## Encoding
 
@@ -52,7 +51,7 @@ add-two `[0 + (+2u)]
 # adds two using a reaching De Bruijn index
 add-two* [`(,0 + (+2u))]
 
-:test (!(add-two* (+2u))) ((+4u))
+:test (!(add-two* `(+2u))) ((+4u))
 ```
 
 ## Meta library [`std/Meta`](/std/Meta.bruijn.html)
@@ -69,4 +68,12 @@ Examples:
 # BLC length of meta term
 :test (length `[0]) ((+4u))
 :test (length `[[1 1]]) ((+12u))
+
+# self-modification
+:test (lhs `(1 0) `0) (`(0 0))
+:test (rhs `(0 1) `0) (`(0 0))
+:test (swap `(1 0)) (`(0 1))
+:test (map inc `0) (`1)
+:test (map (map inc) `[0]) (`[1])
+:test (map swap `[0 1]) (`[1 0])
 ```

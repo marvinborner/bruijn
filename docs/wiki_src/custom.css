@@ -1,3 +1,10 @@
+pre {
+	width: 100%;
+	white-space: pre;
+	overflow-x: scroll;
+	display: inline-grid;
+}
+
 .headerlink {
 	display: none;
 }
