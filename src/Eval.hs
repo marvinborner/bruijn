@@ -134,15 +134,16 @@ evalPrefix p e = evalExp $ Application (Function p) e
 evalQuote :: Expression -> Environment -> EvalState (Failable Expression)
 evalQuote f sub = evalExp f sub >>= \case
   Left  e  -> pure $ Left e
-  Right f' -> pure $ Right $ quotify f'
+  Right f' -> pure $ Right $ quotify 0 f'
    where
     base l r = Abstraction $ Abstraction $ Abstraction $ Application l r
-    quotify (Abstraction e) = base (Bruijn 0) (quotify e)
-    quotify (Application l r) =
-      base (Application (Bruijn 1) (quotify l)) (quotify r)
-    quotify (Bruijn  i) = base (Bruijn 2) (decimalToUnary $ fromIntegral i)
-    quotify (Unquote e) = quotify e
-    quotify _           = invalidProgramState
+    quotify n (Abstraction e) = base (Bruijn 0) (quotify (n + 1) e)
+    quotify n (Application l r) =
+      base (Application (Bruijn 1) (quotify (n + 1) l)) (quotify (n + 1) r)
+    quotify _ (Bruijn i) = base (Bruijn 2) (decimalToUnary $ fromIntegral i)
+    quotify n (Unquote (Bruijn i)) = Bruijn $ n * 3 + i
+    quotify n (Unquote e         ) = quotify n e
+    quotify _ _                    = invalidProgramState
 
 evalUnquote :: Expression -> Environment -> EvalState (Failable Expression)
 evalUnquote f sub = evalExp f sub >>= \case
