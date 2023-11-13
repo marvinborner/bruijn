@@ -78,7 +78,7 @@ a {
 @media(min-width: 1800px) {
 	.example {
 		flex-flow: row nowrap;
-		max-width: 35%;
+		max-width: 45%;
 	}
 
 	.instructions {
