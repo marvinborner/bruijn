@@ -22,7 +22,7 @@ for applications inside substitution holes.
 
 # evaluated as (5 - 2) + 1 = 4
 :test ({ (+5) <$> (+2) | (+1)) ((+4))
-:test ({ ((+3) + (+1)) <$> (+2) | (+1)) ((+4))
+:test ({ ((+3) + (+2)) <$> (+2) | (+1)) ((+4))
 ```
 
 You can use them as normal functions by writing the identifier
