@@ -43,7 +43,7 @@ const highlight = (elem) => {
       (_, t) => `<span class='com'>:time</span> ${term(t)}`,
     )
     .replaceAll(
-      /^([^:\n<#][^ ]*) (.*)$/gm,
+      /^([ \t]*[^:\n<#][^ ]*) (.*)$/gm,
       (_, d, t) => `<span class='def'>${d}</span> ${term(t)}`,
     )
     .replaceAll(/^# (.*)$/gm, "<span class='comment'># $1</span>")

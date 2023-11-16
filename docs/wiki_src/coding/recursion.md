@@ -14,13 +14,11 @@ recursion.
 Say we want a function `g`{.bruijn} to be able to call itself. With the
 `y`{.bruijn} combinator the following equivalence is obtained:
 
-``` bruijn
-  (y g)
-⤳ [[1 (0 0)] [1 (0 0)]] g
-⤳ [g (0 0)] [g (0 0)]
-⤳ g ([g (0 0)] [g (0 0)])
-≡ g (y g)
-```
+      (y g)
+    ⤳ [[1 (0 0)] [1 (0 0)]] g
+    ⤳ [g (0 0)] [g (0 0)]
+    ⤳ g ([g (0 0)] [g (0 0)])
+    ≡ g (y g)
 
 With this equivalence, `g`{.bruijn} is able to call itself since its
 outer argument is the initial function again.
