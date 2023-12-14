@@ -1,7 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # Lists in Church/Boehm-Berarducci encoding using pairs
 # implementations are generally lazy (except when they're broken)
-# TODO: Replace fold/map/etc. with faster LC native logic
 
 :import std/Combinator .
 :import std/Pair P
@@ -84,6 +83,9 @@ eval-r z [[rec]]
 ~!‣ eval-r
 
 :test (~!(inc : (inc : {}(+1)))) ((+3))
+
+# returns the element at unary index in list
+index-unary [[P.fst (0 P.snd 1)]] ⧗ (List a) → Unary → a
 
 # returns the element at index in list
 index z [[[rec]]] ⧗ (List a) → Number → a

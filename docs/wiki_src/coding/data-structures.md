@@ -60,6 +60,10 @@ a-box <>'a'
 :test (store! a-box 'b') (<>'b')
 ```
 
+Options ([`std/Option`](/std/Option.bruijn.html)) use the same data
+structure and have additional definitions to resemble Haskell's
+`Maybe`{.haskell}.
+
 ## Pairs [`std/Pair`](/std/Pair.bruijn.html)
 
 Pairs (tuples) can store any two terms. Pairs can be constructed using

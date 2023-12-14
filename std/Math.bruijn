@@ -1,4 +1,5 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
+# experimental functions, sometimes list-based
 
 :input std/Number
 

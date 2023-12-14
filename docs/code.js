@@ -10,7 +10,7 @@ const term = (t) =>
     .replaceAll(/(\))(?!\<)/g, "<span class='right-app'>)</span>")
     .replaceAll("[", "<span class='left-abs'>[</span>")
     .replaceAll("]", "<span class='right-abs'>]</span>")
-    .replaceAll(/(?<![+-\d])([0-9])/g, "<span class='index'>$1</span>");
+    .replaceAll(/(?<!\([+-]\d*)([0-9])/g, "<span class='index'>$1</span>");
 
 const highlightTerm = (elem) => {
   elem.innerHTML = term(elem.innerHTML);

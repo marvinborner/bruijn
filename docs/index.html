@@ -1,134 +1,188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-        <meta name="description" content="Functional programming language based on pure bruijn-indexed lambda calculus." />
-		<link rel="stylesheet" href="style.css" type="text/css" media="all">
-		<title>bruijn programming language</title>
-	</head>
-	<body>
-		<div class="header">
-			<img src="res/logo.png" />
-			<h1>bruijn</h1>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Functional programming language based on pure De Bruijn indexed lambda calculus."
+    />
+    <link rel="stylesheet" href="style.css" type="text/css" media="all" />
+    <title>bruijn programming language</title>
+  </head>
+  <body>
+    <div class="header">
+      <img src="res/logo.png" />
+      <h1>bruijn</h1>
+    </div>
 
-		<div class="example">
-			<pre class="code">
-<span class="def">pow</span> <span class="term">[<span class="symbol">…!!…</span> (<span class="symbol">iterate</span> (<span class="symbol">…⋅…</span> 0) <span class="ternary">(+1)</span>)]</span>
+    <div class="example">
+      <div class="left">
+        <pre class="code">
+<span class="def">pow</span> <span class="term">[<span class="symbol">index</span> (<span class="symbol">iterate</span> (<span class="symbol">mul</span> 0) <span class="ternary">(+1)</span>)]</span>
 
 <span class="def">…**…</span> <span class="symbol">pow</span>
 
 <span class="com">:test</span> <span class="test">(<span class="term"><span class="ternary">(+2)</span> <span class="mixfix">**</span> <span class="ternary">(+3)</span> <span class="mixfix">=?</span> <span class="ternary">(+8)</span></span>)</span> <span class="test">(<span class="symbol">true</span>)</span></pre>
-			
-			<p>
-				Functional language based on pure bruijn-indexed lambda calculus.
-			</p>
-		</div>
+      </div>
 
-		<div class="bar small">
-			<b>Hint</b>: Click on anything you don't understand.
-		</div>
+      <div class="right">
+        <p>
+          Functional programming language based on pure De Bruijn indexed lambda
+          calculus.
+        </p>
+      </div>
+    </div>
 
-		<div class="example">
-			<p>
-				Lambdas all the way down.<br>
-				No primitive functions.
-			</p>
-			<pre class="code">
+    <div class="bar small">
+      <b>Hint</b>: Click on anything you don't understand.
+    </div>
+
+    <div class="example">
+      <div class="left">
+        <p>
+          Lambdas all the way down.<br />
+          No primitive functions.
+        </p>
+      </div>
+      <div class="right">
+        <pre class="code">
 <span class="repl">></span> <span class="ternary">(+5)</span>
 <span class="term">[[[[2 (2 (1 3))]]]]</span>
 <span class="repl">></span> <span class="char">'a'</span>
 <span class="term">[[[1 (0 (0 (0 (0 (1 (1 (0 2)))))))]]]</span>
 <span class="repl">></span> <span class="symbol">add</span>
 <span class="term">[[(([([[1 0 [[0]]]] ((((0 [[(((0...</span></pre>
-		</div>
+      </div>
 
-		<div class="example">
-			<pre class="code">
+      <div class="left">
+        <pre class="code">
 <span class="repl">></span> <span class="com">:time</span> <span class="symbol">factorial</span> <span class="ternary">(+30)</span>
 <span class="time">0.15 seconds</span></pre>
-			<p>
-				Efficient call-by-need reduction using abstract machines.
-			</p>
-		</div>
+      </div>
+      <div class="right">
+        <p>Efficient call-by-need reduction using abstract machines.</p>
+      </div>
 
-		<div class="example">
-			<p>
-				Substantial standard library.<br>
-				<a href="std/">Source</a>
-			</p>
-			<pre class="code">
+      <div class="left">
+        <p>
+          Substantial standard library.<br />
+          <a href="std/">Source</a>
+        </p>
+      </div>
+      <div class="right">
+        <pre class="code">
 <span class="repl">></span> <span class="mixfix">∏</span> <span class="ternary">(+1)</span> <span class="mixfix">→</span> <span class="ternary">(+3)</span> <span class="mixfix">|</span> <span class="symbol">++‣</span>
 <span class="repl">></span> <span class="symbol">number!</span> <span class="mixfix"><$></span> <span class="left-app">(</span><span class="symbol">lines</span> <span class="string">"42\n25"</span><span class="right-app">)</span>
 <span class="repl">></span> <span class="term"><span class="symbol">sum</span> (<span class="symbol">take</span> <span class="ternary">(+3)</span> (<span class="symbol">repeat</span> <span class="ternary">(+4)</span>))</span>
 <span class="repl">></span> <span class="binary">(+10b)</span> <span class="mixfix">⋀!</span> <span class="binary">(+12b)</span></pre>
-		</div>
+      </div>
 
-		<div class="example">
-			<pre class="code">
+      <div class="left">
+        <pre class="code">
 $ echo "main [0]" > echo.bruijn
 $ bruijn -b echo.bruijn > echo
 $ wc -c echo
 2 echo
 $ echo "hello world!" | bruijn -e echo
-hello world!</pre>
-			<p>
-				Compilation to Tromp's binary lambda calculus.<br>
-				Support for byte and ASCII encoding.
-			</p>
-		</div>
+hello world!</pre
+        >
+      </div>
+      <div class="right">
+        <p>
+          Compilation to Tromp's binary lambda calculus.<br />
+          Support for byte and ASCII encoding.
+        </p>
+      </div>
+    </div>
 
-		<div class="bar big">
-            Learn more: <a href="wiki/">Wiki</a>, <a href="std/">Std</a>
-		</div>
+    <div class="bar big">
+      Learn more: <a href="wiki/">Wiki</a>, <a href="std/">Std</a>
+    </div>
 
-		<div class="instructions">
-			<h1>Installation</h1>
-			<pre class="code">
+    <div class="instructions">
+      <h1>Installation</h1>
+      <pre class="code">
 $ git clone https://github.com/marvinborner/bruijn.git && cd bruijn
 $ <span class="stack">stack</span> run # for playing around
 $ <span class="stack">stack</span> install
-$ bruijn</pre>	
-		</div>
+$ bruijn</pre>
+    </div>
 
-		<div class="instructions">
-			<h1>Broogle</h1>
-			<pre class="code">
+    <div class="instructions">
+      <h1>Broogle</h1>
+      <pre class="code">
 $ ./broogle.sh -f add
 <span class="def">add</span> ⧗ Unary → Unary → Unary
 also known as <span class="def">…+…</span>
 in std/Number/Unary.bruijn:35
 # adds two unary numbers
-...</pre>	
-		</div>
+...</pre>
+    </div>
 
-		<div class="instructions">
-			<h1>Why?</h1>
-			<ul>
-				<li>Compiled binary lambda calculus is incredibly expressive and tiny. Read the articles by <a href="https://justine.lol/lambda/#why">Justine</a> and <a href="https://tromp.github.io/cl/cl.html">Tromp</a>.</li>
-				<li>Exploring different encodings of data as function abstractions is fascinating.</li>
-				<li>Pure lambda calculus can be very beautiful. You will understand if you try to have some fun with it.</li>
-				<li>I don't like naming parameters of functions. Using bruijn indices is a universal reference independent of the function and can actually help readability if you're familiar enough.</li>
-				<li>Really, <a href="https://justforfunnoreally.dev/">just for fun</a>.</li>
-			</ul>
-		</div>
+    <div class="instructions">
+      <h1>Why?</h1>
+      <ul>
+        <li>
+          Compiled binary lambda calculus is incredibly expressive and tiny.
+          Read the articles by
+          <a href="https://justine.lol/lambda/#why">Justine</a> and
+          <a href="https://tromp.github.io/cl/cl.html">Tromp</a>.
+        </li>
+        <li>
+          Exploring different encodings of data as function abstractions is
+          fascinating.
+        </li>
+        <li>
+          Pure lambda calculus can be very beautiful. You will understand if you
+          try to have some fun with it.
+        </li>
+        <li>
+          The use of De Bruijn indices creates a clear distinction between
+          references to arguments and references to identifiers/functions.
+        </li>
+        <li>
+          I don't like naming parameters of functions. De Bruijn indices are a
+          universal reference independent of the function and can actually help
+          readability if you're familiar enough.
+        </li>
+        <li>
+          Really, <a href="https://justforfunnoreally.dev/">just for fun</a>.
+        </li>
+      </ul>
+    </div>
 
-		<div class="instructions">
-			<h1>Articles</h1>
-			<ul>
-				<!-- feel free to add your own -->
-				<li><a href="https://text.marvinborner.de/2023-04-06-01.html">The bruijn programming language</a></li>
-				<li><a href="https://text.marvinborner.de/2023-04-07-01.html">Data structures in pure lambda calculus</a></li>
-				<li><a href="https://text.marvinborner.de/2023-06-18-15.html">Variadic fixed-point combinators</a></li>
-				<li><a href="https://text.marvinborner.de/2023-09-03-21.html">Homoiconic self interpretation of lambda calculus</a></li>
-			</ul>
-		</div>
+    <div class="instructions">
+      <h1>Articles</h1>
+      <ul>
+        <!-- feel free to add your own -->
+        <li>
+          <a href="https://text.marvinborner.de/2023-04-06-01.html"
+            >The bruijn programming language</a
+          >
+        </li>
+        <li>
+          <a href="https://text.marvinborner.de/2023-04-07-01.html"
+            >Data structures in pure lambda calculus</a
+          >
+        </li>
+        <li>
+          <a href="https://text.marvinborner.de/2023-06-18-15.html"
+            >Variadic fixed-point combinators</a
+          >
+        </li>
+        <li>
+          <a href="https://text.marvinborner.de/2023-09-03-21.html"
+            >Metaprogramming and self interpretation</a
+          >
+        </li>
+      </ul>
+    </div>
 
-		<div class="bar big">
-			Open-source: <a href="https://github.com/marvinborner/bruijn">GitHub</a>
-		</div>
+    <div class="bar big">
+      Open-source: <a href="https://github.com/marvinborner/bruijn">GitHub</a>
+    </div>
 
-		<script src="script.js" charset="utf-8"></script>
-	</body>
+    <script src="script.js" charset="utf-8"></script>
+  </body>
 </html>

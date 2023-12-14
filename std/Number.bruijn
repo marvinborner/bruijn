@@ -1,6 +1,6 @@
 # MIT License, Copyright (c) 2023 Marvin Borner
 # this is just a reference to the ternary implementation
-# read the readme for the reasoning of using balanced ternary by default
+# read the wiki for the reasoning of using balanced ternary by default
 
 :import std/List .
 

@@ -34,22 +34,31 @@ a {
 
 .example {
 	display: flex;
+	flex-flow: row wrap;
 	align-items: center;
 	justify-content: center;
-	flex-flow: row wrap;
-	column-gap: 5vw;
-	max-width: 80%;
 	margin: 0 auto;
+	width: 50%;
+}
+
+.example > * {
+	display: flex;
+	flex-basis: 50%;
+	justify-content: center;
+}
+
+.example .code {
+	width: fit-content;
 }
 
 .example p {
 	font-size: 1.2em;
-	max-width: 80vw;
+	max-width: 80%;
 	text-align: center;
 }
 
 .instructions {
-	max-width: 80%;
+	max-width: 70%;
 	margin: 0 auto;
 }
 
@@ -59,30 +68,54 @@ a {
 	}
 }
 
-@media(min-width: 768px) {
-	.example {
-		flex-flow: row nowrap;
-		max-width: 80%;
+/* mobile */
+@media(max-width: 768px) {
+	.example > * {
+		flex-basis: 100%;
 	}
 
-	.example p {
-		width: 30vw;
+	.example * {
+		max-width: 90% !important;
+	}
+
+	.example {
 		font-size: 1.3em;
+		width: 100%
 	}
 
 	.instructions {
-		max-width: 80%;
+		max-width: 90%;
+		font-size: 1.1em;
+	}
+
+	.instructions a {
+		line-height: 1.5em;
+	}
+
+	.example :nth-child(8) { order: 7; }
+	.example :nth-child(7) { order: 8; }
+	.example :nth-child(6) { order: 6; }
+	.example :nth-child(5) { order: 5; }
+	.example :nth-child(4) { order: 3; }
+	.example :nth-child(3) { order: 4; }
+	.example :nth-child(2) { order: 2; }
+	.example :nth-child(1) { order: 1; }
+}
+
+/* small desktop / tablet */
+@media(max-width: 1700px) {
+	.example {
+		width: 80%;
+	}
+
+	.example .code {
+		font-size: 1em;
 	}
 }
 
-@media(min-width: 1800px) {
+@media(max-width: 1000px) {
 	.example {
-		flex-flow: row nowrap;
-		max-width: 45%;
-	}
-
-	.instructions {
-		max-width: 35%;
+		width: 100%;
 	}
 }
 
@@ -124,10 +157,7 @@ a {
 	padding: 15px;
 	font-size: 1.2em;
 	border-radius: 10px;
-}
-
-.instructions .code {
-	overflow-x: scroll;
+	overflow: scroll;
 }
 
 .code .repl {

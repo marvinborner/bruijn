@@ -1,7 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# This file defines the most basic mathematical operations
+# ternary implementation of T.Æ. Mogensen and Douglas W. Jones (see refs in README)
 # → refer to std/Math for more advanced functions
-# Heavily inspired by the works of T.Æ. Mogensen and Douglas W. Jones (see refs in README)
 
 :import std/Box B
 :import std/Combinator .

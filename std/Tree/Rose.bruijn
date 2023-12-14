@@ -34,7 +34,7 @@ empty? [L.empty? ~0] ⧗ (RoseTree a) → Boolean
 
 ∅?‣ empty?
 
-:test (∅?({ 'a' : (({:}'b') : L.empty) })) (false)
+:test (∅?({ 'a' : ({:}'b' : L.empty) })) (false)
 :test (∅?({:}'a')) (true)
 
 # applies a function to leaf and the leafs of all branches
@@ -43,7 +43,7 @@ map z [[[rec]]] ⧗ (a → b) → (RoseTree a) → (RoseTree b)
 
 …<$>… map
 
-:test (map ^‣ ({ "woo" : ({:}"oof" : (({ "aah" : (({:}"huh" : L.empty)) }) : L.empty)) })) ({ 'w' : ({:}'o' : (({ 'a' : ({:}'h' : L.empty) }) : L.empty)) })
+:test (map ^‣ ({ "woo" : ({:}"oof" : (({ "aah" : ({:}"huh" : L.empty) }) : L.empty)) })) ({ 'w' : ({:}'o' : (({ 'a' : ({:}'h' : L.empty) }) : L.empty)) })
 
 # maps a function returning list of trees and concatenates
 concat-map L.concat ∘∘ map ⧗ ((RoseTree a) → (List (RoseTree b))) → (List (RoseTree a)) → (List (RoseTree b))

@@ -41,8 +41,7 @@ chain is not actually overwritten by *another* mixfix chain.
 ``` bruijn
 :test ((+8) + (-4) ⋅ (-2)) ((-8))
 
-# (don't do this)
-…+…⋅… [[[(+16)]]]
+…+…⋅… [[[2 + (1 ⋅ 0)]]]
 
 :test ((+8) + (-4) ⋅ (-2)) ((+16))
 ```
