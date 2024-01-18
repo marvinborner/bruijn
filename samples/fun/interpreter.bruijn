@@ -3,9 +3,8 @@
 # note that Tromp's IO uses an additional abstraction at the beginning ("00" ++ ...)
 
 :import std/Combinator .
-:import std/Number .
+:import std/Number/Binary .
 :import std/List .
-:import std/Char C
 
 uni [0 0] int [0 Ω] ⧗ (List Bit) → Term
 	int [[[0 go (2 2) 1]]]
@@ -23,7 +22,7 @@ uni [0 0] int [0 Ω] ⧗ (List Bit) → Term
 					case-11 [3 [3 var] 4]
 						var [1 (0 3)]
 
-str→blc map (=?‣ ∘ C.number!)
+str→blc map (c ∘ lsb)
 
 :test (str→blc "0010") ([[1]] : ([[1]] : ([[0]] : {}[[1]])))
 

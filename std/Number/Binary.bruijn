@@ -78,19 +78,19 @@ zero? [0 true [false] i] ⧗ Binary → Boolean
 :test (=?(+1b)) (false)
 
 # extracts least significant bit from a binary number
-lst [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
+lsb [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
 
-:test (lst (+0b)) (b⁰)
-:test (lst (+1b)) (b¹)
-:test (lst (+42b)) (b⁰)
+:test (lsb (+0b)) (b⁰)
+:test (lsb (+1b)) (b¹)
+:test (lsb (+42b)) (b⁰)
 
 # extracts most significant bit from a binary number
 # not really useful for binary numbers, but part of interface
-mst [=?0 b⁰ b¹] ⧗ Binary → Bit
+msb [=?0 b⁰ b¹] ⧗ Binary → Bit
 
-:test (mst (+0b)) (b⁰)
-:test (mst (+1b)) (b¹)
-:test (mst (+42b)) (b¹)
+:test (msb (+0b)) (b⁰)
+:test (msb (+1b)) (b¹)
+:test (msb (+42b)) (b¹)
 
 # extracts nth bit from a binary number
 nth …!!… ∘ list! ⧗ Binary → Number → Bit
@@ -277,7 +277,7 @@ div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 :test (/²(+5b) =? (+2b)) (true)
 
 # returns true if the number is even (remainder mod 2 == 0)
-even? ¬‣ ∘ lst ⧗ Binary → Boolean
+even? ¬‣ ∘ lsb ⧗ Binary → Boolean
 
 =²?‣ even?
 
@@ -287,7 +287,7 @@ even? ¬‣ ∘ lst ⧗ Binary → Boolean
 :test (even? (+42b)) (true)
 
 # returns true if the number is odd (remainder mod 2 == 1)
-odd? lst ⧗ Binary → Boolean
+odd? lsb ⧗ Binary → Boolean
 
 ≠²?‣ odd?
 
