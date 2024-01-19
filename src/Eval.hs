@@ -18,13 +18,13 @@ import qualified Data.Map                      as M
 import           Data.Maybe
 import           Data.Time.Clock
 import           Helper
+import           Optimizer
 import           Parser
 import           Paths_bruijn
 import           Reducer
 import           System.Clock
 import           System.Console.Haskeline
 import           System.Directory
-import           System.Environment
 import           System.FilePath.Posix          ( takeBaseName )
 import           System.Mem
 import           Text.Megaparsec         hiding ( State
@@ -53,9 +53,9 @@ split a@(_ : _) b@(c : _)
   where rest = split a $ tail b
 
 -- TODO: Force naming convention for namespaces/files
-loadFile :: String -> EvalConf -> EnvCache -> IO EnvState
-loadFile path conf cache = do
-  f <- try $ readFile path :: IO (Either IOError String)
+loadFile :: EvalConf -> EnvCache -> IO EnvState
+loadFile conf cache = do
+  f <- try $ readFile (_path conf) :: IO (Either IOError String)
   case f of
     Left exception ->
       print
@@ -67,7 +67,7 @@ loadFile path conf cache = do
       (filter (not . null) $ split "\n\n" f')
       (EnvState
         (Environment M.empty)
-        (conf { _isRepl = False, _evalPaths = path : _evalPaths conf })
+        (conf { _isRepl = False, _evalPaths = _path conf : _evalPaths conf })
         cache
       )
 
@@ -148,7 +148,7 @@ evalQuote f sub = evalExp f sub >>= \case
 evalUnquote :: Expression -> Environment -> EvalState (Failable Expression)
 evalUnquote f sub = evalExp f sub >>= \case
   Left  e  -> pure $ Left e
-  Right f' -> pure $ Right $ Unquote $ unsafeReduce f'
+  Right f' -> pure $ Right $ Unquote $ unsafeReduce f' -- TODO: REMOVE UNSAFE
 
 evalExp :: Expression -> Environment -> EvalState (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx
@@ -204,8 +204,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
           in  pure $ s { _env = Environment $ M.union env' envDefs }
         else do
           EnvState (Environment env') _ cache' <- loadFile
-            full
-            (conf { _nicePath = path })
+            (conf { _nicePath = path, _path = full })
             cache -- TODO: Fix wrong `within` in import error
           let cache'' = cache
                 { _imported = M.insert path (Environment env')
@@ -252,8 +251,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
             pure $ s { _env = Environment $ M.union env'' envDefs }
         else do
           EnvState (Environment env') _ cache' <- loadFile
-            full
-            (conf { _nicePath = path })
+            (conf { _nicePath = path, _path = full })
             cache -- TODO: Fix wrong `within` in import error
           let
             cache'' = cache
@@ -298,7 +296,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
       Left  err -> print err
       Right e'  -> do
         print $ length $ toBinary e'
-        red <- reduce e'
+        red <- optimizedReduce conf e'
         print $ length $ toBinary red
     pure s
   Blc e -> do
@@ -307,7 +305,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
       Left  err -> print err
       Right e'  -> do
         putStrLn $ toBinary e'
-        red <- reduce e'
+        red <- optimizedReduce conf e'
         putStrLn $ toBinary red
     pure s
   Jot str -> do
@@ -319,7 +317,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
         print e
         print e'
         print $ length $ toBinary e'
-        red <- reduce e'
+        red <- optimizedReduce conf e'
         print red
         print $ length $ toBinary red
     pure s
@@ -328,8 +326,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     let (res, _) = evalExp e (Environment M.empty) `runState` env
     end <- case res of
       Left  err -> print err >> getTime Monotonic
-      Right e'  -> do
-        red <- reduce e'
+      Right e'  -> do -- TODO: should timing not include optimization time?
+        red <- optimizedReduce conf e'
         deepseq red (getTime Monotonic)
     let roundSecs x = fromIntegral (round $ x * 1e6 :: Integer) / 1e6 :: Double
     putStr
@@ -340,7 +338,6 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     putStrLn " seconds"
     pure s
 
--- TODO: Reduce redundancy
 showResult :: Expression -> Environment -> IO ()
 showResult reduced env =
   let matching   = matchingFunctions reduced env
@@ -370,7 +367,7 @@ evalInstruction (ContextualInstruction instr inp) s@(EnvState env conf _) rec =
       in  (case res of
             Left  err -> print err >> rec s
             Right e'  -> do
-              red <- reduce e'
+              red <- optimizedReduce conf e'
               showResult red env
               rec s
           )
@@ -402,42 +399,33 @@ eval (block : bs) s@(EnvState _ conf _) =
   blockParser | _isRepl conf = parseReplLine
               | otherwise    = parseBlock 0
 
-dumpFile :: String -> (a -> IO ()) -> (Expression -> a) -> IO ()
-dumpFile path wr conv = do
-  EnvState (Environment env) _ _ <- loadFile path
-                                             (defaultConf path)
-                                             (EnvCache M.empty)
+dumpFile :: EvalConf -> (a -> IO ()) -> (Expression -> a) -> IO ()
+dumpFile conf wr conv = do
+  EnvState (Environment env) _ _ <- loadFile conf (EnvCache M.empty)
   case M.lookup entryFunction env of
-    Nothing -> print
-      $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
+    Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
+                                       (Context "" (_nicePath conf))
     Just EnvDef { _exp = e } -> wr $ conv e
 
-evalFileConf :: String -> EvalConf -> IO ()
-evalFileConf path conf = do
-  EnvState (Environment env) _ _ <- loadFile path conf (EnvCache M.empty)
+evalFileConf :: EvalConf -> IO ()
+evalFileConf conf = do
+  EnvState (Environment env) _ _ <- loadFile conf (EnvCache M.empty)
   arg                            <- encodeStdin
   case M.lookup entryFunction env of
-    Nothing -> print
-      $ ContextualError (UndefinedIdentifier entryFunction) (Context "" path)
+    Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
+                                       (Context "" (_nicePath conf))
     Just EnvDef { _exp = e } -> do
-      red <- reduce $ Application e arg
+      red <- optimizedReduce conf (Application e arg)
       showResult red (Environment env)
 
-evalFile :: String -> IO ()
-evalFile path = evalFileConf path (defaultConf path)
-
--- TODO: Merge with evalFile
-evalYolo :: String -> IO ()
-evalYolo path = evalFileConf path (defaultConf path) { _evalTests = False }
-
-exec :: String -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
-exec path rd conv = do
-  f   <- rd path
+exec :: EvalConf -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
+exec conf rd conv = do
+  f   <- rd (_path conf)
   arg <- encodeStdin
   case f of
     Left  exception -> print (exception :: IOError)
     Right f'        -> do
-      red <- reduce $ Application e arg
+      red <- optimizedReduce conf (Application e arg)
       showResult red (Environment M.empty)
       where e = fromBinary $ conv f'
 
@@ -469,18 +457,12 @@ completionSettings history = Settings
   , autoAddHistory = True
   }
 
-runRepl :: IO ()
-runRepl = do
+runRepl :: EvalConf -> IO ()
+runRepl conf = do
   config  <- getDataFileName "config"
   history <- getDataFileName "history"
   prefs   <- readPrefs config
-  let -- TODO: Use -y in repl for YOLO lifestyle
-      conf = EvalConf { _isRepl    = True
-                      , _evalTests = True
-                      , _nicePath  = "<repl>"
-                      , _evalPaths = []
-                      }
-      looper = runInputTWithPrefs
+  let looper = runInputTWithPrefs
         prefs
         (completionSettings history)
         (withInterrupt $ repl $ EnvState (Environment M.empty)
@@ -491,31 +473,16 @@ runRepl = do
     looper
     (EnvState (Environment M.empty) conf (EnvCache M.empty))
 
-usage :: IO ()
-usage = do
-  putStrLn "Invalid arguments. Use 'bruijn [option] path' instead"
-  putStrLn "-b\tcompile path to binary-BLC"
-  putStrLn "-B\tcompile path to ASCII-BLC"
-  putStrLn "-e\texecute path as binary-BLC"
-  putStrLn "-E\texecute path as ASCII-BLC"
-  putStrLn "-y\tdisable execution of tests - YOLO"
-  putStrLn "-*\tshow this help"
-  putStrLn "<default>\texecute path as text-bruijn"
-
-evalMain :: IO ()
-evalMain = do
-  -- TODO: use actual args parser
-  args <- getArgs
-  case args of
-    []           -> runRepl
-    ["-b", path] -> dumpFile path
-                             (Byte.putStr . Bit.realizeBitStringLazy)
-                             (toBitString . toBinary)
-    ["-B", path] -> dumpFile path putStrLn toBinary
-    ["-e", path] ->
-      exec path (try . Byte.readFile) (fromBitString . Bit.bitStringLazy)
-    ["-E", path] -> exec path (try . readFile) id
-    ["-y", path] -> evalYolo path
-    ['-' : _]    -> usage
-    [path   ]    -> evalFile path
-    _            -> usage
+evalMain :: Args -> IO ()
+evalMain args = do
+  let conf = argsToConf args
+  case _argMode args of
+    ArgEval | _isRepl conf -> runRepl conf
+    ArgEval | otherwise    -> evalFileConf conf
+    ArgDumpBblc            -> dumpFile conf
+                                       (Byte.putStr . Bit.realizeBitStringLazy)
+                                       (toBitString . toBinary)
+    ArgDumpBlc -> dumpFile conf putStrLn toBinary
+    ArgEvalBblc ->
+      exec conf (try . Byte.readFile) (fromBitString . Bit.bitStringLazy)
+    ArgEvalBlc -> exec conf (try . readFile) id

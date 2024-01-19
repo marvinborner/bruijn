@@ -19,27 +19,17 @@ There are two modes of compilation:
 
 ## Compilation overhead
 
-Typical compilation to BLC results in much redundant code, since every
-used function gets substituted and translated separately. In
+By default, bruijn's compilation to BLC results in much redundant code,
+since every used function gets substituted and translated separately. In
 `((+3) + (+4) + (+3))`{.bruijn}, for example, `add`{.bruijn} gets
 compiled to BLC two times, resulting in a redundant overhead of around
 3500 bits.
 
-This is because BLC was never intended for compilation of normal
-programs, but mainly as an academic encoding model. This also means that
-it's quite good for writing very expressive and minimal programs
-(i.e. obfuscated code golfing, see [John Tromp's
-IOCCC](https://ioccc.org/2012/tromp/hint.html)).
+If you want smaller (and more efficient) files, install
+[BLoC](https://github.com/marvinborner/BLoC) and
+[BLoCade](https://github.com/marvinborner/BLoCade). The combination of
+these tools results in the abstraction of shared terms and translation
+to a specified target.
 
-Most programs, however, won't be golfed and can result in rather large
-compiled programs. While there's not really any practical need for
-compilation aside from golfing, you could still use the
-[BLoC](https://github.com/marvinborner/bloc) project to optimize
-redundant terms.
-
-Typical workflow:
-
-``` bash
-$ bruijn -B program.bruijn | bloc --from-blc -i - -o out.bloc
-$ cat input | bruijn -E <(bloc --from-bloc -i out.bloc)
-```
+With the bruijn CLI, BLoCade can be executed directly using the flag
+`-t TARGET`, where `TARGET` is one of the supported targets.

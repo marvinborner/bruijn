@@ -40,8 +40,10 @@ dependencies:
 - haskeline
 - megaparsec
 - mtl
-- time
+- optparse-applicative
+- process
 - random
+- time
 
 library:
   source-dirs: src

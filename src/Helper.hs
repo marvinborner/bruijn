@@ -15,7 +15,9 @@ import qualified Data.ByteString.Lazy          as Byte
 import qualified Data.ByteString.Lazy.Char8    as C
 import           Data.List
 import qualified Data.Map                      as M
-import           Data.Maybe                     ( fromMaybe )
+import           Data.Maybe                     ( fromMaybe
+                                                , isNothing
+                                                )
 import           GHC.Generics                   ( Generic )
 import           Text.Megaparsec
 
@@ -42,7 +44,7 @@ printContext (Context inp path) = p $ lines inp
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
 
-data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String
+data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String | OptimizerError String
 
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> printContext ctx
@@ -69,7 +71,8 @@ instance Show Error where
       <> show red1
       <> " = "
       <> show red2
-  show (ImportError path) = errPrefix <> "invalid import " <> show path
+  show (ImportError    path) = errPrefix <> "invalid import " <> show path
+  show (OptimizerError msg ) = errPrefix <> "optimizer failed: " <> msg
 
 type Failable = Either Error
 
@@ -165,11 +168,22 @@ data Command = Input String | Watch String | Import String String | Test Express
 data Instruction = Define Identifier Expression [Instruction] | Evaluate Expression | Comment | Commands [Command] | ContextualInstruction Instruction String
   deriving (Show)
 
+data ArgMode = ArgEval | ArgEvalBblc | ArgEvalBlc | ArgDumpBblc | ArgDumpBlc
+
+data Args = Args
+  { _argMode           :: ArgMode
+  , _argNoTests        :: Bool
+  , _argOptimizeTarget :: String
+  , _argPath           :: Maybe String
+  }
+
 data EvalConf = EvalConf
-  { _isRepl    :: Bool
-  , _evalTests :: Bool
-  , _nicePath  :: String
-  , _evalPaths :: [String]
+  { _isRepl         :: Bool
+  , _evalTests      :: Bool
+  , _nicePath       :: String
+  , _path           :: String
+  , _evalPaths      :: [String]
+  , _optimizeTarget :: String
   }
 
 newtype ExpFlags = ExpFlags
@@ -193,12 +207,15 @@ newtype EnvCache = EnvCache
 
 type EvalState = S.State Environment
 
-defaultConf :: String -> EvalConf
-defaultConf path = EvalConf { _isRepl    = False
-                            , _evalTests = True
-                            , _nicePath  = path
-                            , _evalPaths = []
-                            }
+argsToConf :: Args -> EvalConf
+argsToConf args = EvalConf { _isRepl         = isNothing $ _argPath args
+                           , _evalTests      = not $ _argNoTests args
+                           , _path           = path
+                           , _nicePath       = path
+                           , _evalPaths      = []
+                           , _optimizeTarget = _argOptimizeTarget args
+                           }
+  where path = fromMaybe "" (_argPath args)
 
 defaultFlags :: ExpFlags
 defaultFlags = ExpFlags { _isImported = False }

@@ -62,5 +62,3 @@ fromJot = worker . reverse
   worker ('0' : xs) = Application (Application (worker xs) s) k
   worker ('1' : xs) = Application s (Application k (worker xs))
   worker _          = Abstraction (Bruijn 0)
-
-

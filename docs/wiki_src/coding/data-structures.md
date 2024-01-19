@@ -113,7 +113,8 @@ the list.
 
 Strings are just a list of binary encoded bytes. You may use
 [`std/List`](/std/List.bruijn.html) in combination with
-[`std/Number/Binary`](/std/Binary.bruijn.html) to interact with them.
+[`std/Number/Binary`](/std/Number/Binary.bruijn.html) to interact with
+them.
 
 Example:
 
