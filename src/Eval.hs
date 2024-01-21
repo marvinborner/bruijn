@@ -405,7 +405,7 @@ dumpFile conf wr conv = do
   case M.lookup entryFunction env of
     Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
                                        (Context "" (_nicePath conf))
-    Just EnvDef { _exp = e } -> wr $ conv e
+    Just EnvDef { _exp = e } -> optimizeToTarget conf e >>= wr . conv
 
 evalFileConf :: EvalConf -> IO ()
 evalFileConf conf = do

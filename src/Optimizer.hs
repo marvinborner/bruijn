@@ -3,11 +3,14 @@
 -- For now, my BLoC format is used in combination with BLoCade the BLoC-aid.
 
 module Optimizer
-  ( optimizedReduce
+  ( optimizeToTarget
+  , optimizedReduce
   ) where
 
 import           Binary
 import           Control.Exception
+import qualified Data.BitString                as Bit
+import qualified Data.ByteString.Lazy.Char8    as Byte
 import           Helper
 import           Reducer
 import           System.IO
@@ -38,34 +41,45 @@ toTarget e target = do
   case maybeBloc of
     Left  err  -> return $ Left err
     Right bloc -> do
-      blc <- tryIO $ createProcess (proc "blocade" ["-i", "-", "-t", target])
+      res <- tryIO $ createProcess (proc "blocade" ["-i", "-", "-t", target])
         { std_in  = UseHandle bloc
         , std_out = CreatePipe
         }
-      let out = case blc of
+      let out = case res of
             Left  _            -> Nothing
             Right (_, o, _, _) -> o
       case out of
         Just h -> do
+          hSetBinaryMode h True
           content <- hGetContents h
           return $ case content of
             "" -> Left $ OptimizerError "blocade returned empty string"
             _  -> Right content
         Nothing -> return $ Left $ OptimizerError "can't read from blocade"
 
-optimizeToTarget :: Expression -> String -> IO Expression
-optimizeToTarget e target = do
-  maybeBlc <- toTarget e target
-  case maybeBlc of
-    Left err -> do
-      print err
-      reduce e -- Fallback to default reducer
-    Right blc -> reduce $ fromBinary blc
-
 -- TODO: add more targets (including other PL compilation)
-optimizedReduce :: EvalConf -> Expression -> IO Expression
-optimizedReduce conf e = do
+toExpression :: String -> String -> Expression
+toExpression "blc"   = fromBinary
+toExpression "unblc" = fromBinary
+toExpression "bblc" =
+  fromBinary . fromBitString . Bit.bitStringLazy . Byte.pack
+toExpression "unbblc" =
+  fromBinary . fromBitString . Bit.bitStringLazy . Byte.pack
+toExpression _ = invalidProgramState
+
+optimizeToTarget :: EvalConf -> Expression -> IO Expression
+optimizeToTarget conf e = do
   let target = _optimizeTarget conf
   case target of
-    "" -> reduce e -- No target, fallback to default reducer
-    _  -> optimizeToTarget e target
+    "" -> return e -- No target, fallback to unoptimized expression
+    _  -> do
+      maybeRes <- toTarget e target
+      case maybeRes of
+        Left err -> do
+          print err
+          return e -- Fallback to unoptimized expression
+        Right res -> return $ toExpression target res
+
+optimizedReduce :: EvalConf -> Expression -> IO Expression
+optimizedReduce conf e = optimizeToTarget conf e >>= reduce
+
