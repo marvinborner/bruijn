@@ -1,0 +1,16 @@
+# convert bases to other bases
+
+:import std/Number/Unary U
+:import std/Number/Ternary T
+
+# convert unary numbers to ternary
+unary-to-ternary [0 T.inc (+0)] ⧗ Unary → Ternary
+
+:test (unary-to-ternary (+0u)) ((+0))
+:test (unary-to-ternary (+2u)) ((+2))
+
+# convert ternary numbers to unary
+ternary-to-unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
+
+:test (ternary-to-unary (+0)) ((+0u))
+:test (ternary-to-unary (+2)) ((+2u))
