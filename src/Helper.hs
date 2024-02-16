@@ -317,9 +317,21 @@ maybeHumanifyExpression e =
     <|> ternaryToDecimal e
     <|> humanifyList e
     <|> humanifyPair e
+    <|> humanifyMeta e
 
 humanifyExpression :: Expression -> String
 humanifyExpression e = fromMaybe "" (maybeHumanifyExpression e)
+
+humanifyMeta :: Expression -> Maybe String
+humanifyMeta e = ("`" <>) <$> go e
+ where
+  go (Abstraction (Abstraction (Abstraction (Application (Bruijn 0) t)))) =
+    go t >>= (\a -> pure $ "[" <> a <> "]")
+  go (Abstraction (Abstraction (Abstraction (Application (Application (Bruijn 1) a) b))))
+    = go a >>= \l -> go b >>= \r -> pure $ "(" <> l <> " " <> r <> ")"
+  go (Abstraction (Abstraction (Abstraction (Application (Bruijn 2) n)))) =
+    unaryToDecimal' n
+  go _ = Nothing
 
 humanifyList :: Expression -> Maybe String
 humanifyList e = do
@@ -372,9 +384,12 @@ decimalToDeBruijn n | n < 0     = decimalToDeBruijn 0
   gen n' = Abstraction $ gen (n' - 1)
 
 unaryToDecimal :: Expression -> Maybe String
-unaryToDecimal e = do
+unaryToDecimal e = (<> "u") <$> unaryToDecimal' e
+
+unaryToDecimal' :: Expression -> Maybe String
+unaryToDecimal' e = do
   res <- resolve e
-  return $ show (sum res :: Integer) <> "u"
+  return $ show (sum res :: Integer)
  where
   multiplier (Bruijn 1) = Just 1
   multiplier _          = Nothing
