@@ -6,14 +6,14 @@
 
 :import std/Combinator .
 :import std/Number .
-:import std/Pair P
+:import std/Pair .
 
 pi (+3) : (+14159)
 
 # generates a float from a normal balanced ternary number
-float! \(P.…:…) (+0)
+float! \…:… (+0)
 
 # adds two floating numbers
 # TODO: Carry support
 # - needed: mod, div (?) -> ternary carry != decimal carry
-add P.zip-with …+…
+add zip-with …+…

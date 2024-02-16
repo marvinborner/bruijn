@@ -22,7 +22,6 @@ data-files:
     std/Char.bruijn
     std/Combinator.bruijn
     std/Float.bruijn
-    std/gen_all.sh
     std/List.bruijn
     std/Logic.bruijn
     std/Math.bruijn
@@ -34,6 +33,7 @@ data-files:
     std/Result.bruijn
     std/Set.bruijn
     std/String.bruijn
+    std/test_all.sh
     std/AIT/Beavers.bruijn
     std/Number/Binary.bruijn
     std/Number/Conversion.bruijn
