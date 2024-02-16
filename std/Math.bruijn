@@ -1,5 +1,5 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# experimental functions, sometimes list-based
+# experimental functions; sometimes list-based; could work on any base
 
 :input std/Number
 
@@ -122,6 +122,18 @@ fibs head <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1))) ⧗ (List Number)
 fib [fibs !! ++0] ⧗ Number
 
 :test (fib (+5)) ((+8))
+
+# floored integer square root using Babylonian method
+sqrt [z [[[[rec]]]] (+1) 0 0] ⧗ Number → Number
+	rec (1 >? 2) case-rec case-end
+		case-rec [4 (1 / 0) 0 1] /²(2 + 1)
+		case-end 1
+
+:test ((sqrt (+0)) =? (+0)) (true)
+:test ((sqrt (+1)) =? (+1)) (true)
+:test ((sqrt (+2)) =? (+1)) (true)
+:test ((sqrt (+5)) =? (+2)) (true)
+:test ((sqrt (+9)) =? (+3)) (true)
 
 # integer logarithm
 log z [[[[rec]]]] (+1) ⧗ Number → Number → Number

@@ -1,0 +1,30 @@
+# encode lambda terms as numbers
+# from https://hbr.github.io/Lambda-Calculus/computability/text.html
+# see also std/Meta for unary variant
+
+:import std/Combinator .
+:import std/Logic .
+:import std/Math .
+
+# compute pairing function [n,m]
+compress [[--((pow (+2) 1) ⋅ ++((+2) ⋅ 0))]] ⧗ Number → Number → Number
+
+:test ((compress (+0) (+0)) =? (+0)) (true)
+:test ((compress (+1) (+0)) =? (+1)) (true)
+:test ((compress (+0) (+1)) =? (+2)) (true)
+:test ((compress (+2) (+1)) =? (+11)) (true)
+
+idx compress (+0) ⧗ Number → Number
+
+app (compress (+1)) ∘∘ compress ⧗ Number → Number → Number
+
+abs (compress (+2)) ∘∘ compress ⧗ Number → Number → Number
+
+enc_zero abs (+1) (abs (+0) (idx (+0))) ⧗ Number
+
+enc_inc abs (+2) (abs (+1) (abs (+0) enc)) ⧗ Number
+	enc app (idx (+1)) (app (app (idx (+2)) (idx (+1))) (idx (+0)))
+
+wrap [0 (app enc_inc) enc_zero] ⧗ Number → Number
+
+main [[0]]

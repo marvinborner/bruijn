@@ -1,0 +1,24 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# pairing functions for writing two integers as one, bijectionally
+
+:import std/Logic .
+:import std/Pair .
+:import std/Number .
+:import std/Math .
+
+# strong Rosenberg pairing function
+pair-ternary [[[0 ⋅ 0 + 0 + 2 - 1] (max 1 0)]] ⧗ Number → Number → Number
+
+:test ((pair-ternary (+0) (+0)) =? (+0)) (true)
+:test ((pair-ternary (+0) (+1)) =? (+1)) (true)
+:test ((pair-ternary (+1) (+0)) =? (+3)) (true)
+:test ((pair-ternary (+2) (+1)) =? (+7)) (true)
+
+# strong Rosenberg unpairing function
+unpair-ternary [[[go] (1 - (0 ⋅ 0))] (sqrt 0)] ⧗ Number → (Pair Number Number)
+	go (0 <? 1) (0 : 1) (1 : (1 ⋅ 1 + 1 + 1 - 2))
+
+:test (strip <$> (unpair-ternary (+0))) ((+0) : (+0))
+:test (strip <$> (unpair-ternary (+1))) ((+0) : (+1))
+:test (strip <$> (unpair-ternary (+3))) ((+1) : (+0))
+:test (strip <$> (unpair-ternary (+7))) ((+2) : (+1))

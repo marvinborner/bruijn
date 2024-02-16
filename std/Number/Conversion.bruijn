@@ -1,3 +1,4 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
 # convert bases to other bases
 
 :import std/Number/Unary U

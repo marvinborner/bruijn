@@ -74,4 +74,12 @@ Examples:
 :test (map inc `0) (`1)
 :test (map (map inc) `[0]) (`[1])
 :test (map swap `[0 1]) (`[1 0])
+
+# encoding terms as numbers
+:test ((encode `(0 0)) =? (+3)) (true)
+:test ((encode `[0]) =? (+8)) (true)
+
+# decoding numbers to terms
+:test (decode (+3)) (`(0 0))
+:test (decode (+8)) (`[0])
 ```

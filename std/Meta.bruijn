@@ -5,6 +5,8 @@
 :import std/Combinator .
 :import std/Number/Unary .
 :import std/List .
+:import std/Number/Pairing .
+:import std/Number/Conversion .
 :import std/Pair P
 
 # constructor of meta abstraction
@@ -223,3 +225,31 @@ map [[0 case-idx case-app case-abs]] ⧗ (Meta → Meta) → Meta → Meta
 :test (map swap `[0 1]) (`[1 0])
 :test (map inc `0) (`1)
 :test (map (map inc) `[0]) (`[1])
+
+# ternary encoding of meta terms
+# inspired by Helmut Brandl's and Steve Goguen's work
+# uses ternary for lower space complexity
+encode fold idx-cb app-cb abs-cb ⧗ Meta → Number
+	idx-cb (pair-ternary (+0)) ∘ unary-to-ternary
+	app-cb (pair-ternary (+1)) ∘∘ pair-ternary
+	abs-cb pair-ternary (+2)
+
+:test (ternary-to-unary (encode `0)) ((+0u))
+:test (ternary-to-unary (encode `1)) ((+1u))
+:test (ternary-to-unary (encode `(0 0))) ((+3u))
+:test (ternary-to-unary (encode `[1])) ((+7u))
+:test (ternary-to-unary (encode `[0])) ((+8u))
+
+# decode ternary encoding back to meta term
+# TODO: improve performance (maybe with different unpairing function or better sqrt)
+decode z [[unpair-ternary 0 go]] ⧗ Number → Meta
+	go [[(case-idx : (case-app : {}case-abs)) !! 1 0]]
+		case-idx idx ∘ ternary-to-unary
+		case-app [unpair-ternary 0 (ψ app 4)]
+		case-abs abs ∘ 3
+
+:test (decode (+0)) (`0)
+:test (decode (+1)) (`1)
+:test (decode (+3)) (`(0 0))
+:test (decode (+7)) (`[1])
+:test (decode (+8)) (`[0])
