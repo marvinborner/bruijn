@@ -93,14 +93,38 @@ blc1 [[0]] ⧗ LcBit
 # false bit
 blc0 [[1]] ⧗ LcBit
 
+# converts blc index to meta index + rest
+blc→unary y [[[rec]]] (+0u) ⧗ (List LcBit) → (Pair Meta (List LcBit))
+	rec 0 [[1 case-end case-rec]]
+		case-rec 4 ++3 0
+		case-end (idx --3) : 0
+
+:test (blc→unary (blc1 : {}blc0)) (`0 : [[0]])
+:test (blc→unary (blc1 : (blc1 : {}blc0))) (`1 : [[0]])
+:test (blc→unary (blc1 : (blc1 : (blc1 : {}blc0)))) (`2 : [[0]])
+:test (blc→unary (blc1 : (blc1 : (blc1 : (blc0 : {}blc1))))) (`2 : {}blc1)
+
+# converts blc list to meta term
+# TODO: use CSP instead?
+blc→meta head ∘ (y [[rec]]) ⧗ (List LcBit) → Meta
+	rec 0 [[1 case-0 case-1]]
+		case-0 ^0 case-00 case-01 
+			case-00 3 ~0 [[(abs 1) : 0]]
+			case-01 3 ~0 [[5 0 [[(app 3 1) : 0]]]]
+		case-1 blc→unary 2
+
+:test (blc→meta (blc0 : (blc0 : (blc1 : {}blc0)))) (`[0])
+:test (blc→meta (blc0 : (blc0 : (blc0 : (blc0 : (blc0 : (blc1 : (blc1 : (blc1 : (blc0 : (blc1 : (blc1 : {}blc0)))))))))))) (`[[1 1]])
+
 # converts meta term to blc list
-blc fold idx-cb app-cb abs-cb ⧗ Meta → (List LcBit)
+meta→blc fold idx-cb app-cb abs-cb ⧗ Meta → (List LcBit)
 	idx-cb [++0 (cons blc1) {}blc0]
 	app-cb (cons blc0) ∘ (cons blc1) ∘∘ append
 	abs-cb (cons blc0) ∘ (cons blc0)
 
-:test (blc `[0]) (blc0 : (blc0 : (blc1 : {}blc0)))
-:test (blc `[[1 1]]) (blc0 : (blc0 : (blc0 : (blc0 : (blc0 : (blc1 : (blc1 : (blc1 : (blc0 : (blc1 : (blc1 : {}blc0)))))))))))
+:test (meta→blc `[0]) (blc0 : (blc0 : (blc1 : {}blc0)))
+:test (meta→blc `[[1 1]]) (blc0 : (blc0 : (blc0 : (blc0 : (blc0 : (blc1 : (blc1 : (blc1 : (blc0 : (blc1 : (blc1 : {}blc0)))))))))))
+:test (blc→meta (meta→blc `meta→blc)) (`meta→blc)
 
 α-eq? y [[[rec]]] ⧗ Meta → Meta → Bool
 	rec 1 case-idx case-app case-abs
@@ -128,7 +152,7 @@ eval-blc y [[[rec]]] [0 Ω] ⧗ (List LcBit) → a
 			case-10 4 head
 			case-11 [6 [6 [1 ~0]] 2]
 
-eval* eval-blc ∘ blc ⧗ Meta → Meta
+eval* eval-blc ∘ meta→blc ⧗ Meta → a
 
 # self interpreter for meta encoding
 eval y [[[rec]]] [0 Ω] ⧗ Meta → a
@@ -226,7 +250,7 @@ map [[0 case-idx case-app case-abs]] ⧗ (Meta → Meta) → Meta → Meta
 :test (map inc `0) (`1)
 :test (map (map inc) `[0]) (`[1])
 
-# ternary encoding of meta terms
+# encodes meta terms as ternary number
 # inspired by Helmut Brandl's and Steve Goguen's work
 # uses ternary for lower space complexity
 encode fold idx-cb app-cb abs-cb ⧗ Meta → Number
@@ -240,9 +264,9 @@ encode fold idx-cb app-cb abs-cb ⧗ Meta → Number
 :test (ternary-to-unary (encode `[1])) ((+7u))
 :test (ternary-to-unary (encode `[0])) ((+8u))
 
-# decode ternary encoding back to meta term
+# decodes ternary encoding back to meta term
 # TODO: improve performance (maybe with different unpairing function or better sqrt)
-decode z [[unpair-ternary 0 go]] ⧗ Number → Meta
+decode y [[unpair-ternary 0 go]] ⧗ Number → Meta
 	go [[(case-idx : (case-app : {}case-abs)) !! 1 0]]
 		case-idx idx ∘ ternary-to-unary
 		case-app [unpair-ternary 0 (ψ app 4)]

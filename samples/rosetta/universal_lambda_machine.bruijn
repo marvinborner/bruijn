@@ -1,0 +1,19 @@
+:import std/Combinator .
+:import std/Number/Binary .
+:import std/Meta .
+:import std/List .
+
+# converts string to list of bits
+str→blc map (c ∘ lsb)
+
+:test (str→blc "0010") ([[1]] : ([[1]] : ([[0]] : {}[[1]])))
+
+# converts list of bits to string
+blc→str map [0 '0' '1']
+
+:test (blc→str ([[1]] : ([[1]] : ([[0]] : {}[[1]])))) ("0010")
+
+# reduces BLC string to BLC string
+main str→blc → blc→meta → β* → meta→blc → blc→str
+
+:test (main "0010") ("0010")

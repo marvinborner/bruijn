@@ -6,14 +6,13 @@
 > De Bruijn indices written in Haskell.
 
 Wiki, docs, articles, examples and more:
-[website](https://bruijn.marvinborner.de).
+[website](https://bruijn.marvinborner.de). Also: [Rosetta
+Code](https://rosettacode.org/wiki/Category:Bruijn).
 
 ## Features
 
 - **De Bruijn indices** eliminate the complexity of α-equivalence and
   α-conversion
-- Unique **bracket-style representation** for lambda abstractions
-  enables improved human-readability and faster syntactic perception
 - **Call-by-need** reduction with great time/memory complexity by using
   the RKNL abstract machine (similar to
   [calm](https://github.com/marvinborner/calm/))
@@ -23,7 +22,6 @@ Wiki, docs, articles, examples and more:
   itself
 - Highly space-efficient compilation to **binary lambda calculus (BLC)**
   additionally to normal interpretation and REPL
-- Strongly **opinionated parser** with strict syntax rules
 - **Recursion** can be implemented using combinators such as Y, Z or ω
 - Substantial **standard library** featuring many useful functions (see
   `std/`)

@@ -13,6 +13,7 @@ import           Data.Array
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString.Lazy          as Byte
 import qualified Data.ByteString.Lazy.Char8    as C
+import           Data.Char
 import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe                     ( fromMaybe
@@ -313,8 +314,10 @@ matchingFunctions e (Environment env) =
 maybeHumanifyExpression :: Expression -> Maybe String
 maybeHumanifyExpression e =
   unaryToDecimal e
+    <|> binaryToChar e
     <|> binaryToDecimal e
     <|> ternaryToDecimal e
+    <|> humanifyString e
     <|> humanifyList e
     <|> humanifyPair e
     <|> humanifyMeta e
@@ -330,7 +333,7 @@ humanifyMeta e = ("`" <>) <$> go e
   go (Abstraction (Abstraction (Abstraction (Application (Application (Bruijn 1) a) b))))
     = go a >>= \l -> go b >>= \r -> pure $ "(" <> l <> " " <> r <> ")"
   go (Abstraction (Abstraction (Abstraction (Application (Bruijn 2) n)))) =
-    unaryToDecimal' n
+    fmap show (unaryToDecimal' n)
   go _ = Nothing
 
 humanifyList :: Expression -> Maybe String
@@ -339,6 +342,12 @@ humanifyList e = do
   let conv x = fromMaybe (show x) (maybeHumanifyExpression x)
       m = map conv es
   pure $ "{" <> intercalate ", " m <> "}"
+
+humanifyString :: Expression -> Maybe String
+humanifyString e = do
+  es  <- unlistify e
+  str <- mapM binaryToChar' es
+  pure $ show str
 
 humanifyPair :: Expression -> Maybe String
 humanifyPair e = do
@@ -384,12 +393,12 @@ decimalToDeBruijn n | n < 0     = decimalToDeBruijn 0
   gen n' = Abstraction $ gen (n' - 1)
 
 unaryToDecimal :: Expression -> Maybe String
-unaryToDecimal e = (<> "u") <$> unaryToDecimal' e
+unaryToDecimal e = (<> "u") . show <$> unaryToDecimal' e
 
-unaryToDecimal' :: Expression -> Maybe String
+unaryToDecimal' :: Expression -> Maybe Integer
 unaryToDecimal' e = do
   res <- resolve e
-  return $ show (sum res :: Integer)
+  return (sum res :: Integer)
  where
   multiplier (Bruijn 1) = Just 1
   multiplier _          = Nothing
@@ -403,9 +412,20 @@ unaryToDecimal' e = do
   resolve _                             = Nothing
 
 binaryToDecimal :: Expression -> Maybe String
-binaryToDecimal e = do
+binaryToDecimal e = (<> "b") . show <$> binaryToDecimal' e
+
+binaryToChar :: Expression -> Maybe String
+binaryToChar e = show <$> binaryToChar' e
+
+binaryToChar' :: Expression -> Maybe Char
+binaryToChar' e = do
+  n <- binaryToDecimal' e
+  if n < 255 then Just $ chr $ fromIntegral n else Nothing
+
+binaryToDecimal' :: Expression -> Maybe Integer
+binaryToDecimal' e = do
   res <- resolve e
-  return $ show (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer) <> "b"
+  return (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer)
  where
   multiplier (Bruijn 0) = Just 0
   multiplier (Bruijn 1) = Just 1

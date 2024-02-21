@@ -126,6 +126,8 @@ o [[0 (1 0)]] ⧗ ((a → b) → a) → (a → b) → b
 # queer bird combinator: reverse function composition
 q [[[1 (2 0)]]] ⧗ (a → b) → (b → c) → a → c
 
+…→… q
+
 # quixotic bird combinator
 q' [[[2 (0 1)]]] ⧗ (b → c) → a → (a → b) → c
 
