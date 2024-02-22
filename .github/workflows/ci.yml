@@ -14,5 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: freckle/stack-action@v5
-      - name: Run tests
+      - name: Install hyperfine
+        run: sudo apt-get install hyperfine
+      - name: Install bruijn
+        run: stack install
+      - name: Run tests and measure time
         run: cd std/ && ./test_all.sh

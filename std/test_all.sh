@@ -13,4 +13,8 @@ done
 echo >>All.bruijn
 echo "main [[0]]" >>All.bruijn
 
-stack run -- All.bruijn | grep "ERROR" && exit 1 || exit 0
+if bruijn All.bruijn | grep "ERROR"; then
+	exit 1
+fi
+
+hyperfine "bruijn All.bruijn"
