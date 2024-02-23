@@ -81,16 +81,39 @@ pow* z [[[rec]]] ⧗ Number → Number → Number
 primes nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2)) ⧗ (List Number)
 
 # factorial function
-# TODO: faster fac?
 fac [∏ (+1) → 0 | i] ⧗ Number → Number
 
 :test ((fac (+3)) =? (+6)) (true)
 
-# hyper factorial function
-fac! [∏ (+1) → 0 | [0 ** 0]] ⧗ Number → Number
+# super factorial function
+superfac [∏ (+1) → 0 | fac] ⧗ Number → Number
 
-:test ((fac! (+2)) =? (+4)) (true)
-:test ((fac! (+3)) =? (+108)) (true)
+:test ((superfac (+4)) =? (+288)) ([[1]])
+
+# hyper factorial function
+hyperfac [∏ (+1) → 0 | [0 ** 0]] ⧗ Number → Number
+
+:test ((hyperfac (+2)) =? (+4)) (true)
+:test ((hyperfac (+3)) =? (+108)) (true)
+:test ((hyperfac (+4)) =? (+27648)) ([[1]])
+
+# alternate factorial function
+altfac y [[=?0 0 ((fac 0) - (1 --0))]]
+
+:test ((altfac (+3)) =? (+5)) ([[1]])
+
+# exponential factorial function
+expfac y [[(0 =? (+1)) 0 (0 ** (1 --0))]]
+
+:test ((expfac (+4)) =? (+262144)) ([[1]])
+
+# inverse factorial function
+invfac y [[[compare-case 1 (2 ++1 0) (-1) 0 (∏ (+0) → --1 | ++‣)]]] (+0)
+
+:test ((invfac (+1)) =? (+0)) ([[1]])
+:test ((invfac (+2)) =? (+2)) ([[1]])
+:test ((invfac (+120)) =? (+5)) ([[1]])
+:test ((invfac (+119)) =? (-1)) ([[1]])
 
 # calculates a powertower
 # also: [[foldr pow (+1) (replicate 0 1)]]
