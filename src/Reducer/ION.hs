@@ -3,7 +3,8 @@
 -- TODO: clean everything up after tests are working
 --   iter -> fold/etc, application infix vm abstraction,
 --   monadic VM, map -> array?
--- (fairly literate translation from C code)
+-- fairly literate translation from C code; TODO: use more functional style
+{-# LANGUAGE NamedFieldPuns #-}
 module Reducer.ION
   ( reduce
   ) where
@@ -15,9 +16,7 @@ import           Data.Char                      ( chr
 import           Data.List                      ( intercalate )
 import qualified Data.Map                      as M
 import           Data.Map                       ( Map )
-import           Debug.Trace
 import           Helper
-import           System.IO
 
 ncomb :: Int
 ncomb = 128
@@ -32,28 +31,6 @@ data VM = VM
   , mem  :: Map Int Int
   }
   deriving Show
-
-dumpMem :: VM -> String
-dumpMem VM { mem } =
-  "--- mem ---\n"
-    ++ intercalate
-         "\n"
-         (   (\(a, b) -> show a ++ ": " ++ show b)
-         <$> filter (\(a, b) -> a <= 255 && b /= 0) (M.toList mem)
-         )
-    ++ "\n--- /mem ---"
-
-dumpStack :: VM -> String
-dumpStack VM { mem, sp } =
-  "--- stack ---\n"
-    ++ intercalate
-         "\n"
-         (   (\(a, b) ->
-               show (a - sp) ++ ": " ++ show b ++ if a == sp then " <-" else ""
-             )
-         <$> filter (\(a, b) -> a > 255 && b /= 0) (M.toList mem)
-         )
-    ++ "\n--- /stack ---"
 
 isComb :: Int -> Bool
 isComb n = n < ncomb
@@ -70,20 +47,11 @@ store k v vm = vm { mem = M.insert k v $ mem vm }
 app :: Int -> Int -> VM -> (Int, VM)
 app x y vm@VM { hp } = (hp, store hp x $ store (hp + 1) y $ vm { hp = hp + 2 })
 
--- push :: Int -> VM -> VM
--- push n vm@VM { sp } = store (sp - 1) n $ vm { sp = sp - 1 }
-
 arg' :: Int -> VM -> Int
 arg' n vm = load (load (sp vm + n) vm + 1) vm
 
 arg :: Int -> VM -> (Int, VM)
 arg n vm = (arg' n vm, vm)
-
--- app' :: (VM -> (Int, VM)) -> (VM -> (Int, VM)) -> VM -> (Int, VM)
--- app' f g vm =
---   let (x, vm1) = f vm
---       (y, vm2) = g vm1
---   in  app x y vm2
 
 apparg :: Int -> Int -> VM -> (Int, VM)
 apparg m n vm = app (arg' m vm) (arg' n vm) vm
@@ -96,47 +64,38 @@ com = wor . ord
 
 lazy :: Int -> (VM -> (Int, VM)) -> (VM -> (Int, VM)) -> VM -> VM
 lazy d f a vm = do
-  let fix i _ | i > d = Nothing
-      fix i vm' =
-        if load (load (sp vm' + i + 1) vm') vm' == load (sp vm' + i) vm'
-          then fix (i + 1) vm'
-          else do
-            let vm1'       = vm' { sp = sp vm' - 2 }
-            let cnvar      = nvar vm1'
-            let (n1, vm2') = app (ord 'V') cnvar vm1' { nvar = cnvar + 1 }
-            let spi2       = load (sp vm2' + i + 2) vm2'
-            let vm3'       = store (sp vm2' + i) spi2 vm2'
-            let (n2, vm4') = app spi2 n1 vm3'
-            let vm5'       = store (sp vm4' + i + 1) n2 vm4'
-            let (n3, vm6') = app (ord 'L') n2 vm5'
-            let vm7'       = store (sp vm6' + i + 2) n3 vm6'
-            let vm8' = store (load (sp vm7' + i + 3) vm7' + 1) n3 vm7'
-            Just $ vm8' { sp = sp vm8' + i }
+  let
+    fix i _ | i > d = Nothing
+    fix i vm' =
+      if load (load (sp vm' + i + 1) vm') vm' == load (sp vm' + i) vm'
+        then fix (i + 1) vm'
+        else do
+          let cnvar = nvar vm'
+          let
+            (n1, vm1') =
+              app (ord 'V') cnvar (vm' { sp = sp vm' - 2 }) { nvar = cnvar + 1 }
+          let spi2       = load (sp vm1' + i + 2) vm1'
+          let (n2, vm2') = app spi2 n1 (store (sp vm1' + i) spi2 vm1')
+          let (n3, vm3') = app (ord 'L') n2 (store (sp vm2' + i + 1) n2 vm2')
+          let vm4'       = store (sp vm3' + i + 2) n3 vm3'
+          let vm5'       = store (load (sp vm4' + i + 3) vm4' + 1) n3 vm4'
+          Just $ vm5' { sp = sp vm5' + i }
   case fix 1 vm of
     Just vm' -> vm'
     Nothing  -> do
       let (f', vm1) = f vm
       let (a', vm2) = a vm1
       let vm3       = vm2 { sp = sp vm + d }
-      let
-        dst = trace ("LAZY: " ++ show f' ++ " " ++ show a')
-          $ load (sp vm + d + 1) vm
+      let dst       = load (sp vm + d + 1) vm
       store (sp vm3) f' (store dst f' (store (dst + 1) a' vm3))
 
--- numberArg :: Int -> VM -> Int
--- numberArg n vm = load (fst (arg n vm) + 1) vm
-
 rules :: Int -> VM -> VM
--- rules ch vm = case chr ch of
-rules ch vm = case trace (show $ chr ch) (chr ch) of
+rules ch vm = case chr ch of
   'M' -> lvm 0 (arg 1) (arg 1)
   'Y' -> lvm 0 (arg 1) (app (ord 'Y') 1)
-  'I' ->
-    if trace ("I: " ++ show (arg' 2 vm) ++ " " ++ show (load (sp vm + 1) vm))
-         $  arg' 2 vm
-         == load (sp vm + 1) vm
-      then lvm 1 (arg 1) (arg 1)
-      else lvm 1 (arg 1) (arg 2)
+  'I' -> if arg' 2 vm == load (sp vm + 1) vm
+    then lvm 1 (arg 1) (arg 1)
+    else lvm 1 (arg 1) (arg 2)
   'F' -> do
     let xv = arg' 2 vm
     if isComb xv
@@ -186,30 +145,20 @@ rules ch vm = case trace (show $ chr ch) (chr ch) of
         lazy 0 (wor a) (wor parentVal) (store (sp vm2) parentVal vm2)
   _ -> error "invalid combinator"
   where lvm n f g = lazy n f g vm
-  -- num n = numberArg n vm
 
 eval :: VM -> VM
 eval vm@VM { sp } | sp == -1 = vm { sp = spTop }
 eval vm@VM { sp } =
-  -- let x1  = trace ("x1: " ++ show (load sp vm)) $ load sp vm
-  let x1 =
-        trace ("x1: " ++ show (load sp vm) ++ ", sp: " ++ show (spTop - sp))
-          $ load sp vm
+  let x1  = load sp vm
       x2  = load x1 vm
       vm1 = store (sp - 1) x2 vm { sp = sp - 1 }
       x3  = load x2 vm1
       vm2 = store (sp - 2) x3 vm1 { sp = sp - 2 }
   in  if isComb x1
-        then trace ("1" ++ dumpStack vm ++ "\n" ++ dumpMem vm)
-                   (eval $ rules x1 vm)
+        then eval $ rules x1 vm
         else if isComb x2
-          then trace ("2" ++ dumpStack vm1 ++ "\n" ++ dumpMem vm1)
-                     (eval $ rules x2 vm1)
-          else if isComb x3
-            then trace ("3" ++ dumpStack vm2 ++ "\n" ++ dumpMem vm2)
-                       (eval $ rules x3 vm2)
-            else trace ("continue") (eval vm2)
-            -- else eval $ store (sp - 1) (load n vm) vm { sp = sp - 1 }
+          then eval $ rules x2 vm1
+          else if isComb x3 then eval $ rules x3 vm2 else eval vm2
 
 run :: Int -> VM -> VM
 run i vm@VM { sp } = eval $ store sp i vm
@@ -236,18 +185,15 @@ dbIndex :: Int -> Int -> VM -> (Int, VM)
 dbIndex x depth vm = do
   let f = load x vm
   let a = load (x + 1) vm
-  case
-      trace (show x ++ "," ++ show depth ++ ":" ++ show f ++ " " ++ show a)
-            (chr f)
-    of
-      'V' -> app f (depth - 1 - a) vm
-      'L' -> do
-        let (idx, vm1) = dbIndex a (depth + 1) vm
-        eta idx vm1
-      _ -> do
-        let (f', vm1) = dbIndex f depth vm
-        let (a', vm2) = dbIndex a depth vm1
-        app f' a' vm2
+  case chr f of
+    'V' -> app f (depth - 1 - a) vm
+    'L' -> do
+      let (idx, vm1) = dbIndex a (depth + 1) vm
+      eta idx vm1
+    _ -> do
+      let (f', vm1) = dbIndex f depth vm
+      let (a', vm2) = dbIndex a depth vm1
+      app f' a' vm2
 
 clapp :: (Int, Int) -> VM -> (Int, VM)
 clapp (f, a) vm = case (chr f, chr a) of
@@ -295,8 +241,8 @@ recursive f a vm = do
     else (0, vm)
 
 combineK :: (Int, Int, Int, Int) -> VM -> (Int, VM)
-combineK huh@(n1, d1, n2, d2) vm = do
-  if trace (dumpMem vm ++ "\n" ++ show huh) $ n1 == 0
+combineK (n1, d1, n2, d2) vm = do
+  if n1 == 0
     then if n2 == 0
       then clapp (d1, d2) vm
       else if load (n2 + 1) vm /= 0
@@ -374,34 +320,28 @@ resolveExpression n vm           = do
   let f = load n vm
   let a = load (n + 1) vm
   case chr f of
-    'V' -> Idx a
-    'L' -> Abs $ resolveExpression a vm
-    _   -> App (resolveExpression f vm) (resolveExpression a vm)
+    'V' -> Bruijn a
+    'L' -> Abstraction $ resolveExpression a vm
+    _   -> Application (resolveExpression f vm) (resolveExpression a vm)
 
-parseExpression :: Expression -> VM -> IO (Int, VM)
-parseExpression (Abs t) vm = do
-  (t', vm1) <- parseExpression t vm
-  pure $ app (ord 'L') t' vm1
-parseExpression (App l r) vm = do
-  (l', vm1) <- parseExpression l vm
-  (r', vm2) <- parseExpression r vm1
-  pure $ app l' r' vm2
-parseExpression (Idx i) vm = do
-  pure $ app (ord 'V') i vm
-
-go :: String -> IO ()
-go s = do
-  let vm   = new
-  let term = parseBLC s
-  (db, vm1) <- parseExpression term vm
-  let (cl, vm2) = toCLK db vm1
-  let (i, vm3) = app (ord 'V') (nvar vm2) vm2 { nvar = nvar vm2 + 1 }
-  let (j, vm4)  = app cl i vm3
-  let (k, vm5)  = app (ord 'L') j vm4
-  putStrLn $ dumpStack vm2
-  let res        = run k vm5
-  let (idx, fin) = dbIndex (load spTop res) 0 res
-  print $ resolveExpression idx fin
+parseExpression :: Expression -> VM -> (Int, VM)
+parseExpression (Abstraction t) vm = do
+  let (t', vm1) = parseExpression t vm
+  app (ord 'L') t' vm1
+parseExpression (Application l r) vm = do
+  let (l', vm1) = parseExpression l vm
+  let (r', vm2) = parseExpression r vm1
+  app l' r' vm2
+parseExpression (Bruijn i) vm = do
+  app (ord 'V') i vm
+parseExpression _ _ = error "invalid expression"
 
 reduce :: Expression -> Expression
-reduce e = e
+reduce e = do
+  let vm              = new
+  let (db, vm1) = parseExpression (Abstraction e) vm
+  let (cl, vm2)       = toCLK db vm1
+  let res             = run cl vm2
+  let (idx, fin)      = dbIndex (load spTop res) 0 res
+  let (Abstraction t) = resolveExpression idx fin
+  t
