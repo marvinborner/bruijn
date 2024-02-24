@@ -279,7 +279,9 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
              Right (Test e1' e2') -> do
                lhs <- reduce conf e1'
                rhs <- reduce conf e2'
-               when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs) >> pure s
+               when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs)
+               when (lhs == rhs && _isVerbose conf) (print $ PassedTest e1 e2)
+               pure s
              _ -> pure s
     | otherwise
     -> pure s

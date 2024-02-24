@@ -45,7 +45,10 @@ printContext (Context inp path) = p $ lines inp
 errPrefix :: String
 errPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
 
-data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String | OptimizerError String
+okPrefix :: String
+okPrefix = "\ESC[102m\ESC[30m OK \ESC[0m "
+
+data Error = SyntaxError String | UndefinedIdentifier Identifier | UnmatchedMixfix [MixfixIdentifierKind] [Mixfix] | InvalidIndex Int | FailedTest Expression Expression Expression Expression | PassedTest Expression Expression | ContextualError Error Context | SuggestSolution Error String | ImportError String | OptimizerError String
 
 instance Show Error where
   show (ContextualError err ctx) = show err <> "\n" <> printContext ctx
@@ -62,6 +65,8 @@ instance Show Error where
       <> "\n\ESC[105m\ESC[30mnear\ESC[0m "
       <> unwords (map show ms)
   show (InvalidIndex err) = errPrefix <> "invalid index " <> show err
+  show (PassedTest exp1 exp2) =
+    okPrefix <> "test passed: " <> show exp1 <> " = " <> show exp2
   show (FailedTest exp1 exp2 red1 red2) =
     errPrefix
       <> "test failed: "
@@ -155,13 +160,20 @@ instance Show Expression where
       . showString " "
       . shows exp2
       . showString "\ESC[33m)\ESC[0m"
+  showsPrec _ (MixfixChain [m]) =
+    showString "\ESC[33m\ESC[0m" . shows m . showString "\ESC[33m\ESC[0m"
   showsPrec _ (MixfixChain ms) =
     showString "\ESC[33m(\ESC[0m"
       . foldr1 (\x y -> x . showString " " . y) (map shows ms)
       . showString "\ESC[33m)\ESC[0m"
-  showsPrec _ (Prefix p e) = shows p . showString " " . shows e
-  showsPrec _ (Quote   e ) = showString "\ESC[36m`\ESC[0m" . shows e
-  showsPrec _ (Unquote e ) = showString "\ESC[36m,\ESC[0m" . shows e
+  showsPrec _ (Prefix p e) =
+    showString "\ESC[33m(\ESC[0m"
+      . shows p
+      . showString " "
+      . shows e
+      . showString "\ESC[33m)\ESC[0m"
+  showsPrec _ (Quote   e) = showString "\ESC[36m`\ESC[0m" . shows e
+  showsPrec _ (Unquote e) = showString "\ESC[36m,\ESC[0m" . shows e
 
 data Command = Input String | Watch String | Import String String | Test Expression Expression | ClearState | Time Expression | Length Expression | Blc Expression | Jot String
   deriving (Show)
@@ -174,6 +186,7 @@ data ArgMode = ArgEval | ArgEvalBblc | ArgEvalBlc | ArgDumpBblc | ArgDumpBlc
 data Args = Args
   { _argMode           :: ArgMode
   , _argNoTests        :: Bool
+  , _argVerbose        :: Bool
   , _argOptimizeTarget :: String
   , _argReducer        :: String
   , _argPath           :: Maybe String
@@ -181,6 +194,7 @@ data Args = Args
 
 data EvalConf = EvalConf
   { _isRepl         :: Bool
+  , _isVerbose      :: Bool
   , _evalTests      :: Bool
   , _nicePath       :: String
   , _path           :: String
@@ -212,6 +226,7 @@ type EvalState = S.State Environment
 
 argsToConf :: Args -> EvalConf
 argsToConf args = EvalConf { _isRepl         = isNothing $ _argPath args
+                           , _isVerbose      = _argVerbose args
                            , _evalTests      = not $ _argNoTests args
                            , _path           = path
                            , _nicePath       = path

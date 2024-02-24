@@ -13,7 +13,7 @@ done
 echo >>All.bruijn
 echo "main [[0]]" >>All.bruijn
 
-if bruijn All.bruijn | grep "ERROR"; then
+if bruijn -v All.bruijn | tee /dev/fd/2 | grep -q "ERROR"; then
 	exit 1
 fi
 

@@ -23,6 +23,7 @@ args =
   Args
     <$> (mode <|> pure ArgEval)
     <*> switch (long "yolo" <> short 'y' <> help "Don't run tests")
+    <*> switch (long "verbose" <> short 'v' <> help "Increase verbosity")
     <*> strOption
           (long "target" <> short 't' <> metavar "TARGET" <> value "" <> help
             "Optimize to target using BLoC and BLoCade"
