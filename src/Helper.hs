@@ -175,6 +175,7 @@ data Args = Args
   { _argMode           :: ArgMode
   , _argNoTests        :: Bool
   , _argOptimizeTarget :: String
+  , _argReducer        :: String
   , _argPath           :: Maybe String
   }
 
@@ -185,6 +186,7 @@ data EvalConf = EvalConf
   , _path           :: String
   , _evalPaths      :: [String]
   , _optimizeTarget :: String
+  , _reducer        :: String
   }
 
 newtype ExpFlags = ExpFlags
@@ -215,6 +217,7 @@ argsToConf args = EvalConf { _isRepl         = isNothing $ _argPath args
                            , _nicePath       = path
                            , _evalPaths      = []
                            , _optimizeTarget = _argOptimizeTarget args
+                           , _reducer        = _argReducer args
                            }
   where path = fromMaybe "" (_argPath args)
 

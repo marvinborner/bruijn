@@ -55,6 +55,8 @@ library
       Optimizer
       Parser
       Reducer
+      Reducer.ION
+      Reducer.RKNL
   other-modules:
       Paths_bruijn
   hs-source-dirs:

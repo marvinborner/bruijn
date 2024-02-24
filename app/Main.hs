@@ -27,6 +27,13 @@ args =
           (long "target" <> short 't' <> metavar "TARGET" <> value "" <> help
             "Optimize to target using BLoC and BLoCade"
           )
+    <*> strOption
+          (  long "reducer"
+          <> short 'r'
+          <> metavar "REDUCER"
+          <> value "RKNL"
+          <> help "Reducer (currently RKNL or ION)"
+          )
     <*> optional (argument str (metavar "PATH" <> help "Path to file"))
 
 main :: IO ()

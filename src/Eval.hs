@@ -277,8 +277,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
                print (ContextualError err $ Context inp $ _nicePath conf)
                  >> pure s
              Right (Test e1' e2') -> do
-               lhs <- reduce e1'
-               rhs <- reduce e2'
+               lhs <- reduce conf e1'
+               rhs <- reduce conf e2'
                when (lhs /= rhs) (print $ FailedTest e1 e2 lhs rhs) >> pure s
              _ -> pure s
     | otherwise

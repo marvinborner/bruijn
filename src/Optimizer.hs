@@ -83,4 +83,4 @@ optimizeToTarget conf e = do
         Right res -> return $ toExpression target res
 
 optimizedReduce :: EvalConf -> Expression -> IO Expression
-optimizedReduce conf e = optimizeToTarget conf e >>= reduce
+optimizedReduce conf e = optimizeToTarget conf e >>= reduce conf
