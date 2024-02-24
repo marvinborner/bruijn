@@ -13,7 +13,6 @@ import           Data.Bits                      ( (.|.) )
 import           Data.Char                      ( chr
                                                 , ord
                                                 )
-import           Data.List                      ( intercalate )
 import qualified Data.Map                      as M
 import           Data.Map                       ( Map )
 import           Helper
@@ -34,6 +33,11 @@ data VM = VM
 
 isComb :: Int -> Bool
 isComb n = n < ncomb
+
+-- default chr panics at high n
+chr' :: Int -> Char
+chr' n | n < 256 = chr n
+chr' _           = '?'
 
 new :: VM
 new = VM spTop ncomb 0 mempty
@@ -90,7 +94,7 @@ lazy d f a vm = do
       store (sp vm3) f' (store dst f' (store (dst + 1) a' vm3))
 
 rules :: Int -> VM -> VM
-rules ch vm = case chr ch of
+rules ch vm = case chr' ch of
   'M' -> lvm 0 (arg 1) (arg 1)
   'Y' -> lvm 0 (arg 1) (app (ord 'Y') 1)
   'I' -> if arg' 2 vm == load (sp vm + 1) vm
@@ -143,7 +147,7 @@ rules ch vm = case chr ch of
         let parentVal = load (load (sp vm1 + 1) vm1 + 1) vm1
         let (a, vm2)  = app (ord 'f') (load (sp vm1) vm1) vm1
         lazy 0 (wor a) (wor parentVal) (store (sp vm2) parentVal vm2)
-  _ -> error "invalid combinator"
+  _ -> error $ "invalid combinator " ++ show ch
   where lvm n f g = lazy n f g vm
 
 eval :: VM -> VM
@@ -167,7 +171,7 @@ hasVar0 :: Int -> Int -> VM -> Bool
 hasVar0 db depth vm = do
   let f = load db vm
   let a = load (db + 1) vm
-  case chr f of
+  case chr' f of
     'V' -> a == depth
     'L' -> hasVar0 a (depth + 1) vm
     _   -> hasVar0 f depth vm || hasVar0 a depth vm
@@ -185,7 +189,7 @@ dbIndex :: Int -> Int -> VM -> (Int, VM)
 dbIndex x depth vm = do
   let f = load x vm
   let a = load (x + 1) vm
-  case chr f of
+  case chr' f of
     'V' -> app f (depth - 1 - a) vm
     'L' -> do
       let (idx, vm1) = dbIndex a (depth + 1) vm
@@ -196,7 +200,7 @@ dbIndex x depth vm = do
       app f' a' vm2
 
 clapp :: (Int, Int) -> VM -> (Int, VM)
-clapp (f, a) vm = case (chr f, chr a) of
+clapp (f, a) vm = case (chr' f, chr' a) of
   ('K', 'I')                      -> vord 'F'
   ('B', 'K')                      -> vord 'D'
   ('C', 'I')                      -> vord 'T'
@@ -283,7 +287,7 @@ convertK :: Int -> VM -> (Int, Int, VM)
 convertK db vm = do
   let f = load db vm
   let a = load (db + 1) vm
-  case chr f of
+  case chr' f of
     'V' -> do
       let iter n 0 vm' = (n, vm')
           iter n i vm' = let (n', vm1) = app n 0 vm' in iter n' (i - 1) vm1
@@ -319,7 +323,7 @@ resolveExpression n _ | isComb n = error "unexpected combinator"
 resolveExpression n vm           = do
   let f = load n vm
   let a = load (n + 1) vm
-  case chr f of
+  case chr' f of
     'V' -> Bruijn a
     'L' -> Abstraction $ resolveExpression a vm
     _   -> Application (resolveExpression f vm) (resolveExpression a vm)
@@ -338,10 +342,11 @@ parseExpression _ _ = error "invalid expression"
 
 reduce :: Expression -> Expression
 reduce e = do
-  let vm              = new
+  let vm         = new
   let (db, vm1) = parseExpression (Abstraction e) vm
-  let (cl, vm2)       = toCLK db vm1
-  let res             = run cl vm2
-  let (idx, fin)      = dbIndex (load spTop res) 0 res
-  let (Abstraction t) = resolveExpression idx fin
-  t
+  let (cl, vm2)  = toCLK db vm1
+  let res        = run cl vm2
+  let (idx, fin) = dbIndex (load spTop res) 0 res
+  case resolveExpression idx fin of
+    Abstraction t -> t
+    t             -> error $ "unexpected result " ++ show t
