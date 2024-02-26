@@ -70,3 +70,12 @@ h2,h3,h4,h5,h6 {
 .terminal h6 > * {
 	font-size: inherit;
 }
+
+pre:has(.language-code-showcase), .language-code-showcase {
+	background-color: transparent;
+	border: 0;
+	margin: 0 auto;
+	width: fit-content;
+	max-width: 100%;
+	white-space: pre;
+}

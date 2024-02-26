@@ -52,6 +52,39 @@ add-two* [`(,0 + (+2u))]
 :test (!(add-two* `(+2u))) ((+4u))
 ```
 
+## Self-interpretation
+
+Using a metacircular self-interpreter, bruijn can reduce the meta
+encoding to its normal form. A 194 bit interpreter in the form of
+bruijn's logo:
+
+``` code-showcase
+01010001                                    00011100
+11010000               ######               11100110
+10000               ############               00001
+01011              #####    #####              00001
+11100             ####        ####             00101
+01110             ####       #####             00011
+00000             ####      ######             10100
+00011             ####    ### ####             00111
+10000             ####   ##   ####             11111
+00001             #### ###    ####             11110
+00010             ######      ####             11110
+10011             #####       ####             10100
+11110             ####        ####             00011
+11000              #####    #####              00011
+11000               ############               01011
+01101110               ######               00011001
+00011010                                    00011010
+```
+
+The code can also be found in the `eval`{.bruijn}/`!‣`{.bruijn} function
+of the meta library:
+
+``` bruijn
+:test (!`"tacocat".reverse) ("tacocat")
+```
+
 ## Meta library [`std/Meta`](/std/Meta.bruijn.html)
 
 The meta library enables simple interaction with the meta encoding.
