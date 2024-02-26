@@ -157,6 +157,8 @@ s [[[2 0 (1 0)]]] ⧗ (a → b → c) → (a → b) → a → c
 # thrush combinator: flipped $
 t [[0 1]] ⧗ a → (a → b) → b
 
+&‣ t
+
 …&… t
 
 # turing combinator

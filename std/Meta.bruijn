@@ -94,24 +94,26 @@ blc1 [[0]] ⧗ LcBit
 blc0 [[1]] ⧗ LcBit
 
 # converts blc index to meta index + rest
-blc→unary y [[[rec]]] (+0u) ⧗ (List LcBit) → (Pair Meta (List LcBit))
+blc→unary+rest y [[[rec]]] (+0u) ⧗ (List LcBit) → (Pair Meta (List LcBit))
 	rec 0 [[1 case-end case-rec]]
 		case-rec 4 ++3 0
 		case-end (idx --3) : 0
 
-:test (blc→unary (blc1 : {}blc0)) (`0 : [[0]])
-:test (blc→unary (blc1 : (blc1 : {}blc0))) (`1 : [[0]])
-:test (blc→unary (blc1 : (blc1 : (blc1 : {}blc0)))) (`2 : [[0]])
-:test (blc→unary (blc1 : (blc1 : (blc1 : (blc0 : {}blc1))))) (`2 : {}blc1)
+:test (blc→unary+rest (blc1 : {}blc0)) (`0 : [[0]])
+:test (blc→unary+rest (blc1 : (blc1 : {}blc0))) (`1 : [[0]])
+:test (blc→unary+rest (blc1 : (blc1 : (blc1 : {}blc0)))) (`2 : [[0]])
+:test (blc→unary+rest (blc1 : (blc1 : (blc1 : (blc0 : {}blc1))))) (`2 : {}blc1)
 
 # converts blc list to meta term
 # TODO: use CSP instead?
-blc→meta head ∘ (y [[rec]]) ⧗ (List LcBit) → Meta
+blc→meta+rest y [[rec]] ⧗ (List LcBit) → (Pair Meta (List LcBit))
 	rec 0 [[1 case-0 case-1]]
 		case-0 ^0 case-00 case-01 
 			case-00 3 ~0 [[(abs 1) : 0]]
 			case-01 3 ~0 [[5 0 [[(app 3 1) : 0]]]]
-		case-1 blc→unary 2
+		case-1 blc→unary+rest 2
+
+blc→meta head ∘ blc→meta+rest ⧗ (List LcBit) → Meta
 
 :test (blc→meta (blc0 : (blc0 : (blc1 : {}blc0)))) (`[0])
 :test (blc→meta (blc0 : (blc0 : (blc0 : (blc0 : (blc0 : (blc1 : (blc1 : (blc1 : (blc0 : (blc1 : (blc1 : {}blc0)))))))))))) (`[[1 1]])
@@ -254,21 +256,21 @@ map [[0 case-idx case-app case-abs]] ⧗ (Meta → Meta) → Meta → Meta
 # inspired by Helmut Brandl's and Steve Goguen's work
 # uses ternary for lower space complexity
 encode fold idx-cb app-cb abs-cb ⧗ Meta → Number
-	idx-cb (pair-ternary (+0)) ∘ unary-to-ternary
+	idx-cb (pair-ternary (+0)) ∘ unary→ternary
 	app-cb (pair-ternary (+1)) ∘∘ pair-ternary
 	abs-cb pair-ternary (+2)
 
-:test (ternary-to-unary (encode `0)) ((+0u))
-:test (ternary-to-unary (encode `1)) ((+1u))
-:test (ternary-to-unary (encode `(0 0))) ((+3u))
-:test (ternary-to-unary (encode `[1])) ((+7u))
-:test (ternary-to-unary (encode `[0])) ((+8u))
+:test (ternary→unary (encode `0)) ((+0u))
+:test (ternary→unary (encode `1)) ((+1u))
+:test (ternary→unary (encode `(0 0))) ((+3u))
+:test (ternary→unary (encode `[1])) ((+7u))
+:test (ternary→unary (encode `[0])) ((+8u))
 
 # decodes ternary encoding back to meta term
 # TODO: improve performance (maybe with different unpairing function or better sqrt)
 decode y [[unpair-ternary 0 go]] ⧗ Number → Meta
 	go [[(case-idx : (case-app : {}case-abs)) !! 1 0]]
-		case-idx idx ∘ ternary-to-unary
+		case-idx idx ∘ ternary→unary
 		case-app [unpair-ternary 0 (ψ app 4)]
 		case-abs abs ∘ 3
 
