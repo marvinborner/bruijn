@@ -13,8 +13,7 @@ packages:
     hackage: bitstring-0.0.0
 snapshots:
 - completed:
-    sha256: a209d3455279ee76eb45f01f73bbb960ceaaa8dfad8891435384689df4dcb653
-    size: 617368
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/3.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/3.yaml
+    sha256: e2c529ccfb21501f98f639e056cbde50470b86256d9849d7a82d414ca23e4276
+    size: 712898
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/22/12.yaml
+  original: lts-22.12
