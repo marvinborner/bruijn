@@ -18,6 +18,8 @@ jobs:
         run: sudo apt-get install hyperfine
       - name: Install bruijn
         run: stack install
+      - name: Run HigherOrder tests and measure time
+        run: cd std/ && ./test_all.sh HigherOrder
       - name: Run RKNL tests and measure time
         run: cd std/ && ./test_all.sh RKNL
       - name: Run ION tests and measure time
