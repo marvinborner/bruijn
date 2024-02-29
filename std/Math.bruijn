@@ -77,9 +77,6 @@ pow* z [[[rec]]] ⧗ Number → Number → Number
 			³‣ [0 ⋅ 0 ⋅ 0]
 		case-end (+1)
 
-# prime number sequence
-primes nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2)) ⧗ (List Number)
-
 # factorial function
 fac [∏ (+1) → 0 | i] ⧗ Number → Number
 
@@ -191,6 +188,19 @@ log* [z [[rec]] --0] ⧗ Number → Number
 # pascal triangle
 # TODO: something is wrong in here
 pascal iterate [zip-with …+… ({}(+0) ++ 0) (0 ; (+0))] ({}(+1))
+
+# characteristic prime sequence by Tromp
+characteristic-primes ki : (ki : (sieve s0)) ⧗ (List Bool)
+	sieve y [[k : ([(2 0) (y' 0)] (ssucc 0))]]
+		y' [[0 0] [1 (0 0)]]
+		ssucc [[[[1 : (0 (3 2))]]]]
+	s0 [[[ki : (0 2)]]]
+
+# prime number sequence
+primes map fst (filter snd (zip (iterate ++‣ (+0)) characteristic-primes)) ⧗ (List Number)
+
+# slower but cooler prime number sequence
+primes* nub ((…≠?… (+1)) ∘∘ gcd) (iterate ++‣ (+2)) ⧗ (List Number)
 
 # π as a list of decimal digits
 # translation of unbounded spigot algorithm by Jeremy Gibbons
