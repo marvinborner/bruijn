@@ -23,14 +23,14 @@ const highlight = (elem) => {
     .replaceAll(
       /^:import std\/(.*) (.*)$/gm,
       (_, p, s) =>
-        `<span class="com">:import</span> <a href='${fixPath(
+        `<span class="com">:import</span> <a href='/std/${fixPath(
           p,
         )}.bruijn.html'>std/${p}</a> ${s}`,
     )
     .replaceAll(
       /^:input std\/(.*)$/gm,
       (_, p) =>
-        `<span class="com">:input</span> <a href='${fixPath(
+        `<span class="com">:input</span> <a href='/std/${fixPath(
           p,
         )}.bruijn.html'>std/${p}</a>`,
     )
