@@ -64,7 +64,7 @@ library
       src
   default-extensions:
       LambdaCase
-  ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
+  ghc-options: -O3 -optc-O3 -fllvm -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       array
     , base >=4.7 && <5
@@ -93,38 +93,7 @@ executable bruijn
       app
   default-extensions:
       LambdaCase
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      array
-    , base >=4.7 && <5
-    , binary
-    , bitstring
-    , bruijn
-    , bytestring
-    , clock
-    , containers
-    , deepseq
-    , directory
-    , filepath
-    , haskeline
-    , megaparsec
-    , mtl
-    , optparse-applicative
-    , process
-    , random
-    , time
-  default-language: Haskell2010
-
-test-suite bruijn-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_bruijn
-  hs-source-dirs:
-      test
-  default-extensions:
-      LambdaCase
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O3 -optc-O3 -fllvm -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       array
     , base >=4.7 && <5

@@ -50,6 +50,7 @@ library:
   ghc-options:
   - -O3
   - -optc-O3
+  - -fllvm
   - -funfolding-use-threshold=16
   - -Wall
   - -Wextra
@@ -63,17 +64,9 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - bruijn
-
-tests:
-  bruijn-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
+    - -O3
+    - -optc-O3
+    - -fllvm
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
