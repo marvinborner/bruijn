@@ -37,6 +37,7 @@ describe("header", "[0] is the identity operation. It returns the first argument
 describe("index", "This number references the nth abstraction, starting counting from the inside. These 'De Bruijn indices' replace the concept of variables in lambda calculus.");
 describe("left-abs", "The opening bracket of a function abstraction. It's basically the equivalent of the λ in lambda calculus.");
 describe("left-app", "The opening bracket of a function application.");
+describe("meta", "This is the quote operator. It converts any given expression to bruijn's meta encoding. The meta encoding can be used for self modification and can be turned back to normal bruijn code.");
 describe("mixfix", "This is a mixfix operator. They can be defined like …*… where the … can then be any other term. You can use them without the … as a notation of function application.");
 describe("repl", "This indicates a REPL input.");
 describe("right-abs", "The closing bracket of a function abstraction.");
@@ -46,5 +47,6 @@ describe("string", "Syntactic sugar for a list of binary encoded chars.")
 describe("symbol", "This substitutes a previously defined term (for example from the standard library).");
 describe("ternary", "Syntactic sugar for a balanced ternary number representation using abstractions as data. Needs a sign and brackets to differentiate it from De Bruijn indices.");
 describe("time", "Incredibly fast for lambda calculus standards.");
+describe("unary", "Syntactic sugar for a unary number representation using abstractions as data. This is commonly also known as a Church numeral. Needs a sign and brackets to differentiate it from De Bruijn indices.");
 
 document.body.addEventListener("click", clearPopups, true)

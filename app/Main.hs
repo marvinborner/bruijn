@@ -32,8 +32,8 @@ args =
           (  long "reducer"
           <> short 'r'
           <> metavar "REDUCER"
-          <> value "RKNL"
-          <> help "Reducer (currently RKNL or ION)"
+          <> value "HigherOrder"
+          <> help "Reducer (currently RKNL, ION, or HigherOrder)"
           )
     <*> optional (argument str (metavar "PATH" <> help "Path to file"))
 

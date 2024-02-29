@@ -7,6 +7,7 @@ import           Binary
 import           Control.Concurrent
 import           Control.DeepSeq                ( deepseq )
 import           Control.Exception
+import           Control.Monad                  ( when )
 import           Control.Monad.State
 import qualified Control.Monad.State.Strict    as StrictState
 import qualified Data.BitString                as Bit
@@ -148,7 +149,7 @@ evalQuote f sub = evalExp f sub >>= \case
 evalUnquote :: Expression -> Environment -> EvalState (Failable Expression)
 evalUnquote f sub = evalExp f sub >>= \case
   Left  e  -> pure $ Left e
-  Right f' -> pure $ Right $ Unquote $ unsafeReduce f' -- TODO: REMOVE UNSAFE
+  Right f' -> pure $ Right $ Unquote $ reduceNoIO f'
 
 evalExp :: Expression -> Environment -> EvalState (Failable Expression)
 evalExp idx@(Bruijn      _  ) = const $ pure $ Right idx

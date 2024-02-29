@@ -147,7 +147,8 @@ rules ch vm = case chr' ch of
         let parentVal = load (load (sp vm1 + 1) vm1 + 1) vm1
         let (a, vm2)  = app (ord 'f') (load (sp vm1) vm1) vm1
         lazy 0 (wor a) (wor parentVal) (store (sp vm2) parentVal vm2)
-  _ -> error $ "invalid combinator " ++ show ch
+  '\0' -> store (sp vm) (arg' 1 vm) vm
+  _    -> error $ "invalid combinator " ++ show ch
   where lvm n f g = lazy n f g vm
 
 eval :: VM -> VM

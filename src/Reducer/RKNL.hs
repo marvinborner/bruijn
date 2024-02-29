@@ -2,7 +2,6 @@
 -- based on the RKNL abstract machine
 module Reducer.RKNL
   ( reduce
-  , unsafeReduce
   ) where
 
 import           Control.Concurrent.MVar
@@ -11,7 +10,6 @@ import           Data.Map.Strict                ( Map )
 import qualified Data.Map.Strict               as Map
 import           Data.Maybe                     ( fromMaybe )
 import           Helper
-import           System.IO.Unsafe               ( unsafePerformIO ) -- TODO: AAH
 
 type Store = Map Int Box
 type Stack = [Redex]
@@ -109,9 +107,3 @@ reduce e = do
   forEachState (loadTerm redex) transition >>= \case
     Cconf _ [] v -> pure $ fromRedex v
     _            -> invalidProgramState
-
--- TODO: AAAAAAAAAAAAAAAAH remove this
--- (probably not thaaat bad)
-{-# NOINLINE unsafeReduce #-}
-unsafeReduce :: Expression -> Expression
-unsafeReduce = unsafePerformIO . reduce

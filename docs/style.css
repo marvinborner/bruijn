@@ -180,7 +180,7 @@ a {
 	color: #ff64bd;
 }
 
-.code .ternary, .code .binary {
+.code .ternary, .code .binary, .code .unary {
 	color: #b1ee13;
 }
 
@@ -198,4 +198,8 @@ a {
 
 .code .index {
 	color: #ff5050;
+}
+
+.code .meta {
+	color: #ff94ff;
 }

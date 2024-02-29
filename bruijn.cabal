@@ -55,6 +55,7 @@ library
       Optimizer
       Parser
       Reducer
+      Reducer.HigherOrder
       Reducer.ION
       Reducer.RKNL
   other-modules:

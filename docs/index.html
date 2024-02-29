@@ -57,11 +57,14 @@
 
       <div class="left">
         <pre class="code">
-<span class="repl">></span> <span class="com">:time</span> <span class="symbol">factorial</span> <span class="ternary">(+30)</span>
-<span class="time">0.15 seconds</span></pre>
+<span class="repl">></span> <span class="com">:time</span> <span class="symbol">factorial</span> <span class="ternary">(+42)</span>
+<span class="time">0.01 seconds</span></pre>
       </div>
       <div class="right">
-        <p>Efficient call-by-need reduction using abstract machines.</p>
+        <p>
+          <a href="wiki/technical/performance/">Efficient</a> reduction using
+          abstract machines and higher-order encodings.
+        </p>
       </div>
 
       <div class="left">
@@ -90,9 +93,28 @@ hello world!</pre
       </div>
       <div class="right">
         <p>
-          Compilation to Tromp's binary lambda calculus.<br />
+          <a href="wiki/coding/compilation/">Compilation</a> to Tromp's binary
+          lambda calculus.<br />
           Support for byte and ASCII encoding.
         </p>
+      </div>
+
+      <div class="left">
+        <p>
+          <a href="wiki/coding/meta-programming/">Meta-programming</a><br />
+          and self-interpretation.
+        </p>
+      </div>
+      <div class="right">
+        <pre class="code">
+<span class="repl">></span> <span class="symbol">length</span> <span class="meta">`</span><span class="symbol">factorial</span>
+<span class="repl">></span> <span class="mixfix">!</span><span class="left-app">(</span><span class="symbol">swap</span> <span class="meta">`</span><span class="left-app">(</span><span class="unary">(+2u)</span> <span class="unary">(+3u)</span><span class="right-app">))</span>
+<span class="repl">></span> <span class="symbol">lhs</span> <span class="left-app">(</span><span class="symbol">blc→meta</span> <span class="string">"010000100000110"</span><span class="right-app">)</span></span>
+</pre>
+        <!-- <span class="repl">></span> <span class="mixfix">∏</span> <span class="ternary">(+1)</span> <span class="mixfix">→</span> <span class="ternary">(+3)</span> <span class="mixfix">|</span> <span class="symbol">++‣</span> -->
+        <!-- <span class="repl">></span> <span class="symbol">number!</span> <span class="mixfix"><$></span> <span class="left-app">(</span><span class="symbol">lines</span> <span class="string">"42\n25"</span><span class="right-app">)</span> -->
+        <!-- <span class="repl">></span> <span class="term"><span class="symbol">sum</span> (<span class="symbol">take</span> <span class="ternary">(+3)</span> (<span class="symbol">repeat</span> <span class="ternary">(+4)</span>))</span> -->
+        <!-- <span class="repl">></span> <span class="binary">(+10b)</span> <span class="mixfix">⋀!</span> <span class="binary">(+12b)</span></pre> -->
       </div>
     </div>
 

@@ -1,24 +1,18 @@
 # Performance
 
-The reduction of lambda calculus is (practically) not very efficient. As
-an extension, bruijn also suffers from bad performance.
+In general, the reduction of practical programs encoded in lambda
+calculus is not very efficient when compared to traditional programming
+languages. We do, however, work a lot on making the performance as
+comparable as possible:
 
-Bruijn's interpreter works by substituting the entire program into one
-huge lambda calculus term that will then get reduced by the
-[reducer](reduction.md). As a result, many equivalent terms get
-evaluated multiple times (although some of this is solved by bruijn's
-call-by-need reduction strategy). We currently work on a solution that
-reduces all equivalent terms as one, which turns out is not actually
-that trivial. Follow the [blog](https://text.marvinborner.de) to keep up
-to date with the development.
-
-Aside from that, bruijn is still much faster than most of the hobby
-programming languages based on pure lambda calculus. This is because of
-the [RKNL reducer](reduction.md) and our choice of default [number/byte
-encodings](../coding/data-structures.md).
-
-``` bruijn
-> :import std/Math .
-> :time fac (+30)
-0.15 seconds
-```
+-   We have different reducers and constantly benchmark and improve them
+    in order to find the most efficient method of reduction. Read more
+    about our [reducer choices](reduction.md).
+-   Bruijn uses efficient data structures by default. For example, for
+    nary numbers we use results of Torben Mogensens investigations (as
+    described in [number/byte encodings](../coding/data-structures.md)).
+-   The lambda calculus optimizers
+    [BLoC](https://github.com/marvinborner/bloc) and
+    [BLoCade](https://github.com/marvinborner/blocade) are directly
+    integrated into bruijn and can be enabled optionally (see
+    [compilation](../coding/compilation.md))
