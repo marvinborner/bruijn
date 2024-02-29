@@ -9,9 +9,9 @@
 # id for church numerals
 # generic base for dec/fib/fac/etc.
 uid [[[extract (2 inc init)]]] ⧗ Unary → Unary
-	extract [0 [0]]
-	inc [[0 (1 3)]]
-	init [0 1]
+	extract &i
+	inc [&(0 2)]
+	init &0
 
 :test (uid (+0u)) ((+0u))
 :test (uid (+1u)) ((+1u))
@@ -36,8 +36,8 @@ inc [[[1 (2 1 0)]]] ⧗ Unary → Unary
 
 # subs 1 from a unary number
 dec [[[extract (2 inc const)]]] ⧗ Unary → Unary
-	extract [0 [0]]
-	inc [[0 (1 3)]]
+	extract &i
+	inc [&(0 2)]
 	const [1]
 
 --‣ dec
@@ -142,7 +142,7 @@ mul …∘… ⧗ Unary → Unary → Unary
 :test ((+2u) ⋅ (+3u)) ((+6u))
 
 # divs two unary numbers
-div [[[[3 [[0 1]] [1] (3 [3 [[0 1]] [3 (0 1)] [0]] 0)]]]] ⧗ Unary → Unary → Unary
+div [[[[3 t [1] (3 [3 t [3 (0 1)] i] 0)]]]] ⧗ Unary → Unary → Unary
 
 …/… div
 
@@ -156,7 +156,7 @@ div* [z rec ++0] ⧗ Unary → Unary → Unary
 	rec [[[[[[=?0 ((+0u) 2 1) (2 (5 0 3 2 1))] (3 - 2)]]]]]
 
 # returns remainder of integer division
-mod [[[[3 [0 [[1]]] (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) [[0]]]]]] ⧗ Unary → Unary → Unary
+mod [[[[3 &k (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) ki]]]] ⧗ Unary → Unary → Unary
 
 …%… mod
 
@@ -164,7 +164,7 @@ mod [[[[3 [0 [[1]]] (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) [[0]]]]]] ⧗ Unary �
 :test ((+3u) % (+5u)) ((+3u))
 
 # slower mod (more obvious impl)
-mod* [[1 [0 [[(0 ⋀? (3 ≤? 1)) case-rec case-end]]] (1 : true) [[1]]]] ⧗ Unary → Unary → Unary
+mod* [[1 &[[(0 ⋀? (2 ≤? 1)) case-rec case-end]] (1 : true) k]] ⧗ Unary → Unary → Unary
 	case-rec (1 - 3) : true
 	case-end 1 : false
 
@@ -173,7 +173,7 @@ mod* [[1 [0 [[(0 ⋀? (3 ≤? 1)) case-rec case-end]]] (1 : true) [[1]]]] ⧗ Un
 pow* [[1 0]] ⧗ Unary → Unary → Unary
 
 # exponentiates two unary numbers
-pow [[0 [[3 (1 0)]] [[1 0]]]] ⧗ Unary → Unary → Unary
+pow [[0 [[3 (1 0)]] pow*]] ⧗ Unary → Unary → Unary
 
 …^… pow
 
@@ -187,11 +187,11 @@ fib [0 [[[2 0 [2 (1 0)]]]] [[1]] [0]] ⧗ Unary → Unary
 :test (fib (+6u)) ((+8u))
 
 # factorial function
-fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] [0]]] ⧗ Unary → Unary
+fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
 
 :test (fac (+3u)) ((+6u))
 
 # hyperfactorial function
-hyperfac [[1 [[(0 0) (1 [[2 1 (1 0)]])]] [1] [0]]] ⧗ Unary → Unary
+hyperfac [[1 [[(0 0) (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
 
 :test (hyperfac (+3u)) ((+108u))

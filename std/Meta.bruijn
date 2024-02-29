@@ -145,7 +145,7 @@ meta→blc fold idx-cb app-cb abs-cb ⧗ Meta → (List LcBit)
 :test (α-eq? `α-eq? `α-eq?) (true)
 
 # modified Tromp 232 bit universal machine
-eval-blc y [[[rec]]] [0 Ω] ⧗ (List LcBit) → a
+eval-blc y [[[rec]]] &Ω ⧗ (List LcBit) → a
 	rec 0 [[0 [2 case-0 case-1]]]
 		case-0 5 [1 case-00 case-01]
 			case-00 5 [[2 (0 : 1)]]
@@ -157,9 +157,9 @@ eval-blc y [[[rec]]] [0 Ω] ⧗ (List LcBit) → a
 eval* eval-blc ∘ meta→blc ⧗ Meta → a
 
 # self interpreter for meta encoding
-eval y [[[rec]]] [0 Ω] ⧗ Meta → a
+eval y [[[rec]]] &Ω ⧗ Meta → a
 	rec 0 case-idx case-app case-abs
-		case-idx [2 [1 [0 [[0]]] 0 [[1]]]]
+		case-idx [2 [1 &[[0]] 0 [[1]]]]
 		case-app 2 [3 [3 [2 0 (1 0)]]]
 		case-abs 2 [2 [[2 [0 1 2]]]]
 

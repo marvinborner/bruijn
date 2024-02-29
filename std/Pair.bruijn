@@ -8,14 +8,14 @@ pair [[[0 2 1]]] ⧗ a → b → (Pair a b)
 …:… pair
 
 # extracts first expression from pair
-fst [0 k] ⧗ (Pair a b) → a
+fst &k ⧗ (Pair a b) → a
 
 ^‣ fst
 
 :test (^([[0]] : [[1]])) ([[0]])
 
 # extracts second expression from pair
-snd [0 ki] ⧗ (Pair a b) → b
+snd &ki ⧗ (Pair a b) → b
 
 ~‣ snd
 

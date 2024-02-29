@@ -90,9 +90,9 @@ list! [0 z a⁻ a⁺ a⁰] ⧗ Number → List
 # strips leading 0s from a balanced ternary number
 strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : true
-	a⁻ [0 [[↑⁻1 : false]]]
-	a⁺ [0 [[↑⁺1 : false]]]
-	a⁰ [0 [[(0 (+0) ↑⁰1) : 0]]]
+	a⁻ &[[↑⁻1 : false]]
+	a⁺ &[[↑⁺1 : false]]
+	a⁰ &[[(0 (+0) ↑⁰1) : 0]]
 
 %‣ strip
 
@@ -218,9 +218,9 @@ not-eq? not! ∘∘ eq? ⧗ Number → Number → Boolean
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
 inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (+1)
-	a⁻ [0 [[↑⁻1 : ↑⁰1]]]
-	a⁺ [0 [[↑⁺1 : ↑⁻0]]]
-	a⁰ [0 [[↑⁰1 : ↑⁺1]]]
+	a⁻ &[[↑⁻1 : ↑⁰1]]
+	a⁺ &[[↑⁺1 : ↑⁻0]]
+	a⁰ &[[↑⁰1 : ↑⁺1]]
 
 ++‣ inc
 
@@ -233,9 +233,9 @@ inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 # subs (+1) from a balanced ternary number (can introduce leading 0s)
 dec [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (-1)
-	a⁻ [0 [[↑⁻1 : ↑⁺0]]]
-	a⁺ [0 [[↑⁺1 : ↑⁰1]]]
-	a⁰ [0 [[↑⁰1 : ↑⁻1]]]
+	a⁻ &[[↑⁻1 : ↑⁺0]]
+	a⁺ &[[↑⁺1 : ↑⁰1]]
+	a⁰ &[[↑⁰1 : ↑⁻1]]
 
 --‣ dec
 
@@ -366,9 +366,9 @@ mul [[1 z a⁻ a⁺ a⁰]] ⧗ Number → Number → Number
 # WARNING: Not necessarily equivalent to (/ (+3)): e.g. /³(+5) == (+2)!
 div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (+0)
-	a⁻ [0 [[↑⁻1 : 1]]]
-	a⁺ [0 [[↑⁺1 : 1]]]
-	a⁰ [0 [[↑⁰1 : 1]]]
+	a⁻ &[[↑⁻1 : 1]]
+	a⁺ &[[↑⁺1 : 1]]
+	a⁰ &[[↑⁰1 : 1]]
 
 /³‣ div³
 

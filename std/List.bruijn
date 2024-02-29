@@ -68,7 +68,7 @@ apply z [[[rec]]] ⧗ (a* → b) → (List a) → b
 :test (…+… <! ((+1) : {}(+2))) ((+3))
 
 # applies each element of the tail to the head (left-associative)
-eval [0 apply] ⧗ (Pair (a → b) (List a)) → b
+eval &apply ⧗ (Pair (a → b) (List a)) → b
 
 !‣ eval
 
@@ -472,4 +472,4 @@ iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
 y* [[[0 1] <$> 0] xs] ⧗ a → (List b)
 	xs [[1 <! ([[1 2 0]] <$> 0)]] <$> 0
 
-:test ([0 (+5)] <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)
+:test (&(+5) <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)

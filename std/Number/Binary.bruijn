@@ -59,8 +59,8 @@ binary! foldr up (+0b) ⧗ (List Bit) → Binary
 # strips leading 0s from a binary number
 strip [^(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : true
-	a¹ [0 [[↑¹1 : false]]]
-	a⁰ [0 [[(0 (+0b) ↑⁰1) : 0]]]
+	a¹ &[[↑¹1 : false]]
+	a⁰ &[[(0 (+0b) ↑⁰1) : 0]]
 
 %‣ strip
 
@@ -162,8 +162,8 @@ not-eq? not! ∘∘ eq? ⧗ Binary → Binary → Boolean
 # adds 1 to a binary number (can introduce leading 0s)
 inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : (+1b)
-	a¹ [0 [[↑¹1 : ↑⁰0]]]
-	a⁰ [0 [[↑⁰1 : ↑¹1]]]
+	a¹ &[[↑¹1 : ↑⁰0]]
+	a⁰ &[[↑⁰1 : ↑¹1]]
 
 ++‣ inc
 
@@ -173,8 +173,8 @@ inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 # subs 1 from a binary number (can introduce leading 0s)
 dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : (+0b)
-	a¹ [0 [[↑¹1 : ↑⁰1]]]
-	a⁰ [0 [[↑⁰1 : ↑¹0]]]
+	a¹ &[[↑¹1 : ↑⁰1]]
+	a⁰ &[[↑⁰1 : ↑¹0]]
 
 --‣ dec
 
@@ -268,8 +268,8 @@ sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binar
 # rshifts least significant bit of a binary number
 div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : (+0b)
-	a¹ [0 [[↑¹1 : 1]]]
-	a⁰ [0 [[↑⁰1 : 1]]]
+	a¹ &[[↑¹1 : 1]]
+	a⁰ &[[↑⁰1 : 1]]
 
 /²‣ div²
 
