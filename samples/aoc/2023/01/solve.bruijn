@@ -1,0 +1,7 @@
+:import std/Math .
+:import std/String .
+:import std/Char C
+
+part1 [[^0 ⋅ (+10) + _0] (filter (gre? (+9)) (C.number! <$> 0))]
+
+main [∑(part1 <$> (lines 0))]
