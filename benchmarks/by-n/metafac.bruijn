@@ -1,0 +1,6 @@
+# 0 5 20
+
+:import std/Math .
+:import std/Meta .
+
+main [!`(fac (+${BENCH_N}))]

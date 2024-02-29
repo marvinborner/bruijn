@@ -1,0 +1,6 @@
+# 0 40 200
+
+:import std/Math .
+:import std/List .
+
+main [primes !! (+${BENCH_N})]

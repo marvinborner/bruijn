@@ -1,0 +1,5 @@
+# 0 10 40
+
+:import std/Math .
+
+main [fac (+${BENCH_N})]
