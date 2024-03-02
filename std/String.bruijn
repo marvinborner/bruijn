@@ -1,7 +1,7 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 
 :import std/Char C
-:import std/Number .
+:import std/Math .
 :import std/Number/Binary B
 
 :input std/List
@@ -29,21 +29,26 @@ ni? \in? ⧗ String → Char → Boolean
 :test ("ab" ∋ 'c') (false)
 
 # converts a string of digits into a number
-number! from-digits ∘ (map C.number!) ⧗ String → Number
+string→number from-digits ∘ (map C.char→number) ⧗ String → Number
 
-:test (%(number! "123")) ((+123))
+:test (%(string→number "123")) ((+123))
 
 # converts a signed string of digits into a number
-signed-number! [(sign ^0) (number! ~0)] ⧗ String → Number
+string→signed-number [(sign ^0) (string→number ~0)] ⧗ String → Number
 	sign [(B.eq? 0 '-') -‣ i]
 
-:test (%(signed-number! "+123")) ((+123))
-:test (%(signed-number! "-123")) ((-123))
+:test (%(string→signed-number "+123")) ((+123))
+:test (%(string→signed-number "-123")) ((-123))
+
+# converts a number to a string
+number→string (map C.number→char) ∘ digits ⧗ Number → String
+
+:test (number→string (+123)) ("123")
 
 # splits string by newline character
 lines z [[rec]] ⧗ String → (List String)
 	rec build (break (B.eq? '\n') 0)
-		build [(~0) [[[^3 : (5 1)]]] {}(^0) ]
+		build [~0 [[[^3 : (5 1)]]] {}(^0) ]
 
 :test (lines "ab\ncd") ("ab" : {}"cd")
 

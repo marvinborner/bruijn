@@ -5,4 +5,7 @@
 :import std/Number/Conversion .
 
 # converts a char to a balanced ternary number
-number! [binary→ternary (0 - '0')] ⧗ Char → Number
+char→number [binary→ternary (0 - '0')] ⧗ Char → Number
+
+# converts a balanced ternary number to a char
+number→char ['0' + (ternary→binary 0)] ⧗ Number → Char

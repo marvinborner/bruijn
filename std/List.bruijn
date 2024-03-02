@@ -1,7 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # Lists in Church/Boehm-Berarducci encoding using pairs
 # implementations are generally lazy (except when they're broken)
-# TODO: look into https://hbr.github.io/Lambda-Calculus/lambda2/lambda.html#lists, has more elegant mapping
 
 :import std/Combinator .
 :import std/Pair P
