@@ -26,7 +26,7 @@ args =
     <*> switch (long "verbose" <> short 'v' <> help "Increase verbosity")
     <*> strOption
           (long "target" <> short 't' <> metavar "TARGET" <> value "" <> help
-            "Optimize to target using BLoC and BLoCade"
+            "Compile to target using BLoC and BLoCade"
           )
     <*> strOption
           (  long "reducer"

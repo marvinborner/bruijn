@@ -9,6 +9,11 @@ import           Helper
 data HigherOrder = HigherOrderBruijn Int | HigherOrderAbstraction (HigherOrder -> HigherOrder) | HigherOrderApplication HigherOrder HigherOrder
 data NamedTerm = NamedVariable Int | NamedAbstraction Int NamedTerm | NamedApplication NamedTerm NamedTerm
 
+(!?) :: [a] -> Int -> Maybe a
+(!?) []       _ = Nothing
+(!?) (x : _ ) 0 = Just x
+(!?) (_ : xs) i = xs !? (i - 1)
+
 app :: HigherOrder -> HigherOrder -> HigherOrder
 app (HigherOrderAbstraction f) = f
 app f                          = HigherOrderApplication f
@@ -16,7 +21,9 @@ app f                          = HigherOrderApplication f
 eval :: Expression -> HigherOrder
 eval = go []
  where
-  go env (Bruijn      x    ) = env !! x
+  go env (Bruijn x) = case env !? x of
+    Just v -> v
+    _      -> HigherOrderBruijn x
   go env (Abstraction e    ) = HigherOrderAbstraction $ \x -> go (x : env) e
   go env (Application e1 e2) = app (go env e1) (go env e2)
   go _   _                   = invalidProgramState
@@ -32,7 +39,9 @@ toNamedTerm = go 0
 resolveExpression :: NamedTerm -> Expression
 resolveExpression = resolve []
  where
-  resolve vs (NamedVariable i     ) = Bruijn $ vs !! i
+  resolve vs (NamedVariable i) = Bruijn $ case vs !? i of
+    Just v -> v
+    _      -> i
   resolve vs (NamedAbstraction v t) = Abstraction $ resolve (v : vs) t
   resolve vs (NamedApplication l r) = Application (resolve vs l) (resolve vs r)
 

@@ -28,6 +28,7 @@ import           System.Console.Haskeline
 import           System.Directory
 import           System.FilePath.Posix          ( takeBaseName )
 import           System.Mem
+import           Target
 import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
@@ -408,7 +409,7 @@ dumpFile conf wr conv = do
   case M.lookup entryFunction env of
     Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
                                        (Context "" (_nicePath conf))
-    Just EnvDef { _exp = e } -> optimizeToTarget conf e >>= wr . conv
+    Just EnvDef { _exp = e } -> toTarget conf e >>= wr . conv
 
 evalFileConf :: EvalConf -> IO ()
 evalFileConf conf = do

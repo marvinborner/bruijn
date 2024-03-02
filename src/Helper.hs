@@ -184,23 +184,23 @@ data Instruction = Define Identifier Expression [Instruction] | Evaluate Express
 data ArgMode = ArgEval | ArgEvalBblc | ArgEvalBlc | ArgDumpBblc | ArgDumpBlc
 
 data Args = Args
-  { _argMode           :: ArgMode
-  , _argNoTests        :: Bool
-  , _argVerbose        :: Bool
-  , _argOptimizeTarget :: String
-  , _argReducer        :: String
-  , _argPath           :: Maybe String
+  { _argMode     :: ArgMode
+  , _argNoTests  :: Bool
+  , _argVerbose  :: Bool
+  , _argToTarget :: String
+  , _argReducer  :: String
+  , _argPath     :: Maybe String
   }
 
 data EvalConf = EvalConf
-  { _isRepl         :: Bool
-  , _isVerbose      :: Bool
-  , _evalTests      :: Bool
-  , _nicePath       :: String
-  , _path           :: String
-  , _evalPaths      :: [String]
-  , _optimizeTarget :: String
-  , _reducer        :: String
+  { _isRepl    :: Bool
+  , _isVerbose :: Bool
+  , _evalTests :: Bool
+  , _nicePath  :: String
+  , _path      :: String
+  , _evalPaths :: [String]
+  , _toTarget  :: String
+  , _reducer   :: String
   }
 
 newtype ExpFlags = ExpFlags
@@ -225,14 +225,14 @@ newtype EnvCache = EnvCache
 type EvalState = S.State Environment
 
 argsToConf :: Args -> EvalConf
-argsToConf args = EvalConf { _isRepl         = isNothing $ _argPath args
-                           , _isVerbose      = _argVerbose args
-                           , _evalTests      = not $ _argNoTests args
-                           , _path           = path
-                           , _nicePath       = path
-                           , _evalPaths      = []
-                           , _optimizeTarget = _argOptimizeTarget args
-                           , _reducer        = _argReducer args
+argsToConf args = EvalConf { _isRepl    = isNothing $ _argPath args
+                           , _isVerbose = _argVerbose args
+                           , _evalTests = not $ _argNoTests args
+                           , _path      = path
+                           , _nicePath  = path
+                           , _evalPaths = []
+                           , _toTarget  = _argToTarget args
+                           , _reducer   = _argReducer args
                            }
   where path = fromMaybe "" (_argPath args)
 

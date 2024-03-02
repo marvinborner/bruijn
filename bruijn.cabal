@@ -58,6 +58,7 @@ library
       Reducer.HigherOrder
       Reducer.ION
       Reducer.RKNL
+      Target
   other-modules:
       Paths_bruijn
   hs-source-dirs:
