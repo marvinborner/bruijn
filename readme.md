@@ -5,6 +5,8 @@
 > A purely functional programming language based on lambda calculus and
 > De Bruijn indices written in Haskell.
 
+Pronunciation: `/bɹaʊn/`.
+
 Wiki, docs, articles, examples and more:
 [website](https://bruijn.marvinborner.de). Also: [Rosetta
 Code](https://rosettacode.org/wiki/Category:Bruijn).

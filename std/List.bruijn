@@ -1,6 +1,7 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # Lists in Church/Boehm-Berarducci encoding using pairs
 # implementations are generally lazy (except when they're broken)
+# TODO: look into https://hbr.github.io/Lambda-Calculus/lambda2/lambda.html#lists, has more elegant mapping
 
 :import std/Combinator .
 :import std/Pair P
@@ -244,7 +245,9 @@ concat foldr append empty ⧗ (List a) → (List a) → (List a)
 # maps a function returning list of list and concatenates
 concat-map concat ∘∘ map ⧗ (a → (List b)) → (List a) → (List b)
 
-:test (concat-map [-0 : {}0] ((+1) : {}(+2))) ((-1) : ((+1) : ((-2) : {}(+2))))
+…<++>… concat-map
+
+:test ([-0 : {}0] <++> ((+1) : {}(+2))) ((-1) : ((+1) : ((-2) : {}(+2))))
 
 # zips two lists discarding excess elements
 zip z [[[rec]]] ⧗ (List a) → (List b) → (List (Pair a b))
@@ -314,13 +317,13 @@ drop-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
 :test (drop-while zero? ((+0) : ((+0) : {}(+1)))) ({}(+1))
 
 # returns all combinations of two lists
-cross [[concat-map [map [1 : 0] 1] 1]] ⧗ (List a) → (List b) → (List (Pair a b))
+cross [[[[1 : 0] <$> 1] <++> 1]] ⧗ (List a) → (List b) → (List (Pair a b))
 
 :test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
 
 # returns all combinations of three lists
 # TODO: add/use triple type (list element types can be different)
-cross3 [[[concat-map [concat-map [map [2 : (1 : {}0)] 2] 2] 2]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
+cross3 [[[[[[2 : (1 : {}0)] <$> 2] <++> 2] <++> 2]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
 
 # :test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
 

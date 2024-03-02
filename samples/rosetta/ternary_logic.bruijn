@@ -1,0 +1,71 @@
+true [[[0]]]
+
+maybe [[[1]]]
+
+false [[[2]]]
+
+¬‣ [0 true maybe false]
+
+:test (¬true) (false)
+:test (¬maybe) (maybe)
+:test (¬false) (true)
+
+…⋀… [[1 (0 1 1 1) (0 0 0 1) (0 0 0 0)]]
+
+:test (true ⋀ true) (true)
+:test (true ⋀ maybe) (maybe)
+:test (true ⋀ false) (false)
+:test (maybe ⋀ true) (maybe)
+:test (maybe ⋀ maybe) (maybe)
+:test (maybe ⋀ false) (false)
+:test (false ⋀ true) (false)
+:test (false ⋀ maybe) (false)
+:test (false ⋀ false) (false)
+
+…⋁… [[1 (0 0 0 0) (0 1 0 0) (0 1 1 1)]]
+
+:test (true ⋁ true) (true)
+:test (true ⋁ maybe) (true)
+:test (true ⋁ false) (true)
+:test (maybe ⋁ true) (true)
+:test (maybe ⋁ maybe) (maybe)
+:test (maybe ⋁ false) (maybe)
+:test (false ⋁ true) (true)
+:test (false ⋁ maybe) (maybe)
+:test (false ⋁ false) (false)
+
+…⊃… [[1 (0 true 0 1) (0 true 1 1) (0 1 1 1)]]
+
+:test (true ⊃ true) (true)
+:test (true ⊃ maybe) (true)
+:test (true ⊃ false) (true)
+:test (maybe ⊃ true) (maybe)
+:test (maybe ⊃ maybe) (maybe)
+:test (maybe ⊃ false) (true)
+:test (false ⊃ true) (false)
+:test (false ⊃ maybe) (maybe)
+:test (false ⊃ false) (true)
+
+…≡… [[1 (0 true 0 1) (0 1 1 1) (0 0 0 0)]]
+
+:test (true ≡ true) (true)
+:test (true ≡ maybe) (maybe)
+:test (true ≡ false) (false)
+:test (maybe ≡ true) (maybe)
+:test (maybe ≡ maybe) (maybe)
+:test (maybe ≡ false) (maybe)
+:test (false ≡ true) (false)
+:test (false ≡ maybe) (maybe)
+:test (false ≡ false) (true)
+
+# --- result samples ---
+
+:import std/List .
+
+main [[inp <> "=" <> !res ++ "\n"] <++> (cross3 ops trits trits)]
+	!‣ [0 "false" "maybe" "true"]
+	…<>… [[1 ++ " " ++ 0]]
+	inp 0 [[~1 <> (0 [[!1 <> (0 [[!1]])]])]]
+	res ^(^0) ^(~0) ^(~(~0))
+	ops (…⋀… : "and") : ((…⋁… : "or") : ((…⊃… : "if") : {}(…≡… : "equiv")))
+	trits true : (maybe : {}false)

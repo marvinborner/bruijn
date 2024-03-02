@@ -188,7 +188,7 @@ a {
 	color: #b1ee13;
 }
 
-.code .mixfix {
+.code .mixfix, .code .prefix {
 	color: #eee513;
 }
 
