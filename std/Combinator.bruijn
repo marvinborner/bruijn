@@ -118,8 +118,10 @@ o [[0 (1 0)]] ⧗ ((a → b) → a) → (a → b) → b
 # alternative name: starling prime: s'
 φ [[[[3 (2 0) (1 0)]]]] ⧗ (b → c → d) → (a → b) → (a → c) → a → d
 
-# psi combinator: on
+# psi combinator: on, (f ⋔ g) x y = f (g x) (g y)
 ψ [[[[3 (2 1) (2 0)]]]] ⧗ (b → b → c) → (a → b) → a → a → c
+
+…⋔… ψ
 
 ψ* [[[[[4 3 (2 1) (2 0)]]]]] ⧗ (c → b → b → d) → c → (a → b) → a → a → d
 

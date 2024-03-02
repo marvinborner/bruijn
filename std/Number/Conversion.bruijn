@@ -27,3 +27,13 @@ binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
 
 :test (T.eq? (binary→ternary (+0b)) (+0t)) ([[1]])
 :test (T.eq? (binary→ternary (+42b)) (+42t)) ([[1]])
+
+# converts numbers to binary
+# constructs reversed path of composed functions and applies to ternary
+ternary→binary [y [[[rec]]] [0] 0 (+0b)] ⧗ Ternary → Binary
+	rec T.zero? 0 case-end case-rec
+		case-rec T.odd? 0 (2 (1 ∘ B.inc) (T.dec 0)) (2 (1 ∘ (B.mul (+2b))) (T.div² 0))
+		case-end 1
+
+:test (B.eq? (ternary→binary (+0t)) (+0b)) ([[1]])
+:test (B.eq? (ternary→binary (+42t)) (+42b)) ([[1]])

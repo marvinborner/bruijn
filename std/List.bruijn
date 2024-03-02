@@ -135,6 +135,18 @@ foldr1 [[foldl 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
 # applies or to all list elements
 lor? foldr or? false ⧗ (List Boolean) → Boolean
 
+# largest element by compare function
+max-by [foldl1 max'] ⧗ (a → a → Number) → (List a) → a
+	max' [[>?(2 1 0) 1 0]]
+
+:test (max-by (compare ⋔ length) ("abc" : ("ab" : {}"abcd"))) ("abcd")
+
+# smallest element by compare function
+min-by [foldl1 min'] ⧗ (a → a → Number) → (List a) → a
+	min' [[<?(2 1 0) 1 0]]
+
+:test (min-by (compare ⋔ length) ("abc" : ("ab" : {}"abcd"))) ("ab")
+
 ⋁?‣ lor?
 
 :test (⋁?(true : {}true)) (true)
@@ -157,11 +169,8 @@ reverse foldl \cons empty ⧗ (List a) → (List a)
 
 :test (<~>((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
 
-# appends two lists
-append z [[[rec]]] ⧗ (List a) → (List a) → (List a)
-	rec 1 [[[case-append]]] case-end
-		case-append 2 : (5 1 3)
-		case-end 0
+# appends two lists (Tromp)
+append &(z [[[[[0 3 (2 4 1)]]]]]) ⧗ (List a) → (List a) → (List a)
 
 …++… append
 

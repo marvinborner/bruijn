@@ -75,7 +75,7 @@ idx! [0 [0] 0 0] ⧗ Meta → Unary
 fold y [[[[[rec]]]]] ⧗ (Unary → a) → (a → a → a) → (a → a) → Meta → a
 	rec 0 case-idx case-app case-abs
 		case-idx 3
-		case-app ψ 2 (4 3 2 1)
+		case-app 2 ⋔ (4 3 2 1)
 		case-abs 1 ∘ (4 3 2 1)
 
 # calculates blc length of meta term
@@ -271,7 +271,7 @@ encode fold idx-cb app-cb abs-cb ⧗ Meta → Number
 decode y [[unpair-ternary 0 go]] ⧗ Number → Meta
 	go [[(case-idx : (case-app : {}case-abs)) !! 1 0]]
 		case-idx idx ∘ ternary→unary
-		case-app [unpair-ternary 0 (ψ app 4)]
+		case-app [unpair-ternary 0 (app ⋔ 4)]
 		case-abs abs ∘ 3
 
 :test (decode (+0)) (`0)

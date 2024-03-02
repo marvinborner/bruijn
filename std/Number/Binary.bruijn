@@ -6,6 +6,11 @@
 :import std/List .
 :import std/Logic .
 
+# TODO: remove ternary conversion shortcuts
+# TODO: then move functions to reflect order of std/Ternary
+
+:import std/Number/Ternary T
+
 # bit indicating a one, compatible with std/Logic
 b¹ true ⧗ Bit
 
@@ -252,6 +257,17 @@ sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binar
 :test ((+3b) - (+0b) =? (+3b)) (true)
 :test ((+3b) - (+2b) =? (+1b)) (true)
 
+# muls two binary numbers (can introduce leading 0s)
+mul [[1 z a¹ a⁰]] ⧗ Number → Number → Number
+	z (+0b)
+	a¹ [↑⁰0 + 1]
+	a⁰ [↑⁰0]
+
+…⋅… mul
+
+:test ((+42b) ⋅ (+0b) =? (+0b)) (true)
+:test ((+3b) ⋅ (+11b) =? (+33b)) (true)
+
 # rshifts least significant bit of a binary number
 div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : (+0b)
@@ -282,3 +298,70 @@ odd? lsb ⧗ Binary → Boolean
 :test (odd? (+1b)) (true)
 :test (odd? (+41b)) (true)
 :test (odd? (+42b)) (false)
+
+# TODO: Remove (duplicate of std/Conversion because of dep loop)
+binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
+	rec zero? 0 case-end case-rec
+		case-rec odd? 0 (2 (1 ∘ T.inc) (dec 0)) (2 (1 ∘ (T.mul (+2t))) (div² 0))
+		case-end 1
+
+# returns true if number is greater than other number
+# TODO: remove ternary conversion
+gre? T.gre? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
+
+…>?… gre?
+
+:test ((+1b) >? (+2b)) (false)
+:test ((+2b) >? (+2b)) (false)
+:test ((+3b) >? (+2b)) (true)
+
+# returns true if number is less than other number
+les? \gre? ⧗ Binary → Binary → Boolean
+
+…<?… les?
+
+:test ((+1b) <? (+2b)) (true)
+:test ((+2b) <? (+2b)) (false)
+:test ((+3b) <? (+2b)) (false)
+
+# returns true if number is less than or equal to other number
+leq? not! ∘∘ gre? ⧗ Binary → Binary → Boolean
+
+…≤?… leq?
+
+:test ((+1b) ≤? (+2b)) (true)
+:test ((+2b) ≤? (+2b)) (true)
+:test ((+3b) ≤? (+2b)) (false)
+
+# returns true if number is greater than or equal to other number
+geq? \leq? ⧗ Binary → Binary → Boolean
+
+…≥?… geq?
+
+:test ((+1b) ≥? (+2b)) (false)
+:test ((+2b) ≥? (+2b)) (true)
+:test ((+3b) ≥? (+2b)) (true)
+
+# returns eq, lt, gt depending on comparison of two numbers
+# TODO: remove ternary conversion
+compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c → Binary → Binary → d
+
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare compare-case (+0) (+1) (-1) ⧗ Binary → Binary → Binary
+
+:test (compare (+2b) (+2b)) ((+0))
+:test (compare (+2b) (+1b)) ((+1))
+:test (compare (+1b) (+2b)) ((-1))
+
+…<=>… compare
+
+# returns max number of two
+max [[(1 ≤? 0) 0 1]] ⧗ Binary → Binary → Binary
+
+:test (max (+5b) (+2b)) ((+5b))
+
+# returns min number of two
+min [[(1 ≤? 0) 1 0]] ⧗ Binary → Binary → Binary
+
+:test (min (+5b) (+2b)) ((+2b))

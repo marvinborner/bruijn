@@ -1,0 +1,23 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# De Bruijn numeral system (named by me)
+# proof that this numeral system does not support zero/eq/sub/etc. is in
+#   Wadsworth, Christopher. "Some unusual λ-calculus numeral systems."
+# very sad indeed
+
+:import std/Combinator . 
+
+# increments De Bruijn numeral
+inc [[[2 1]]]
+
+++‣ inc
+
+:test (++(+0d)) ((+1d))
+:test (++(+5d)) ((+6d))
+
+# decrements De Bruijn numeral
+dec [[1 0 0]]
+
+--‣ dec
+
+:test (--(+1d)) ((+0d))
+:test (--(+5d)) ((+4d))
