@@ -348,7 +348,7 @@ compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c
 
 # returns 1 if a>b, -1 if a<b and 0 if a=b
 # also: spaceship operator
-compare compare-case (+0) (+1) (-1) ⧗ Binary → Binary → Binary
+compare compare-case (+0) (+1) (-1) ⧗ Binary → Binary → Number
 
 :test (compare (+2b) (+2b)) ((+0))
 :test (compare (+2b) (+1b)) ((+1))

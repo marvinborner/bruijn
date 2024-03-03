@@ -1,0 +1,22 @@
+:import std/Number .
+:import std/List .
+
+y* [[[0 1] <$> 0] ([[1 <! ([[1 2 0]] <$> 0)]] <$> 0)]
+
+# --- example usage ---
+# mutual recurrence relation of odd?/even?
+
+# even x = if x == 0 then true else odd? (x-1)
+g [[[=?0 [[1]] (1 --0)]]]
+
+# odd x = if x == 0 then false else even? (x-1)
+h [[[=?0 [[0]] (2 --0)]]]
+
+even? ^(y* (g : {}h))
+
+odd? _(y* (g : {}h))
+
+:test (even? (+5)) ([[0]])
+:test (odd? (+5)) ([[1]])
+
+main [[0]]

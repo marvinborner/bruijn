@@ -2,7 +2,7 @@
 :import std/String .
 
 main [answer]
-	numbers number! <$> (lines 0)
+	numbers string→number <$> (lines 0)
 	parts split-list-by =?‣ numbers
 	sums sum <$> parts
 	answer build (sort-desc sums)

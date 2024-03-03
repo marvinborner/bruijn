@@ -1,5 +1,8 @@
 # Examples
 
+You can find a lot more examples on [Rosetta
+code](https://rosettacode.org/wiki/Category:Bruijn).
+
 ## Hello world!
 
 Hello world using [lists](../coding/data-structures.md#lists-stdlist)

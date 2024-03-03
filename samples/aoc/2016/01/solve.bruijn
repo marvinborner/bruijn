@@ -7,7 +7,7 @@
 :import std/Number .
 :import std/List .
 
-direction! [^0 : (S.number! ~0)] ⧗ (List Char) → Direction
+direction! [^0 : (S.string→number ~0)] ⧗ (List Char) → Direction
 
 :test (direction! "R42") ('R' : (+42))
 

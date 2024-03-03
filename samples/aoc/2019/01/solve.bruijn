@@ -23,5 +23,5 @@ part1 ∑‣ ∘ (map fuel) ⧗ (List Mass) → Fuel
 part2 ∑‣ ∘ (map fuelfuel) ⧗ (List Mass) → Fuel
 
 main [parts nums]
-	nums number! <$> ~(<~>(lines 0))
+	nums string→number <$> ~(<~>(lines 0))
 	parts [(part1 0) : (part2 0)]

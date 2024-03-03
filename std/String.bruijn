@@ -29,16 +29,25 @@ ni? \in? ⧗ String → Char → Boolean
 :test ("ab" ∋ 'c') (false)
 
 # converts a string of digits into a number
-string→number from-digits ∘ (map C.char→number) ⧗ String → Number
+string→unsigned-number from-digits ∘ (map C.char→number) ⧗ String → Number
 
-:test (%(string→number "123")) ((+123))
+:test (%(string→unsigned-number "123")) ((+123))
 
 # converts a signed string of digits into a number
-string→signed-number [(sign ^0) (string→number ~0)] ⧗ String → Number
+string→signed-number [(sign ^0) (string→unsigned-number ~0)] ⧗ String → Number
 	sign [(B.eq? 0 '-') -‣ i]
 
 :test (%(string→signed-number "+123")) ((+123))
 :test (%(string→signed-number "-123")) ((-123))
+
+# converts signed/unsigned number strings to a number
+string→number [C.les? ^0 '0' signed unsigned] ⧗ String → Number
+	signed string→signed-number 0
+	unsigned string→unsigned-number 0
+
+:test (%(string→number "123")) ((+123))
+:test (%(string→number "+123")) ((+123))
+:test (%(string→number "-123")) ((-123))
 
 # converts a number to a string
 number→string (map C.number→char) ∘ digits ⧗ Number → String

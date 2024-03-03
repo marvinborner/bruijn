@@ -18,5 +18,5 @@ part2 z [[rec]]
 		case-cont 1 ~0
 
 main [parts nums]
-	nums number! <$> ~(<~>(lines 0))
+	nums string→number <$> ~(<~>(lines 0))
 	parts [(part1 (cross 0 0)) : (part2 (cross3 0 0 0))]

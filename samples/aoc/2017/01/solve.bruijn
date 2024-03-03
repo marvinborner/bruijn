@@ -19,5 +19,5 @@ part2 [(sum ∘ eqs ∘ pairs) 0]
 :test (part1 ((+1) : ((+1) : ((+2) : {}(+2))))) ((+3))
 
 main [parts nums]
-	nums C.number! <$> ^(lines 0)
+	nums C.char→number <$> ^(lines 0)
 	parts [(part1 0) : (part2 0)]

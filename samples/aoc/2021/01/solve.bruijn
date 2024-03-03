@@ -6,7 +6,7 @@ part1 [{ [[(1 <? 0) (+1) (+0)]] | 0 , ~0 }]
 part2 [{ [[(1 <? 0) (+1) (+0)]] | 0 , ~(~(~0)) }]
 
 main [parts nums]
-	nums number! <$> (lines 0)
+	nums string→number <$> (lines 0)
 	parts [∑(part1 0) : ∑(part2 0)]
 
 # equivalent alternative using std/Pair P

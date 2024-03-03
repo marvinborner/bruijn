@@ -145,7 +145,7 @@ arrow z [[[[rec]]]] ⧗ Number → Number → Number → Number
 
 # fibonacci sequence
 # TODO: faster fib?
-fibs head <$> (iterate [~0 : (^0 + ~0)] ((+0) : (+1))) ⧗ (List Number)
+fibs head <$> (iterate &[[0 : (1 + 0)]] ((+0) : (+1))) ⧗ (List Number)
 
 fib [fibs !! ++0] ⧗ Number
 

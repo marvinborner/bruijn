@@ -365,7 +365,7 @@ humanifyString :: Expression -> Maybe String
 humanifyString e = do
   es  <- unlistify e
   str <- mapM binaryToChar' es
-  pure $ show str
+  pure str
 
 humanifyPair :: Expression -> Maybe String
 humanifyPair e = do
@@ -438,7 +438,7 @@ binaryToChar e = show <$> binaryToChar' e
 binaryToChar' :: Expression -> Maybe Char
 binaryToChar' e = do
   n <- binaryToDecimal' e
-  if n < 255 then Just $ chr $ fromIntegral n else Nothing
+  if n > 31 && n < 127 || n == 10 then Just $ chr $ fromIntegral n else Nothing
 
 binaryToDecimal' :: Expression -> Maybe Integer
 binaryToDecimal' e = do

@@ -28,7 +28,7 @@ map [[0 none [some (2 0)]]] ⧗ (a → b) → (Option a) → (Option b)
 :test (map [[1]] none) (none)
 
 # applies a function to the value in option or returns first arg if none
-map-or v ⧗ (a → b) → (Option a) → (Option c)
+map-or v ⧗ a → (b → c) → (Option b) → c
 
 :test (map-or [[[2]]] [[1]] (some [[0]])) ([[[0]]])
 :test (map-or [[[2]]] [[1]] none) ([[[2]]])
