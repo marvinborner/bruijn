@@ -1,0 +1,62 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+
+# true
+true [[[0]]]
+
+# maybe (true-ish)
+maybe [[[1]]]
+
+# false
+false [[[2]]]
+
+# inverts trit value
+¬‣ [0 true maybe false] ⧗ Trit → Trit
+
+:test (¬true) (false)
+:test (¬maybe) (maybe)
+:test (¬false) (true)
+
+# true if both args are true-ish
+and? [[1 (0 1 1 1) (0 0 0 1) (0 0 0 0)]] ⧗ Trit → Trit → Trit
+
+…⋀?… and?
+
+:test (true ⋀? true) (true)
+:test (true ⋀? maybe) (maybe)
+:test (true ⋀? false) (false)
+:test (maybe ⋀? true) (maybe)
+:test (maybe ⋀? maybe) (maybe)
+:test (maybe ⋀? false) (false)
+:test (false ⋀? true) (false)
+:test (false ⋀? maybe) (false)
+:test (false ⋀? false) (false)
+
+# true if one of the args is true-ish
+or? [[1 (0 0 0 0) (0 1 0 0) (0 1 1 1)]] ⧗ Trit → Trit → Trit
+
+…⋁?… or?
+
+:test (true ⋁? true) (true)
+:test (true ⋁? maybe) (true)
+:test (true ⋁? false) (true)
+:test (maybe ⋁? true) (true)
+:test (maybe ⋁? maybe) (maybe)
+:test (maybe ⋁? false) (maybe)
+:test (false ⋁? true) (true)
+:test (false ⋁? maybe) (maybe)
+:test (false ⋁? false) (false)
+
+# mathematical iff (if and only if) definition
+iff [[1 (0 true 0 1) (0 1 1 1) (0 0 0 0)]] ⧗ Trit → Trit → Trit
+
+…⇔?… iff
+
+:test (true ⇔? true) (true)
+:test (true ⇔? maybe) (maybe)
+:test (true ⇔? false) (false)
+:test (maybe ⇔? true) (maybe)
+:test (maybe ⇔? maybe) (maybe)
+:test (maybe ⇔? false) (maybe)
+:test (false ⇔? true) (false)
+:test (false ⇔? maybe) (maybe)
+:test (false ⇔? false) (true)
