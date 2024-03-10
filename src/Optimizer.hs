@@ -72,21 +72,21 @@ commonPath p1 p2 = go (reverse p1) (reverse p2)
   go (x : xs) (y : ys) | x == y    = x : go xs ys
                        | otherwise = []
 
-inject :: Expression -> Path -> Expression -> [Path] -> Expression
-inject i [] e ps = Application (Abstraction (subst ? (incv e))) i
-inject i [L : p] (Application l r) ps = Application (inject i p l ps) r
-inject i [R : p] (Application l r) ps = Application l (inject i p r ps)
-inject i [D : p] (Abstraction t  ) ps = Abstraction (inject i p t ps)
-inject _ _       _                 _  = invalidProgramState
+-- inject :: Expression -> Path -> Expression -> [Path] -> Expression
+-- inject i [] e ps = Application (Abstraction (subst ? (incv e))) i
+-- inject i [L : p] (Application l r) ps = Application (inject i p l ps) r
+-- inject i [R : p] (Application l r) ps = Application l (inject i p r ps)
+-- inject i [D : p] (Abstraction t  ) ps = Abstraction (inject i p t ps)
+-- inject _ _       _                 _  = invalidProgramState
 
 optimize :: Expression -> IO Expression
 optimize e = do
   let tree = constructTree e
   let filtered =
         M.filterWithKey (\k ps -> isClosed k && isGood k && length ps > 1) tree
+  -- TODO: simulated annealing on every closed term even if not good or ==1
   let filtered' =
         M.filterWithKey (\k ps -> not $ preferParent e ps filtered) filtered
-  -- TODO: simulated annealing just before injection
   print $ (\(k, p) -> foldl1 commonPath p) <$> M.toList filtered'
   -- inject t (take (length commonPath) ps) e ps -- oder so
   pure e
@@ -95,5 +95,5 @@ optimize e = do
 -- TODO: enable optimizer with flag
 optimizedReduce :: EvalConf -> Expression -> IO Expression
 optimizedReduce conf e = do
-  optimize e
+  -- optimize e
   reduce conf e
