@@ -1,4 +1,4 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
 # this is just a reference to the boolean implementation
 
-:input std/Logic/Binary .
+:input std/Logic/Binary

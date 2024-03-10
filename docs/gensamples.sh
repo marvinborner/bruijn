@@ -9,7 +9,7 @@ links=""
 
 prefix=""
 for file in $files; do
-	name=$(echo "$file" | cut -c12-)
+	name=$(cut -c12- <<<"$file")
 	_prefix=$(cut -d/ -f1 <<<"$name")
 	if ! [ "$prefix" = "$_prefix" ]; then
 		prefix=$_prefix
