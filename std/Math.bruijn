@@ -12,6 +12,13 @@ sum foldl add (+0) ⧗ (List Number) → Number
 
 :test (∑((+1) : ((+2) : {}(+3)))) ((+6))
 
+# digit sum of all values
+digit-sum sum ∘ number→list ⧗ Number → Number
+
+:test ((digit-sum (+0)) =? (+0)) (true)
+:test ((digit-sum (+10)) =? (+1)) (true)
+:test ((digit-sum (+19)) =? (+10)) (true)
+
 # returns max value of list
 lmax foldl1 max ⧗ (List Number) → Number
 
@@ -21,14 +28,6 @@ lmax foldl1 max ⧗ (List Number) → Number
 lmin foldl1 min ⧗ (List Number) → Number
 
 :test (lmin ((+2) : ((+1) : {}(+0)))) ((+0))
-
-# converts number to list of its digits
-digits z [[rec]] ⧗ Number → (List Number)
-	rec =?0 case-end case-rec
-		case-rec (1 (0 / (+10))) ; (0 % (+10))
-		case-end empty
-
-:test (digits (+0)) (empty)
 
 # list from num to num
 {…→…} z [[[rec]]] ⧗ Number → Number → (List Number)

@@ -9,14 +9,18 @@
 # converts unary numbers to ternary
 unary→ternary [0 T.inc (+0t)] ⧗ Unary → Ternary
 
-:test (unary→ternary (+0u)) ((+0t))
-:test (unary→ternary (+2u)) ((+2t))
+¹³‣ unary→ternary
+
+:test (¹³(+0u)) ((+0t))
+:test (¹³(+2u)) ((+2t))
 
 # converts ternary numbers to unary
 ternary→unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
 
-:test (ternary→unary (+0t)) ((+0u))
-:test (ternary→unary (+2t)) ((+2u))
+³¹‣ ternary→unary
+
+:test (³¹(+0t)) ((+0u))
+:test (³¹(+2t)) ((+2u))
 
 # converts binary numbers to ternary
 # constructs reversed path of composed functions and applies to ternary
@@ -25,8 +29,10 @@ binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
 		case-rec B.odd? 0 (2 (1 ∘ T.inc) (B.dec 0)) (2 (1 ∘ (T.mul (+2t))) (B.div² 0))
 		case-end 1
 
-:test (T.eq? (binary→ternary (+0b)) (+0t)) ([[1]])
-:test (T.eq? (binary→ternary (+42b)) (+42t)) ([[1]])
+²³‣ binary→ternary
+
+:test (T.eq? ²³(+0b) (+0t)) ([[1]])
+:test (T.eq? ²³(+42b) (+42t)) ([[1]])
 
 # converts numbers to binary
 # constructs reversed path of composed functions and applies to ternary
@@ -35,5 +41,7 @@ ternary→binary [y [[[rec]]] [0] 0 (+0b)] ⧗ Ternary → Binary
 		case-rec T.odd? 0 (2 (1 ∘ B.inc) (T.dec 0)) (2 (1 ∘ (B.mul (+2b))) (T.div² 0))
 		case-end 1
 
-:test (B.eq? (ternary→binary (+0t)) (+0b)) ([[1]])
-:test (B.eq? (ternary→binary (+42t)) (+42b)) ([[1]])
+³²‣ ternary→binary
+
+:test (B.eq? ³²(+0t) (+0b)) ([[1]])
+:test (B.eq? ³²(+42t) (+42b)) ([[1]])

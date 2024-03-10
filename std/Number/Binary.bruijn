@@ -163,6 +163,9 @@ not-eq? not! ∘∘ eq? ⧗ Binary → Binary → Boolean
 :test ([[[1 (0 2)]]] ≠? [[[1 (0 2)]]]) (false)
 :test ([[[1 (0 2)]]] ≠? (+2b)) (true)
 
+# prefix for comparing functions
+?‣ &eq?
+
 # adds 1 to a binary number (can introduce leading 0s)
 inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 	z (+0b) : (+1b)
@@ -196,7 +199,7 @@ complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
 :test (-*(+42b)) ([[[1 (0 (1 (0 (1 (0 2)))))]]])
 
 # inverts a binary number by complementing and incrementing (2's complement)
-# don't forget to pad the number with zeroes if needed
+# don't forget to pad the number with 0s if needed
 invert ++‣ ∘ -*‣ ⧗ Binary → Binary
 
 -‣ invert
@@ -204,9 +207,9 @@ invert ++‣ ∘ -*‣ ⧗ Binary → Binary
 :test (-(+0b)) ((+1b))
 :test (-(+1b)) ((+1b))
 
-# pads a binary number with zeroes until its as long a another binary number
-# TODO: this could probably be done without list magic
-pad [[binary! (pad-right ∀(list! %1) b⁰ (list! 0))]] ⧗ Binary → Binary → Binary
+# pads a binary number with 0s until it's as long a another binary number
+# TODO: this could be done without list magic (see Ternary)
+pad [[binary! (pad-right ∀(list! %1) b⁰ (list! %0))]] ⧗ Binary → Binary → Binary
 
 :test (pad (+5b) [[[1 2]]]) ([[[1 (0 (0 2))]]])
 
@@ -248,7 +251,7 @@ sub* [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 # subs two binary numbers
 # uses addition but with two's complement
 # TODO: isn't very performant ⇒ replace with sub*
-# TODO: gives wrong results if b>a in a-b
+# TODO: gives fun results if b>a in a-b
 sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binary
 
 …-… sub
@@ -278,6 +281,20 @@ div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 
 :test (/²(+6b) =? (+3b)) (true)
 :test (/²(+5b) =? (+2b)) (true)
+
+# ceiled integer log2 by counting bits
+# also counts leading 0s
+log2* [0 (+0b) inc inc] ⧗ Binary → Binary
+
+# ceiled integer log2 by counting bits
+log2 log2* ∘ strip ⧗ Binary → Binary
+
+:test ((log2 (+1b)) =? (+1b)) (true)
+:test ((log2 (+2b)) =? (+2b)) (true)
+:test ((log2 (+3b)) =? (+2b)) (true)
+:test ((log2 (+4b)) =? (+3b)) (true)
+:test ((log2 (+32b)) =? (+6b)) (true)
+:test ((log2 (+48b)) =? (+6b)) (true)
 
 # returns true if the number is even (remainder mod 2 == 0)
 even? ¬‣ ∘ lsb ⧗ Binary → Boolean

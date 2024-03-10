@@ -8,9 +8,16 @@
 
 # the following functions are only here because of recursive imports of list/ternary
 
+# converts number to list of its digits
+number→list [=?0 {}(+0) (z [[rec]] 0)] ⧗ Number → (List Number)
+	rec =?0 case-end case-rec
+		case-rec (1 (0 / (+10))) ; (0 % (+10))
+		case-end empty
+
+:test (number→list (+0)) ({}(+0))
+
 # converts a list of digits into a balanced ternary number
-from-digits foldl [[(+10) ⋅ 1 + 0]] (+0)
+list→number foldl [[(+10) ⋅ 1 + 0]] (+0) ⧗ (List Number) → Number
 
-:test (from-digits ((+4) : ((+2) : {}(+0)))) ((+420))
-:test (from-digits empty) ((+0))
-
+:test (list→number ((+4) : ((+2) : {}(+0)))) ((+420))
+:test (list→number empty) ((+0))

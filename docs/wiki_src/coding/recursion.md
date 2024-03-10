@@ -69,9 +69,9 @@ g [[[=?0 true (1 --0)]]]
 # the even? recursive call will be the first argument (2)
 h [[[=?0 false (2 --0)]]]
 
-even? head (y* g h) ⧗ Number → Boolean
+even? head (y* (g : {}h)) ⧗ Number → Boolean
 
-odd? tail (y* g h) ⧗ Number → Boolean
+odd? tail (y* (g : {}h)) ⧗ Number → Boolean
 ```
 
 Read more about this in the blog post [Variadic fixed-point

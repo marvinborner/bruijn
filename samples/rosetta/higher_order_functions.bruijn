@@ -1,0 +1,7 @@
+first [0 [[0]]]
+
+second [first [[1]]]
+
+:test (second) ([[[[0]]]])
+
+main [[0]]

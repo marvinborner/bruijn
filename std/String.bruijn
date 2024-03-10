@@ -14,8 +14,11 @@ eq? eq? B.eq? ⧗ String → String → Boolean
 :test ("ab" =? "ab") (true)
 :test ("ab" =? "aa") (false)
 
+# prefix for comparing functions
+?‣ &eq?
+
 # returns true if character is part of a string
-in? in? B.eq? ⧗ Char → String → Boolean
+in? B.?in? ⧗ Char → String → Boolean
 
 …∈… in?
 
@@ -29,7 +32,7 @@ ni? \in? ⧗ String → Char → Boolean
 :test ("ab" ∋ 'c') (false)
 
 # converts a string of digits into a number
-string→unsigned-number from-digits ∘ (map C.char→number) ⧗ String → Number
+string→unsigned-number list→number ∘ (map C.char→number) ⧗ String → Number
 
 :test (%(string→unsigned-number "123")) ((+123))
 
@@ -50,7 +53,7 @@ string→number [C.les? ^0 '0' signed unsigned] ⧗ String → Number
 :test (%(string→number "-123")) ((-123))
 
 # converts a number to a string
-number→string (map C.number→char) ∘ digits ⧗ Number → String
+number→string (map C.number→char) ∘ number→list ⧗ Number → String
 
 :test (number→string (+123)) ("123")
 

@@ -119,6 +119,9 @@ not-eq? not! ∘∘ eq? ⧗ Unary → Unary → Boolean
 :test ((+1u) ≠? (+1u)) (false)
 :test ((+42u) ≠? (+42u)) (false)
 
+# prefix for comparing functions
+?‣ &eq?
+
 # returns eq, lt, gt depending on comparison of two numbers
 compare-case [[[[[go (1 - 0) (0 - 1)]]]]] ⧗ a → b → c → Unary → Unary → d
 	go [[=?0 (=?1 6 5) 4]]

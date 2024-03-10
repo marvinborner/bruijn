@@ -4,8 +4,61 @@
 
 :import std/Number/Conversion .
 
+# prefix for comparing functions
+?‣ &eq?
+
 # converts a char to a balanced ternary number
-char→number [binary→ternary (0 - '0')] ⧗ Char → Number
+char→number (\sub '0') → binary→ternary ⧗ Char → Number
+
+:test (char→number '0') ((+0))
 
 # converts a balanced ternary number to a char
-number→char ['0' + (ternary→binary 0)] ⧗ Number → Char
+number→char ternary→binary → (add '0') ⧗ Number → Char
+
+:test (number→char (+0)) ('0')
+:test (number→char (+9)) ('9')
+
+# returns true if char is in A-Z
+uppercase? φ and? (\geq? 'A') (\leq? 'Z') ⧗ Char → Boolean
+
+:test (uppercase? 'a') (false)
+:test (uppercase? 'z') (false)
+:test (uppercase? 'A') (true)
+:test (uppercase? 'Z') (true)
+:test (uppercase? '0') (false)
+
+# returns true if char is in a-z
+lowercase? φ and? (\geq? 'a') (\leq? 'z') ⧗ Char → Boolean
+
+:test (lowercase? 'a') (true)
+:test (lowercase? 'z') (true)
+:test (lowercase? 'A') (false)
+:test (lowercase? 'Z') (false)
+:test (lowercase? '0') (false)
+
+# returns true if char is in a-zA-Z
+alpha? φ or? lowercase? uppercase? ⧗ Char → Boolean
+
+:test (alpha? 'a') (true)
+:test (alpha? 'z') (true)
+:test (alpha? 'A') (true)
+:test (alpha? 'Z') (true)
+:test (alpha? '0') (false)
+
+# returns true if char is in 0-9
+numeric? φ and? (\geq? '0') (\leq? '9') ⧗ Char → Boolean
+
+:test (numeric? '0') (true)
+:test (numeric? '9') (true)
+:test (numeric? 'a') (false)
+
+# returns true if char is in a-zA-Z0-9
+alpha-numeric? φ or? numeric? alpha? ⧗ Char → Boolean
+
+:test (alpha-numeric? 'a') (true)
+:test (alpha-numeric? 'z') (true)
+:test (alpha-numeric? 'A') (true)
+:test (alpha-numeric? 'Z') (true)
+:test (alpha-numeric? '0') (true)
+:test (alpha-numeric? '9') (true)
+:test (alpha-numeric? '$') (false)

@@ -1,0 +1,15 @@
+# TODO: Too slow to be published. Probably needs Maps/Sets/Vectors/sth.
+
+:import std/Combinator .
+:import std/Char C
+:import std/Math .
+:import std/List .
+
+# very slow but elegant
+de-bruijn y [[[C.?infix? (take 0 1) ~1 case-end case-rec]]]
+	case-rec max-by (compare ⋔ length) ([3 (0 : 2) 1] <$> (C.?nub 1))
+	case-end drop 0 1
+
+:test (de-bruijn "abcd" (+2)) ("dccaadbbacbdabcd")
+
+main [[0]]

@@ -1,5 +1,5 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# ternary implementation of T.Æ. Mogensen and Douglas W. Jones (see refs in README)
+# inspiration from T.Æ. Mogensen and Douglas W. Jones (see refs in README)
 # → refer to std/Math for more advanced functions
 
 :import std/Box B
@@ -65,6 +65,9 @@ t⁰? [0 false false true] ⧗ Trit → Boolean
 :test (t⁺ ↑ (+42)) (↑⁺(+42))
 :test (t⁰ ↑ (+42)) (↑⁰(+42))
 
+# lshifts a zero trit into a balanced ternary number
+←⁰‣ [[[[[4 (0 3) 2 1 0]]]]]
+
 # infinity
 # WARNING: using this mostly results in undefined behavior! (TODO?)
 infty z [[[[[1 (4 1)]]]]] ⧗ Number
@@ -129,6 +132,20 @@ lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
 :test (lst (+42)) (t⁰)
 
 # extracts most significant trit from a balanced ternary number
+mst* [B.get t⁰ (0 z a⁻ a⁺ a⁰)] ⧗ Number → Trit
+	z B.empty
+	a⁻ [B.store! 0 t⁻]
+	a⁺ [B.store! 0 t⁺]
+	a⁰ [B.store! 0 t⁰]
+
+:test (mst* (-1)) (t⁻)
+:test (mst* (+0)) (t⁰)
+:test (mst* (+1)) (t⁺)
+:test (mst* (+42)) (t⁺)
+:test (mst* [[[[(0 (1 (0 3)))]]]]) (t⁰)
+
+# extracts most significant trit from a balanced ternary number
+# ignores leading 0s
 mst [B.get t⁰ (0 z a⁻ a⁺ a⁰)] ⧗ Number → Trit
 	z B.empty
 	a⁻ [B.store! 0 t⁻]
@@ -214,6 +231,9 @@ not-eq? not! ∘∘ eq? ⧗ Number → Number → Boolean
 :test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (true)
 :test ((+1) ≠? (+0)) (true)
 :test ((-42) ≠? (+42)) (true)
+
+# prefix for comparing functions
+?‣ &eq?
 
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
 inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
@@ -339,6 +359,23 @@ abs [<?0 -0 0] ⧗ Number → Number
 :test (|(-1)) ((+1))
 :test (|(+42)) ((+42))
 
+# returns max number of two
+max [[(1 ≤? 0) 0 1]] ⧗ Number → Number → Number
+
+:test (max (+5) (+2)) ((+5))
+
+# returns min number of two
+min [[(1 ≤? 0) 1 0]] ⧗ Number → Number → Number
+
+:test (min (+5) (+2)) ((+2))
+
+# clamps a number between two numbers
+clamp [[[min 1 (max 0 2)]]] ⧗ Number → Number → Number
+
+:test (clamp (+0) (+5) (+3)) ((+3))
+:test (clamp (+0) (+5) (-2)) ((+0))
+:test (clamp (+0) (+5) (+7)) ((+5))
+
 # apply a function n times to a value
 # ~> substitute church numbers
 apply z [[[rec]]] ⧗ Number → (a → a) → a → a
@@ -396,6 +433,17 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 :test (/³*(-6) =? (-2)) (true)
 :test (/³*(+5) =? (+1)) (true)
 
+# ceiled integer log3 by counting number of trits
+# also counts leading 0s
+log3* [0 (+0) inc inc inc] ⧗ Number → Number
+
+# ceiled integer log3 by counting number of trits
+log3 log3* ∘ strip ⧗ Number → Number
+
+:test (log3 (+0)) ((+0))
+:test (log3 (+5)) ((+3))
+:test (log3 (+42)) ((+5))
+
 # returns the smallest number in a range such that a predicate is true
 binary-search z [[[[rec]]]] ⧗ (Number → Boolean) → Number → Number → Number
 	rec (0 =? 1) case-end case-search
@@ -417,9 +465,28 @@ ternary-search z [[[[rec]]]] ⧗ (Number → Number) → Number → Number → N
 
 # finds quotient and remainder using binary search
 # TODO: fix for numbers <=1 (case analysis, q,r<0)
-# TODO: faster algorithm
 quot-rem [[go --(binary-search [0 ⋅ 1 >? 2] (+0) 1)]] ⧗ Number → Number → (Pair Number Number)
 	go [0 : (2 - (1 ⋅ 0))]
+
+# pads a ternary number with 0s until it's as long a another ternary number
+pad y [[[(log3* 0) <? (log3* 1) (2 1 ←⁰0) 0]]] ⧗ Number → Number → Number
+
+# forces number to be exactly n trits long (either pad/trim)
+force [[[0 <? 2 pad trim] (log3* 0)]] ⧗ Number → Number
+	pad y [[[=?1 0 (2 --1 ←⁰0)]]] (2 - 0) 1
+	trim y [[[=?1 0 (2 --1 /³0)]]] (0 - 2) 1
+
+# technique by Douglas W. Jones
+# TODO: fix
+quot-rem* [[[[z [[[[rec]]]] 1 (+0) 3]] ((max (log3 1) (log3 0)) ⋅ (+2)) 0]]
+	rec =?2 (0 : 1) ([[compare-case eq lt gt 1 (+0)]] rem' quo')
+		rem' force 5 ((mst* (force 5 0)) ↑ (+0) + ↑⁰1)
+		quo' force 5 ↑⁰0
+		eq 5 --4 1 0
+		lt [(-0 >? 2) ⋁? ((-0 =? 2) ⋀? <?1) fix (6 --5 2 1)] (force 7 (1 + 6))
+			fix 6 --5 0 --1
+		gt [(-0 <? 2) ⋁? ((-0 =? 2) ⋀? >?1) fix (6 --5 2 1)] (force 7 (1 - 6))
+			fix 6 --5 0 ++1
 
 # divs two balanced ternary numbers
 div ^‣ ∘∘ quot-rem ⧗ Number → Number
@@ -461,20 +528,3 @@ odd? ¬‣ ∘ even? ⧗ Number → Boolean
 :test (≠²?(+1)) (true)
 :test (≠²?(+41)) (true)
 :test (≠²?(+42)) (false)
-
-# returns max number of two
-max [[(1 ≤? 0) 0 1]] ⧗ Number → Number → Number
-
-:test (max (+5) (+2)) ((+5))
-
-# returns min number of two
-min [[(1 ≤? 0) 1 0]] ⧗ Number → Number → Number
-
-:test (min (+5) (+2)) ((+2))
-
-# clamps a number between two numbers
-clamp [[[min 1 (max 0 2)]]] ⧗ Number → Number → Number
-
-:test (clamp (+0) (+5) (+3)) ((+3))
-:test (clamp (+0) (+5) (-2)) ((+0))
-:test (clamp (+0) (+5) (+7)) ((+5))

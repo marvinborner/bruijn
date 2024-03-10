@@ -216,9 +216,9 @@ filter z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
 		case-filter 4 2 (cons 2) i (5 4 1)
 		case-end empty
 
-…<#>… \filter
+…<#>… filter
 
-:test (((+1) : ((+0) : {}(+3))) <#> zero?) ({}(+0))
+:test (zero? <#> ((+1) : ((+0) : {}(+3)))) ({}(+0))
 
 # returns the last element of a list
 last ^‣ ∘ <~>‣ ⧗ (List a) → a
@@ -315,6 +315,12 @@ drop-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
 
 :test (drop-while zero? ((+0) : ((+0) : {}(+1)))) ({}(+1))
 
+# returns all tails of a list
+tails z [[rec]] ⧗ (List a) → (List a)
+	rec ∅?0 {}empty (0 : (1 ~0))
+
+:test (tails "abc") ("abc" : ("bc" : ("c" : {}empty)))
+
 # returns all combinations of two lists
 cross [[[[1 : 0] <$> 1] <++> 1]] ⧗ (List a) → (List b) → (List (Pair a b))
 
@@ -323,8 +329,6 @@ cross [[[[1 : 0] <$> 1] <++> 1]] ⧗ (List a) → (List b) → (List (Pair a b))
 # returns all combinations of three lists
 # TODO: add/use triple type (list element types can be different)
 cross3 [[[[[[2 : (1 : {}0)] <$> 2] <++> 2] <++> 2]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
-
-# :test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
 
 # returns pair of take-while and drop-while
 span [[(take-while 1 0) : (drop-while 1 0)]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
@@ -369,8 +373,8 @@ split-list-by z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List (List a))
 sort-asc z [[rec]]
 	rec 0 [[[case-sort]]] case-end
 		case-sort (4 lesser) ++ {}(2) ++ (4 greater)
-			lesser 1 <#> (\les? 2)
-			greater 1 <#> (\geq? 2)
+			lesser (\les? 2) <#> 1
+			greater (\geq? 2) <#> 1
 		case-end empty
 
 :test (sort-asc ((+3) : ((+2) : {}(+1)))) ((+1) : ((+2) : {}(+3)))
@@ -379,8 +383,8 @@ sort-asc z [[rec]]
 sort-desc z [[rec]]
 	rec 0 [[[case-sort]]] case-end
 		case-sort (4 greater) ++ {}(2) ++ (4 lesser)
-			greater 1 <#> (\geq? 2)
-			lesser 1 <#> (\les? 2)
+			greater (\geq? 2) <#> 1
+			lesser (\les? 2) <#> 1
 		case-end empty
 
 :test (sort-desc ((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
@@ -416,6 +420,24 @@ eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolea
 :test (eq? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
 :test (eq? …=?… empty empty) (true)
 
+# returns true if list is prefix of other list
+prefix? z [[[[rec]]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
+	rec ∅?1 true (∅?0 false go)
+		go 1 [[2 [[(6 3 1) ⋀? (7 6 2 0)]]]]
+
+:test (prefix? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
+:test (prefix? …=?… ((+1) : {}(+2)) ((+0) : ((+1) : {}(+2)))) (false)
+:test (prefix? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
+:test (prefix? …=?… empty empty) (true)
+
+# returns true if list is within other list
+infix? [[[any? (prefix? 2 1) (tails 0)]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
+
+:test (infix? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
+:test (infix? …=?… ((+1) : {}(+2)) ((+0) : ((+1) : {}(+2)))) (true)
+:test (infix? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
+:test (infix? …=?… empty empty) (true)
+
 # finds the first index that matches a predicate
 find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
 	rec 0 [[[case-find]]] case-end
@@ -426,7 +448,7 @@ find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
 :test (find-index (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
 :test (find-index (…=?… (+4)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((-1))
 
-# removes first element that match an eq predicate
+# removes first element that matches an eq predicate
 remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)
 	rec 0 [[[case-remove]]] case-end
 		case-remove (5 2 4) 1 (2 : (6 5 4 1))
@@ -437,7 +459,7 @@ remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)
 # removes duplicates from list based on eq predicate (keeps first occurrence)
 nub z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List a)
 	rec 0 [[[case-nub]]] case-end
-		case-nub 2 : (5 4 (1 <#> [¬(5 0 3)]))
+		case-nub 2 : (5 4 ([¬(5 0 3)] <#> 1))
 		case-end empty
 
 :test (nub …=?… ((+1) : ((+2) : {}(+3)))) ((+1) : ((+2) : {}(+3)))

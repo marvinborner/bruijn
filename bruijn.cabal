@@ -36,6 +36,7 @@ data-files:
     std/test_all.sh
     std/AIT/Beavers.bruijn
     std/Number/Binary.bruijn
+    std/Number/Bruijn.bruijn
     std/Number/Conversion.bruijn
     std/Number/Pairing.bruijn
     std/Number/Ternary.bruijn
