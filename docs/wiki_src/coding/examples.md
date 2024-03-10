@@ -1,7 +1,8 @@
 # Examples
 
 You can find a lot more examples on [Rosetta
-code](https://rosettacode.org/wiki/Category:Bruijn).
+code](https://rosettacode.org/wiki/Category:Bruijn) or on the dedicated
+interactive [samples](/samples/) page.
 
 ## Hello world!
 

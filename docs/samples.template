@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href="index.css" type="text/css" media="all">
+		<title>bruijn samples</title>
+	</head>
+	<body>
+		<h1>bruijn samples</h1>
+These are some code samples written in the bruijn programming language. Most of the examples are copies of our solutions on <a href="https://rosettacode.org/wiki/Category:Bruijn">Rosetta Code</a>. All examples are written by bruijn's contributors and may be used according to the <a href="https://en.wikipedia.org/wiki/GNU_Free_Documentation_License">GNU FDL license</a>.
+		<ul>
+			LINKS
+		</ul>
+	</body>
+</html>

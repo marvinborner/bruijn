@@ -1,16 +1,19 @@
 // high-quality syntax highlighter
-// TODO: Implement actual highlighter (or fix many regex bugs)
+// TODO: Implement actual parser (or fix MANY regex bugs)
 
 const term = (t) =>
   t
+    .replaceAll(
+      /(?<!\([+-]\d*)(?<![a-z][^&; ]*)([0-9])/g,
+      "<span class='index'>$1</span>",
+    )
     .replaceAll(/'(.)'/g, "<span class='string'>'$1'</span>")
     .replaceAll(/"([^\"]*)"/g, "<span class='string'>\"$1\"</span>")
-    .replaceAll(/(\([+-][0-9]+[ubt]?\))/g, "<span class='number'>$1</span>")
+    .replaceAll(/(\([+-][0-9]+[ubtd]?\))/g, "<span class='number'>$1</span>")
     .replaceAll(/(?<!\>)(\()/g, "<span class='left-app'>(</span>")
     .replaceAll(/(\))(?!\<)/g, "<span class='right-app'>)</span>")
     .replaceAll("[", "<span class='left-abs'>[</span>")
-    .replaceAll("]", "<span class='right-abs'>]</span>")
-    .replaceAll(/(?<!\([+-]\d*)([0-9])/g, "<span class='index'>$1</span>");
+    .replaceAll("]", "<span class='right-abs'>]</span>");
 
 const highlightTerm = (elem) => {
   elem.innerHTML = term(elem.innerHTML);
@@ -33,6 +36,10 @@ const highlight = (elem) => {
         `<span class="com">:input</span> <a href='/std/${fixPath(
           p,
         )}.bruijn.html'>std/${p}</a>`,
+    )
+    .replaceAll(
+      /^:import (.*) (.*)$/gm,
+      (_, p, s) => `<span class="com">:import</span> ${p} ${s}`,
     )
     .replaceAll(
       /^:test (\(.*\)) (\(.*\))$/gm,

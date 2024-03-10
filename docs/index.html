@@ -109,13 +109,14 @@ hello world!</pre
         <pre class="code">
 <span class="repl">></span> <span class="symbol">length</span> <span class="meta">`</span><span class="symbol">factorial</span>
 <span class="repl">></span> <span class="prefix">!</span><span class="left-app">(</span><span class="symbol">swap</span> <span class="meta">`</span><span class="left-app">(</span><span class="unary">(+2u)</span> <span class="unary">(+3u)</span><span class="right-app">))</span>
-<span class="repl">></span> <span class="symbol">lhs</span> <span class="left-app">(</span><span class="symbol">blc→meta</span> <span class="string">"010000100000110"</span><span class="right-app">)</span></span>
+<span class="repl">></span> <span class="symbol">lhs</span> <span class="left-app">(</span><span class="symbol">blc→meta</span> <span class="string">"010000100000110"</span><span class="right-app">)</span>
 </pre>
       </div>
     </div>
 
     <div class="bar big">
-      Learn more: <a href="wiki/">Wiki</a>, <a href="std/">Std</a>
+      Learn more: <a href="wiki/">Wiki</a>, <a href="std/">Std</a>,
+      <a href="samples/">Samples</a>
     </div>
 
     <div class="instructions">
@@ -142,6 +143,14 @@ in std/Number/Unary.bruijn:35
       <h1>Why?</h1>
       <ul>
         <li>
+          By having a very small core (the reducer), bruijn is safe, consistent,
+          and (potentially) proven to be correct!
+        </li>
+        <li>
+          Since it doesn't have builtin functions, bruijn is independent of
+          hardware internals and could easily be run on almost any architecture.
+        </li>
+        <li>
           Compiled binary lambda calculus is incredibly expressive and tiny.
           Read the articles by
           <a href="https://justine.lol/lambda/#why">Justine</a> and
@@ -149,20 +158,12 @@ in std/Number/Unary.bruijn:35
         </li>
         <li>
           Exploring different encodings of data as function abstractions is
-          fascinating.
+          really fascinating.
         </li>
         <li>
-          Pure lambda calculus can be very beautiful. You will understand if you
-          try to have some fun with it.
-        </li>
-        <li>
-          The use of De Bruijn indices creates a clear distinction between
-          references to arguments and references to identifiers/functions.
-        </li>
-        <li>
-          I don't like naming parameters of functions. De Bruijn indices are a
+          Naming parameters of functions is annoying. De Bruijn indices are a
           universal reference independent of the function and can actually help
-          readability if you're familiar enough.
+          readability!
         </li>
         <li>
           Really, <a href="https://justforfunnoreally.dev/">just for fun</a>.
