@@ -348,7 +348,7 @@ geq? \leq? ⧗ Number → Number → Boolean
 :test ((+2) ≥? (+2)) (true)
 :test ((+3) ≥? (+2)) (true)
 
-# returns eq, lt, gt depending on comparison of two numbers
+# returns eq, gt, lt depending on comparison of two numbers
 compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 	go [=?0 5 (>?0 4 3)]
 
@@ -356,11 +356,22 @@ compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 # also: spaceship operator
 compare compare-case (+0) (+1) (-1) ⧗ Number → Number → Number
 
+…<=>… compare
+
+<=>‣ &compare
+
 :test (compare (+2) (+2)) ((+0))
 :test (compare (+2) (+1)) ((+1))
 :test (compare (+1) (+2)) ((-1))
 
-…<=>… compare
+# returns true if comparison result is equal (EQ)
+c-eq? eq? (+0) ⧗ Number → Number
+
+# returns true if comparison result is less than (LT)
+c-les? eq? (-1) ⧗ Number → Number
+
+# returns true if comparison result is greater than (GT)
+c-gre? eq? (+1) ⧗ Number → Number
 
 # negates a balanced ternary number if <0
 abs [<?0 -0 0] ⧗ Number → Number

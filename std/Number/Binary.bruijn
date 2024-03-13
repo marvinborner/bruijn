@@ -359,7 +359,7 @@ geq? \leq? ⧗ Binary → Binary → Boolean
 :test ((+2b) ≥? (+2b)) (true)
 :test ((+3b) ≥? (+2b)) (true)
 
-# returns eq, lt, gt depending on comparison of two numbers
+# returns eq, gt, lt depending on comparison of two numbers
 # TODO: remove ternary conversion
 compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c → Binary → Binary → d
 
@@ -367,12 +367,15 @@ compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c
 # also: spaceship operator
 compare compare-case (+0) (+1) (-1) ⧗ Binary → Binary → Number
 
+…<=>… compare
+
+<=>‣ &compare
+
 :test (compare (+2b) (+2b)) ((+0))
 :test (compare (+2b) (+1b)) ((+1))
 :test (compare (+1b) (+2b)) ((-1))
 
-…<=>… compare
-
+# prefix for comparing functions
 # returns max number of two
 max [[(1 ≤? 0) 0 1]] ⧗ Binary → Binary → Binary
 

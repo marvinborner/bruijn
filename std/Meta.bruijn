@@ -3,8 +3,8 @@
 
 :import std/Logic .
 :import std/Combinator .
-:import std/Number/Unary .
 :import std/List .
+:import std/Number/Unary .
 :import std/Number/Pairing .
 :import std/Number/Conversion .
 :import std/Pair P

@@ -17,6 +17,59 @@ eq? eq? B.eq? ⧗ String → String → Boolean
 # prefix for comparing functions
 ?‣ &eq?
 
+# returns eq, gt, lt depending on comparison of two numbers
+compare-case B.<=>compare-case ⧗ a → b → c → String → String → d
+
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare compare-case (+0) (+1) (-1) ⧗ String → String → Number
+
+…<=>… compare
+
+<=>‣ &compare
+
+:test (compare "2" "2") ((+0))
+:test (compare "2" "1") ((+1))
+:test (compare "1" "2") ((-1))
+:test (compare "12" "1") ((-1))
+:test (compare "1" "12") ((+1))
+
+# returns true if string is lexically less than other string
+les? c-les? ∘∘ compare ⧗ String → String → Boolean
+
+…<?… les?
+
+:test ("1" <? "2") (true)
+:test ("2" <? "2") (false)
+:test ("3" <? "2") (false)
+
+# returns true if string is lexically greater than other string
+gre? \les? ⧗ String → String → Boolean
+
+…>?… gre?
+
+:test ("1" >? "2") (false)
+:test ("2" >? "2") (false)
+:test ("3" >? "2") (true)
+
+# returns true if string is lexically less than or equal to other string
+leq? not! ∘∘ gre? ⧗ String → String → Boolean
+
+…≤?… leq?
+
+:test ("1" ≤? "2") (true)
+:test ("2" ≤? "2") (true)
+:test ("3" ≤? "2") (false)
+
+# returns true if number is greater than or equal to other string
+geq? \leq? ⧗ String → String → Boolean
+
+…≥?… geq?
+
+:test ("1" ≥? "2") (false)
+:test ("2" ≥? "2") (true)
+:test ("3" ≥? "2") (true)
+
 # returns true if character is part of a string
 in? B.?in? ⧗ Char → String → Boolean
 

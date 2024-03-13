@@ -4,8 +4,6 @@
 #   Wadsworth, Christopher. "Some unusual λ-calculus numeral systems."
 # very sad indeed
 
-:import std/Combinator . 
-
 # increments De Bruijn numeral
 inc [[[2 1]]]
 

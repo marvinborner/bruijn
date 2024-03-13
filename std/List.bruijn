@@ -420,6 +420,15 @@ eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolea
 :test (eq? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
 :test (eq? …=?… empty empty) (true)
 
+# returns eq, lt, gt depending on comparison of two lists and comparison function
+compare-case z [[[[[[[rec]]]]]]] ⧗ (a → a → Boolean) → c → d → e → (List a) → (List a) → Boolean
+	rec ∅?1 (∅?0 4 3) (∅?0 2 go)
+		go [=?0 (7 6 5 4 3 ~2 ~1) 0] (5 ^1 ^0)
+
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare [compare-case 0 (+0) (+1) (-1)] ⧗ (a → a → Boolean) → Binary → Binary → Number
+
 # returns true if list is prefix of other list
 prefix? z [[[[rec]]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
 	rec ∅?1 true (∅?0 false go)
