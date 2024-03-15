@@ -419,7 +419,7 @@ evalFileConf conf = do
     Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
                                        (Context "" (_nicePath conf))
     Just EnvDef { _exp = e } -> do
-      red <- optimizedReduce conf (Application e arg)
+      red <- optimizedReduce conf { _hasArg = True } (Application e arg)
       showResult red (Environment env)
 
 exec :: EvalConf -> (String -> IO (Either IOError a)) -> (a -> String) -> IO ()
@@ -429,7 +429,7 @@ exec conf rd conv = do
   case f of
     Left  exception -> print (exception :: IOError)
     Right f'        -> do
-      red <- optimizedReduce conf (Application e arg)
+      red <- optimizedReduce conf { _hasArg = True } (Application e arg)
       showResult red (Environment M.empty)
       where e = fromBinary $ conv f'
 

@@ -23,7 +23,7 @@ Say we want a function `g`{.bruijn} to be able to call itself. With the
 With this equivalence, `g`{.bruijn} is able to call itself since its
 outer argument is the initial function again.
 
-Example for using `y`{.bruijn} to find the factorial of 2:
+Example for using `y`{.bruijn} to find the factorial of 3:
 
 ``` bruijn
 # here, `1` is the induced outer argument `(y g)`
@@ -57,7 +57,8 @@ suggestions.
 For solving mutual recurrence relations, you can use the *variadic
 fixed-point combinator* `y*`{.bruijn} from
 [`std/List`](/std/List.bruijn.html). This combinator produces all the
-fixed points of a function as an iterable [list](data-structures.md).
+fixed points of given functions as an iterable
+[list](data-structures.md).
 
 Example `even?`{.bruijn}/`odd?`{.bruijn} implementation using
 `y*`{.bruijn}:

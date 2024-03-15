@@ -38,11 +38,11 @@ Laziness can (in some cases) produce huge performance boosts. For
 example:
 
 ``` bruijn
-# 11 seconds
-:time (+10) ** (+500)
+# 10 seconds
+:time (+10) ** (+1000)
 
-# 0.1 seconds
-:time ((+10) ** (+500)) =? (+400)
+# 0.02 seconds
+:time ((+10) ** (+1000)) =? (+42)
 ```
 
 This works because a ternary number is just a concatenation of trits

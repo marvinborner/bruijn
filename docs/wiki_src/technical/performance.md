@@ -11,6 +11,7 @@ comparable as possible:
 -   Bruijn uses efficient data structures by default. For example, for
     nary numbers we use results of Torben Mogensens investigations (as
     described in [number/byte encodings](../coding/data-structures.md)).
+-   Bruijn has a `-O` flag that enables abstraction of duplicated terms
 -   The lambda calculus optimizers
     [BLoC](https://github.com/marvinborner/bloc) and
     [BLoCade](https://github.com/marvinborner/blocade) are directly

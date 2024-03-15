@@ -1,0 +1,3 @@
+:import std/Math .
+
+main [(fac (+100)) + (fac (+100))]
