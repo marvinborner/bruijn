@@ -19,6 +19,7 @@ nav:
     - introduction/setup.md
     - introduction/lambda-calculus.md
     - introduction/syntax.md
+    - introduction/animations.md
   - Coding:
     - coding/REPL.md
     - coding/mixfix.md

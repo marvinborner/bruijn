@@ -11,7 +11,6 @@ prefix="seeelefant"
 for file in $files; do
 	name=$(cut -c8- <<<"$file")
 	_prefix=$(cut -c8- <<<"$file" | sed -rn 's@^(.*)/.*$@\1@p')
-	echo "$_prefix"
 	if ! [ "$prefix" = "$_prefix" ]; then
 		prefix=$_prefix
 		links="$links\n</ol><h2>std/$prefix</h2><ol>"
