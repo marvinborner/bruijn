@@ -37,7 +37,7 @@ again.
 :test (`[0 `,[0]]) (`[0 [0]])
 ```
 
-Unquoted De Bruijn indices will get bound to the respective abstraction
+Unquoted de Bruijn indices will get bound to the respective abstraction
 outside of its meta encoding.
 
 ``` bruijn
@@ -46,7 +46,7 @@ add-two `[0 + (+2u)]
 
 :test (!add-two (+2u)) ((+4u))
 
-# adds two using a reaching De Bruijn index
+# adds two using a reaching de Bruijn index
 add-two* [`(,0 + (+2u))]
 
 :test (!(add-two* `(+2u))) ((+4u))

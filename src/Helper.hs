@@ -407,7 +407,7 @@ decimalToUnary n | n < 0     = decimalToUnary 0
   gen 0  = Bruijn 0
   gen n' = Application (Bruijn 1) (gen (n' - 1))
 
--- Decimal to De Bruijn encoding
+-- Decimal to de Bruijn encoding
 decimalToDeBruijn :: Integer -> Expression
 decimalToDeBruijn n | n < 0     = decimalToDeBruijn 0
                     | otherwise = gen n

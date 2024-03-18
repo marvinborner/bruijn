@@ -1,6 +1,6 @@
 # Lambda calculus
 
-Bruijn is based on De Bruijn indexed lambda calculus.
+Bruijn is based on de Bruijn indexed lambda calculus.
 
 ## Traditional lambda calculus
 
@@ -11,15 +11,15 @@ Lambda calculus basically has three types of terms:
     `E` respectively. It's helpful to think of abstractions as anonymous
     functions.
 -   *Application*: `(f x)` applies `f` to `x` -- the standard convention
-    allows repeated left-associative application: `(f x y z)` is
+    allows repeated left-associative application: `f x y z` is
     `(((f x) y) z)`.
 
 Combining these terms and removing redundant parentheses can result in
-terms like λx.λy.x y, basically representing a function with two
+terms like `λx.λy.x y`, basically representing a function with two
 parameters that uses its second parameter as an argument for its first.
 
 Evaluating terms is called *reduction*. There's only one rule you need
-to know: `((λx.E) A)` becomes `E[x := A]` -- that is, calling an
+to know: `(λx.E A)` becomes `E[x := A]` -- that is, calling an
 abstraction with an argument substitutes the argument inside the body of
 the abstraction ("β-reduction"). There are many different kinds of
 reduction techniques, but they basically all come back to this simple
@@ -28,11 +28,11 @@ the order of reduction doesn't change the eventual result.
 
 When we talk about reduction in bruijn, we typically mean "reduction
 until normal form" -- we reduce until the term can't be reduced any
-further (there does not exist any `((λx.E) A)`).
+further (there does not exist any `(λx.E A)`).
 
-    ((λx.x) (λx.x))    ⤳ (λx.x)
-    ((λx.x) (λx.λy.x)) ⤳ (λx.λy.x)
-    ((λx.λy.x) (λx.x)) ⤳ (λy.λx.x)
+    (λx.x λx.x)     ⤳ λx.x
+    (λx.x λx.λy.x)  ⤳ λx.λy.x
+    (λx.λy.x (λx.x) ⤳ λy.λx.x
 
 ## De Bruijn indices
 
@@ -43,15 +43,15 @@ many variables it's also really complicated to compare two expressions,
 since you first need to resolve shadowed and conflicting variables
 ("α-conversion").
 
-De Bruijn replace the concept of variables by using numeric references
-to the abstraction layer. Let me explain using an example: The
-expression `λx.x` becomes `λ0` -- the `0` refers to the first parameter
-of the abstraction. Subsequently, the expression `λx.λy.x y` becomes
-`λλ1 0`. Basically, if you're reading from left to right starting at the
-abstraction you want to bind, you increment on every occurring `λ` until
-you arrive at the index.
+De Bruijn indices replace the concept of variables by using numeric
+references to the abstraction layer. Let me explain using an example:
+The expression `λx.x` becomes `λ0` -- the `0` refers to the first
+parameter of the abstraction. Subsequently, the expression `λx.λy.x y`
+becomes `λλ1 0`. Basically, if you're reading from left to right
+starting at the abstraction you want to bind, you increment on every
+occurring `λ` until you arrive at the index.
 
-While confusing at first, programs written with De Bruijn indices can
+While confusing at first, programs written with de Bruijn indices can
 actually be way easier to understand than the equivalent program with
 named variables.
 

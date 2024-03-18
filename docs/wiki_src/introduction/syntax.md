@@ -2,7 +2,7 @@
 
 Bruijn has an arguably weird syntax, although it's not strictly meant as
 an esoteric programming language. Most notably the usage of lambda
-calculus logic, combinators, and De Bruijn indices can be confusing at
+calculus logic, combinators, and de Bruijn indices can be confusing at
 first -- it's definitely possible to get used to them though!
 
 Bruijn uses a [variation of lambda calculus](lambda-calculus.md). For
@@ -42,7 +42,7 @@ normal lambda calculus reducer.
 
 ## Open terms
 
-If you use De Bruijn indices that reach out of their environment, you
+If you use de Bruijn indices that reach out of their environment, you
 have created an *open term*. Depending on the context, these terms are
 typically seen as invalid if standing by themself.
 

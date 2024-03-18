@@ -3,7 +3,7 @@
 </p>
 
 > A purely functional programming language based on lambda calculus and
-> De Bruijn indices written in Haskell.
+> de Bruijn indices written in Haskell.
 
 Pronunciation: `/bɹaʊn/`.
 
