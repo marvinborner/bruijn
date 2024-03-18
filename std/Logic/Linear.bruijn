@@ -1,0 +1,57 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# binary logic but every abstraction is referred to *exactly once* (linearity)
+# originally by "Harry G. Mairson" in "Linear lambda calculus and PTIME-completeness"
+# could potentially be used for better visuals/graphs or more efficient reduction
+
+# garbage collection hack
+gc [0 [0] [0] [0]] ⧗ LinearBoolean → (a → a)
+
+# true
+true [[[0 2 1]]] ⧗ LinearBoolean
+
+# false
+false [[[0 1 2]]] ⧗ LinearBoolean
+
+# inverts boolean value
+not! [[[2 0 1]]] ⧗ LinearBoolean → LinearBoolean
+
+¬‣ not!
+
+:test (¬true) (false)
+:test (¬false) (true)
+
+# true if both args are true
+and? [[1 0 false [[gc 0 1]]]] ⧗ LinearBoolean → LinearBoolean → LinearBoolean
+
+…⋀?… and?
+
+:test (true ⋀? true) (true)
+:test (true ⋀? false) (false)
+:test (false ⋀? true) (false)
+:test (false ⋀? false) (false)
+
+# true if not both args are true
+nand? [[not! (and? 1 0)]] ⧗ LinearBoolean → LinearBoolean → LinearBoolean
+
+:test (nand? true true) (false)
+:test (nand? true false) (true)
+:test (nand? false true) (true)
+:test (nand? false false) (true)
+
+# true if one of the args is true
+or? [[1 true 0 [[gc 0 1]]]] ⧗ LinearBoolean → LinearBoolean → LinearBoolean
+
+…⋁?… or?
+
+:test (true ⋁? true) (true)
+:test (true ⋁? false) (true)
+:test (false ⋁? true) (true)
+:test (false ⋁? false) (false)
+
+# true if both args are false
+nor? [[not! (or? 1 0)]] ⧗ LinearBoolean → LinearBoolean → LinearBoolean
+
+:test (nor? true true) (false)
+:test (nor? true false) (false)
+:test (nor? false true) (false)
+:test (nor? false false) (true)
