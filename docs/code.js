@@ -1,13 +1,14 @@
 // high-quality syntax highlighter
 // TODO: Implement actual parser (or fix MANY regex bugs)
+// TODO: bug: -0 in (-0 0) is not highlighted as index
 
 const term = (t) =>
   t
     .replaceAll(
-      /(?<!\([+-]\d*)(?<![a-z][^&; ]*)([0-9])/g,
+      /(?<!\([+-]\d*)(?<![a-z][^&; ]*)(?<!["'])([0-9])/g,
       "<span class='index'>$1</span>",
     )
-    .replaceAll(/'(.)'/g, "<span class='string'>'$1'</span>")
+    .replaceAll(/'([^\'])'/g, "<span class='string'>'$1'</span>")
     .replaceAll(/"([^\"]*)"/g, "<span class='string'>\"$1\"</span>")
     .replaceAll(/(\([+-][0-9]+[ubtd]?\))/g, "<span class='number'>$1</span>")
     .replaceAll(/(?<!\>)(\()/g, "<span class='left-app'>(</span>")

@@ -510,8 +510,8 @@ iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
 :test (take (+0) (iterate ++‣ (+0))) (empty)
 
-# calculates all fixed points of a given function as a list
-y* [[[0 1] <$> 0] xs] ⧗ a → (List b)
+# calculates all fixed points of given function as a list
+y* [[[0 1] <$> 0] xs] ⧗ (List a) → (List b)
 	xs [[1 <! ([[1 2 0]] <$> 0)]] <$> 0
 
 :test (&(+5) <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)
