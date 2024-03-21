@@ -73,6 +73,12 @@ gcd z [[[=?0 1 (2 0 (1 % 0))]]] ⧗ Number → Number → Number
 :test ((gcd (+10) (+5)) =? (+5)) (true)
 :test ((gcd (+3) (+8)) =? (+1)) (true)
 
+# least common multiple using gcd
+lcm [[=?1 1 (=?0 0 |(1 / (gcd 1 0) ⋅ 0))]] ⧗ Number → Number → Number
+
+:test ((lcm (+12) (+18)) =? (+36)) (true)
+:test ((lcm (+42) (+25)) =? (+1050)) (true)
+
 # power function
 pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number
 
