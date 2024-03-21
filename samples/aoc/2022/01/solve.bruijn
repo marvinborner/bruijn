@@ -1,9 +1,7 @@
+:import std/Combinator .
 :import std/Math .
 :import std/String .
 
-main [answer]
-	numbers string→number <$> (lines 0)
-	parts split-list-by =?‣ numbers
-	sums sum <$> parts
-	answer build (sort-desc sums)
-		build [^0 : ∑(take (+3) 0)]
+main blocks → (map (map string→number)) → (map sum) → sort-desc → res
+	res [^0 : (^0 + ^(~0) + ^(~(~0)))]
+	blocks [split-list-by (eq? "\n") (lines 0)]

@@ -1,9 +1,9 @@
-:import std/Math .
 :import std/String .
+:import std/Math .
 
-part1 [{ [[(1 <? 0) (+1) (+0)]] | 0 , ~0 }]
+part1 [{ [[(1 <? 0) (+1) (+0)]] | 0 ; ~0 }]
 
-part2 [{ [[(1 <? 0) (+1) (+0)]] | 0 , ~(~(~0)) }]
+part2 [{ [[(1 <? 0) (+1) (+0)]] | 0 ; ~(~(~0)) }]
 
 main [parts nums]
 	nums string→number <$> (lines 0)

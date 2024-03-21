@@ -1,7 +1,8 @@
-:import std/Math .
+:import std/Combinator .
 :import std/String .
-:import std/Char C
+:import std/Math .
+:import std/Char .
 
-part1 [[^0 ⋅ (+10) + _0] (filter (gre? (+9)) (C.char→number <$> 0))]
+part1 (filter numeric?) → [^0 : {}(_0)] → string→number
 
 main [∑(part1 <$> (lines 0))]
