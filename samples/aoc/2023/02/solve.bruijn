@@ -1,0 +1,18 @@
+:import std/Combinator .
+:import std/String .
+:import std/Math .
+:import std/Char C
+
+valid? &[[\(C.eq? 0 'r' (1 >? (+12)) (C.eq? 0 'g' (1 >? (+13)) (1 >? (+14))))]]
+
+parse map (game → (map (sets → (map (cubes → (map (tail → cube)))) → concat → maxes)) → head)
+	game (split-list-by (C.eq? ':')) → tail
+	sets split-list-by (C.eq? ';')
+	cubes split-list-by (C.eq? ',')
+	cube (split-list-by (C.eq? ' ')) → &[[(string→number 1) : ^(^0)]]
+	maxes [(m 'r') : ((m 'g') : {}(m 'b'))]
+		m [max-by (compare ⋔ head) (filter [C.eq? (tail 0) 1] 1)]
+
+main lines → parse → enumerate → (φ cons part1 part2)
+	part1 (map &[[1 : (all? valid? 0)]]) → (filter tail) → (map (head → inc)) → sum
+	part2 (map &[(map head) → product]) → sum

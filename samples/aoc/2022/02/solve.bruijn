@@ -1,0 +1,18 @@
+# perfectly normal rock paper scissors :)
+
+:import std/Combinator .
+:import std/String .
+:import std/Number .
+:import std/Number/Conversion .
+
+:import std/Char C
+:import std/Number/Binary B
+
+parse (split-by (C.eq? ' ')) → &[[²³(B.sub ^1 'A') : ²³(B.sub ^0 'X')]]
+
+solve [foldr go (+0)]
+	go &[[[^3 !! 1 + ((drop 0 ^(~3)) ++ (take 0 ^(~3)) !! 1)] (~(~2) !! 1)]] → add
+
+main lines → (map parse) → (φ cons part1 part2)
+	part1 solve (((+1) : ((+2) : {}(+3))) : (((+0) : ((+3) : {}(+6))) : ((+1) : ((+0) : {}(+2)))))
+	part2 solve (((+0) : ((+3) : {}(+6))) : (((+3) : ((+1) : {}(+2))) : ((+0) : ((+1) : {}(+2)))))
