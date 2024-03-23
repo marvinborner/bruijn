@@ -1,0 +1,13 @@
+:import std/Combinator .
+:import std/List .
+:import std/Math .
+
+# could be arbitrary >34, chosen by manual min search
+lim (+34)
+
+solve [∑(crit <#> (take lim fibs))]
+	crit φ [[0 1 0]] even? (\les? 0)
+
+:test ((solve (+4000)) =? (+3382)) ([[1]])
+
+main [solve (+4000000)]

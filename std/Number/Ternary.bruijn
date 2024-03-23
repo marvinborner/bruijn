@@ -500,10 +500,11 @@ double-shift [[[[[left : right]] (force 2 1) (force 2 0)]]]
 	left force 4 ((mst* 0) ↑ (+0) + (↑⁰1))
 	right force 4 ↑⁰0
 
-# efficient quotient/remainder implementation for balanced ternary
+# "efficient" quotient/remainder implementation for balanced ternary
 # technique by Douglas W. Jones
 # algorithm originally intended for fixed-width numbers (=> ugly hacks with force+log3)
 # TODO: remove the final `huh` correction step (probably some off-by-one bug?)
+# TODO: not actually that efficient right now
 quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log3 1) (log3 0)) 0]] ⧗ Number → Number → (Pair Number Number)
 	rec =?2 huh (double-shift 5 1 0 [[compare-case eq gt lt 1 (+0)]])
 		huh (>?1 ⋀? 6) ⋁? (<?1 ⋀? \6) (--0 : (1 + 7)) (0 : 1)

@@ -1,0 +1,17 @@
+:import std/Combinator .
+:import std/Logic .
+:import std/Math .
+:import std/List .
+
+# solve' [head <#> lst]
+# 	check (2 + 1 + 0 =? 3) ⋀? ((0 ** (+2)) + (1 ** (+2)) =? (2 ** (+2))) (true : (2 ⋅ 1 ⋅ 0)) {}false
+# 	lst concat-map [concat-map [map [check] ({ (+1) → --0 })] ({ (+1) → --0 })] ({ (+1) → 0 })
+
+solve [head <#> lst] → head → tail
+	check [[[[[2 + 1 + 0 =? 7 (true : (2 ⋅ 1 ⋅ 0)) {}false]]] a b c]] (1 ** (+2)) (0 ** (+2))
+		a 1 - 0
+		b (+2) ⋅ 3 ⋅ 2
+		c 1 + 0
+	lst concat-map [map [check] ({ (+1) → --0 })] ({ (+2) → (sqrt 0) })
+
+main [solve (+1000)]

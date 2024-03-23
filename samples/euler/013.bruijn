@@ -1,0 +1,8 @@
+# it's really interesting that (take (+10)) makes the entire computation 10s faster
+# laziness ftw!
+
+:import std/Combinator .
+:import std/String .
+:import std/Math .
+
+main trim → lines → (map string→number) → sum → number→string → (take (+10))

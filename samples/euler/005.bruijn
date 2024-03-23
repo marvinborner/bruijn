@@ -1,0 +1,8 @@
+:import std/Math .
+:import std/List .
+
+solve [foldr1 lcm ({ (+1) → 0 })]
+
+:test ((solve (+10)) =? (+2520)) ([[1]])
+
+main [solve (+20)]

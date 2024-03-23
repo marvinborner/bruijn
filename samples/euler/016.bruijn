@@ -1,0 +1,10 @@
+# TODO: digit-sum/quot-rem is still the bottleneck
+
+:import std/Combinator .
+:import std/Math .
+
+solve (pow (+2)) → digit-sum
+
+:test ((solve (+15)) =? (+26)) ([[1]])
+
+main [solve (+1000)]

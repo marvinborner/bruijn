@@ -1,0 +1,8 @@
+:import std/Combinator .
+:import std/Math .
+
+solve factors → lmax
+
+:test ((solve (+13195)) =? (+29)) ([[1]])
+
+main [solve (+600851475143)]

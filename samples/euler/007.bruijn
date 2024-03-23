@@ -1,0 +1,11 @@
+# TODO: Write faster primes function
+
+:import std/Combinator .
+:import std/Math .
+:import std/List .
+
+solve dec → (\index primes)
+
+:test ((solve (+6)) =? (+13)) ([[1]])
+
+main [solve (+10001)]

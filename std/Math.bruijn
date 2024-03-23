@@ -213,10 +213,17 @@ characteristic-primes ki : (ki : (sieve s0)) ⧗ (List Bool)
 	s0 [[[ki : (0 2)]]]
 
 # prime number sequence
-primes L.map fst (L.filter snd (L.zip (L.iterate ++‣ (+0)) characteristic-primes)) ⧗ (List Number)
+primes L.map fst (L.filter snd (enumerate characteristic-primes)) ⧗ (List Number)
 
 # slower but cooler prime number sequence
 primes* L.nub ((…≠?… (+1)) ∘∘ gcd) (L.iterate ++‣ (+2)) ⧗ (List Number)
+
+# prime factors
+factors \divs primes ⧗ Number → (List Number)
+	divs y [[&[[&[[3 ⋅ 3 >? 4 case-1 (=?0 case-2 case-3)]] (quot-rem 2 1)]]]]
+		case-1 4 >? (+1) {}4 empty
+		case-2 3 : (5 1 (3 : 2))
+		case-3 5 4 2
 
 # π as a list of decimal digits
 # translation of unbounded spigot algorithm by Jeremy Gibbons

@@ -37,6 +37,9 @@ sequence foldr (lift-m2 cons) {}empty ⧗ (List (M a)) → (M (List a))
 
 >‣ [sequence ∘∘ 0]
 
+# traverses list based on modifier
+traverse sequence ∘∘ map ⧗ (a → (M b)) → (N a) → (M (N b))
+
 # performs action n times
 replicate-m >replicate ⧗ Number → (M a) → (M (List a))
 

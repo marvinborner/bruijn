@@ -1,0 +1,15 @@
+# TODO: Really slow
+
+:import std/Combinator .
+:import std/List .
+:import std/Math .
+:import std/Number/Binary .
+
+hailstone-length y [[[0 =? (+1b) 1 go]]] (+0b)
+	go =²?0 (2 ++1 /²0) (2 ++1 (↑¹0 + 0))
+
+solve [max-by (compare ⋔ hailstone-length) (take 0 (iterate inc (+1b)))]
+
+:test ((solve (+1000)) =? (+871b)) ([[1]])
+
+main [solve (+1000000)]

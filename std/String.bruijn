@@ -110,6 +110,12 @@ number→string (map C.number→char) ∘ number→list ⧗ Number → String
 
 :test (number→string (+123)) ("123")
 
+# trims whitespace from the beginning and end of a string
+trim w b (reverse ∘ (drop-while (ni? "\t\r\n "))) ⧗ String → String
+
+:test (trim "  ab  ") ("ab")
+:test (trim "\t\r\nab\t\r\n") ("ab")
+
 # splits string by newline character
 lines z [[rec]] ⧗ String → (List String)
 	rec build (break (B.eq? '\n') 0)

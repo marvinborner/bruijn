@@ -1,0 +1,10 @@
+:import std/Combinator .
+:import std/List .
+:import std/Math .
+
+solve [∑(crit <#> ({ (+0) → --0 }))]
+	crit φ m ((\mod (+3)) → zero?) ((\mod (+5)) → zero?)
+
+:test ((solve (+10)) =? (+23)) ([[1]])
+
+main [solve (+1000)]
