@@ -55,8 +55,8 @@ split a@(_ : _) b@(c : _)
   where rest = split a $ tail b
 
 -- TODO: Force naming convention for namespaces/files
-loadFile :: EvalConf -> EnvCache -> IO EnvState
-loadFile conf cache = do
+loadFile :: EvalConf -> EnvCache -> Environment -> IO EnvState
+loadFile conf cache env = do
   f <- try $ readFile (_path conf) :: IO (Either IOError String)
   case f of
     Left exception ->
@@ -64,11 +64,11 @@ loadFile conf cache = do
           (ContextualError (ImportError $ show (exception :: IOError))
                            (Context "" $ _nicePath conf)
           )
-        >> pure (EnvState (Environment M.empty) conf cache)
+        >> pure (EnvState env conf cache)
     Right f' -> eval
       (filter (not . null) $ split "\n\n" f')
       (EnvState
-        (Environment M.empty)
+        env
         (conf { _isRepl = False, _evalPaths = _path conf : _evalPaths conf })
         cache
       )
@@ -200,19 +200,18 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
         print
             (ContextualError (ImportError path) (Context inp $ _nicePath conf))
           >> pure s
+      -- paths can never be cached upon input since they may depend on context
+      -- BUT inputs can be loaded from import cache since they would've had missing definitions!
       else if M.member path (_imported cache)
         then
           let (Environment env') = fromJust $ M.lookup path (_imported cache)
           in  pure $ s { _env = Environment $ M.union env' envDefs }
         else do
-          EnvState (Environment env') _ cache' <- loadFile
+          EnvState env' _ _ <- loadFile
             (conf { _nicePath = path, _path = full })
             cache -- TODO: Fix wrong `within` in import error
-          let cache'' = cache
-                { _imported = M.insert path (Environment env')
-                                $ M.union (_imported cache) (_imported cache')
-                }
-          pure $ EnvState (Environment $ M.union env' envDefs) conf cache'' -- import => _isRepl = False
+            env
+          pure $ EnvState env' conf cache -- import => _isRepl = False
   Watch path ->
     let
       monitor mtime = do
@@ -255,6 +254,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
           EnvState (Environment env') _ cache' <- loadFile
             (conf { _nicePath = path, _path = full })
             cache -- TODO: Fix wrong `within` in import error
+            (Environment M.empty)
           let
             cache'' = cache
               { _imported = M.insert path (Environment env')
@@ -405,7 +405,9 @@ eval (block : bs) s@(EnvState _ conf _) =
 
 dumpFile :: EvalConf -> (a -> IO ()) -> (Expression -> a) -> IO ()
 dumpFile conf wr conv = do
-  EnvState (Environment env) _ _ <- loadFile conf (EnvCache M.empty)
+  EnvState (Environment env) _ _ <- loadFile conf
+                                             (EnvCache M.empty)
+                                             (Environment M.empty)
   case M.lookup entryFunction env of
     Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
                                        (Context "" (_nicePath conf))
@@ -413,8 +415,10 @@ dumpFile conf wr conv = do
 
 evalFileConf :: EvalConf -> IO ()
 evalFileConf conf = do
-  EnvState (Environment env) _ _ <- loadFile conf (EnvCache M.empty)
-  arg                            <- encodeStdin
+  EnvState (Environment env) _ _ <- loadFile conf
+                                             (EnvCache M.empty)
+                                             (Environment M.empty)
+  arg <- encodeStdin
   case M.lookup entryFunction env of
     Nothing -> print $ ContextualError (UndefinedIdentifier entryFunction)
                                        (Context "" (_nicePath conf))

@@ -1,0 +1,66 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# generic number template, meant to be :input-ted
+# assumes: zero?, even?, gt?, zero?, eq?, add, compare-case
+
+# TODO: also include std/Number more std/Math etc.? Requires solution for recursive imports
+# then: give numeral systems unary id, match with index-unary
+
+:import std/Combinator .
+:import std/Logic .
+
+# returns true if number is not zero
+not-zero? not! ∘∘ zero? ⧗ Generic → Boolean
+
+≠?‣ not-zero?
+
+# returns true if two numbers are not equal
+not-eq? not! ∘∘ eq? ⧗ Generic → Generic → Boolean
+
+…≠?… not-eq?
+
+# prefix for comparing functions
+?‣ &eq?
+
+# returns true if number is lts than other number
+lt? \gt? ⧗ Generic → Generic → Boolean
+
+…<?… lt?
+
+# returns true if number is lts than or equal to other number
+le? not! ∘∘ gt? ⧗ Generic → Generic → Boolean
+
+…≤?… le?
+
+# returns true if number is gtater than or equal to other number
+ge? \le? ⧗ Generic → Generic → Boolean
+
+…≥?… ge?
+
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare compare-case (+0) (+1) (-1) ⧗ Generic → Generic → Generic
+
+…<=>… compare
+
+<=>‣ &compare
+
+# returns true if comparison result is equal (EQ)
+c-eq? eq? (+0) ⧗ Generic → Generic
+
+# returns true if comparison result is lts than (LT)
+c-lt? eq? (-1) ⧗ Generic → Generic
+
+# returns true if comparison result is gtater than (GT)
+c-gt? eq? (+1) ⧗ Generic → Generic
+
+# returns max number of two
+max [[(1 ≤? 0) 0 1]] ⧗ Generic → Generic → Generic
+
+# returns min number of two
+min [[(1 ≤? 0) 1 0]] ⧗ Generic → Generic → Generic
+
+# clamps a number between two numbers
+clamp [[[min 1 (max 0 2)]]] ⧗ Generic → Generic → Generic
+
+# returns true if the number is odd (remainder mod 2 == 1)
+odd? ¬‣ ∘ even? ⧗ Generic → Boolean

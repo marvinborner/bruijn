@@ -25,16 +25,25 @@ zero? [0 [(+0u)] true] ⧗ Unary → Boolean
 :test (=?(+0u)) (true)
 :test (=?(+42u)) (false)
 
-# adds 1 to a unary number
-inc [[[1 (2 1 0)]]] ⧗ Unary → Unary
+# returns remainder of integer division
+mod [[[[3 &k (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) ki]]]] ⧗ Unary → Unary → Unary
 
-++‣ inc
+…%… mod
 
-:test (++(+0u)) ((+1u))
-:test (++(+1u)) ((+2u))
-:test (++(+42u)) ((+43u))
+:test ((+10u) % (+3u)) ((+1u))
+:test ((+3u) % (+5u)) ((+3u))
 
-# subs 1 from a unary number
+# returns true if the number is even (remainder mod 2 == 0)
+even? [=?(0 % (+2u))] ⧗ Unary → Boolean
+
+=²?‣ even?
+
+:test (=²?(+0u)) (true)
+:test (=²?(+1u)) (false)
+:test (=²?(+41u)) (false)
+:test (=²?(+42u)) (true)
+
+# subtracts 1 from a unary number
 dec [[[extract (2 inc const)]]] ⧗ Unary → Unary
 	extract &i
 	inc [&(0 2)]
@@ -46,6 +55,15 @@ dec [[[extract (2 inc const)]]] ⧗ Unary → Unary
 :test (--(+1u)) ((+0u))
 :test (--(+42u)) ((+41u))
 
+# adds 1 to a unary number
+inc [[[1 (2 1 0)]]] ⧗ Unary → Unary
+
+++‣ inc
+
+:test (++(+0u)) ((+1u))
+:test (++(+1u)) ((+2u))
+:test (++(+42u)) ((+43u))
+
 # adds two unary numbers
 add [[[[3 1 (2 1 0)]]]] ⧗ Unary → Unary → Unary
 
@@ -54,7 +72,7 @@ add [[[[3 1 (2 1 0)]]]] ⧗ Unary → Unary → Unary
 :test ((+0u) + (+2u)) ((+2u))
 :test ((+5u) + (+3u)) ((+8u))
 
-# subs two unary numbers
+# subtracts two unary numbers
 sub [[0 dec 1]] ⧗ Unary → Unary → Unary
 
 …-… sub
@@ -62,43 +80,14 @@ sub [[0 dec 1]] ⧗ Unary → Unary → Unary
 :test ((+2u) - (+2u)) ((+0u))
 :test ((+5u) - (+3u)) ((+2u))
 
-# returns true if number is less than or equal to other number
-le? zero? ∘∘ sub ⧗ Unary → Unary → Boolean
-
-…≤?… le?
-
-:test ((+1u) ≤? (+2u)) (true)
-:test ((+2u) ≤? (+2u)) (true)
-:test ((+3u) ≤? (+2u)) (false)
-
-# returns true if number is greater than or equal to other number
-ge? \le? ⧗ Unary → Unary → Boolean
-
-…≥?… ge?
-
-:test ((+1u) ≥? (+2u)) (false)
-:test ((+2u) ≥? (+2u)) (true)
-:test ((+3u) ≥? (+2u)) (true)
-
 # returns true if number is greater than other number
-# larger numbers should be second argument (performance)
-gt? not! ∘∘ le? ⧗ Unary → Unary → Boolean
+gt? not! ∘∘ (zero? ∘∘ sub) ⧗ Unary → Unary → Boolean
 
 …>?… gt?
 
 :test ((+1u) >? (+2u)) (false)
 :test ((+2u) >? (+2u)) (false)
 :test ((+3u) >? (+2u)) (true)
-
-# returns true if number is less than other number
-# smaller numbers should be second argument (performance)
-lt? \gt? ⧗ Unary → Unary → Boolean
-
-…<?… lt?
-
-:test ((+1u) <? (+2u)) (true)
-:test ((+2u) <? (+2u)) (false)
-:test ((+3u) <? (+2u)) (false)
 
 # returns true if two unary numbers are equal
 eq? [[=?(1 - 0) ⋀? =?(0 - 1)]] ⧗ Unary → Unary → Boolean
@@ -110,35 +99,17 @@ eq? [[=?(1 - 0) ⋀? =?(0 - 1)]] ⧗ Unary → Unary → Boolean
 :test ((+1u) =? (+2u)) (false)
 :test ((+42u) =? (+42u)) (true)
 
-# returns true if two unary numbers are not equal
-not-eq? not! ∘∘ eq? ⧗ Unary → Unary → Boolean
-
-…≠?… not-eq?
-
-:test ((+1u) ≠? (+0u)) (true)
-:test ((+1u) ≠? (+1u)) (false)
-:test ((+42u) ≠? (+42u)) (false)
-
-# prefix for comparing functions
-?‣ &eq?
-
 # returns eq, lt, gt depending on comparison of two numbers
 compare-case [[[[[go (1 - 0) (0 - 1)]]]]] ⧗ a → b → c → Unary → Unary → d
 	go [[=?0 (=?1 6 5) 4]]
 
-# returns ternary 1 if a>b, -1 if a<b and 0 if a=b
-# also: spaceship operator
-compare compare-case (+0) (+1) (-1) ⧗ Unary → Unary → Number
+# ============================================================================ #
+# most relevant functions are defined - we can now derive from Generic/Number! #
+# ============================================================================ #
 
-:test (compare (+2u) (+2u)) ((+0))
-:test (compare (+2u) (+1u)) ((+1))
-:test (compare (+1u) (+2u)) ((-1))
+:input std/Generic/Number
 
-…<=>… compare
-
-<=>‣ &compare
-
-# muls two unary numbers
+# multiplies two unary numbers
 mul …∘… ⧗ Unary → Unary → Unary
 
 …⋅… mul
@@ -159,39 +130,6 @@ div [[[[3 t [1] (3 [3 t [3 (0 1)] i] 0)]]]] ⧗ Unary → Unary → Unary
 # slower div (more obvious impl)
 div* [z rec ++0] ⧗ Unary → Unary → Unary
 	rec [[[[[[=?0 ((+0u) 2 1) (2 (5 0 3 2 1))] (3 - 2)]]]]]
-
-# returns remainder of integer division
-mod [[[[3 &k (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) ki]]]] ⧗ Unary → Unary → Unary
-
-…%… mod
-
-:test ((+10u) % (+3u)) ((+1u))
-:test ((+3u) % (+5u)) ((+3u))
-
-# slower mod (more obvious impl)
-mod* [[1 &[[(0 ⋀? (2 ≤? 1)) case-rec case-end]] (1 : true) k]] ⧗ Unary → Unary → Unary
-	case-rec (1 - 3) : true
-	case-end 1 : false
-
-# returns true if the number is even (remainder mod 2 == 0)
-even? [=?(0 % (+2u))] ⧗ Unary → Boolean
-
-=²?‣ even?
-
-:test (=²?(+0u)) (true)
-:test (=²?(+1u)) (false)
-:test (=²?(+41u)) (false)
-:test (=²?(+42u)) (true)
-
-# returns true if the number is odd (remainder mod 2 == 1)
-odd? ¬‣ ∘ even? ⧗ Unary → Boolean
-
-≠²?‣ odd?
-
-:test (≠²?(+0u)) (false)
-:test (≠²?(+1u)) (true)
-:test (≠²?(+41u)) (true)
-:test (≠²?(+42u)) (false)
 
 # exponentiates two unary number
 # doesn't give correct results for x^0

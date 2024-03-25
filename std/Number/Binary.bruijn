@@ -45,33 +45,6 @@ up [[[[[4 1 0 (3 2 1 0)]]]]] ⧗ Bit → Binary → Binary
 :test (up b¹ [[[0 2]]]) ([[[1 (0 2)]]])
 :test (up b⁰ (+1b)) ((+2b))
 
-# converts a binary number to a list of bits
-list! [0 z a¹ a⁰] ⧗ Binary → (List Bit)
-	z empty
-	a¹ [b¹ : 0]
-	a⁰ [b⁰ : 0]
-
-:test (list! (+0b)) (empty)
-:test (list! (+6b)) (b⁰ : (b¹ : {}b¹))
-
-# converts a list of bits to a binary number
-binary! foldr up (+0b) ⧗ (List Bit) → Binary
-
-:test (binary! (list! (+0b))) ((+0b))
-:test (binary! (list! (+42b))) ((+42b))
-
-# strips leading 0s from a binary number
-strip [^(0 z a¹ a⁰)] ⧗ Binary → Binary
-	z (+0b) : true
-	a¹ &[[↑¹1 : false]]
-	a⁰ &[[(0 (+0b) ↑⁰1) : 0]]
-
-%‣ strip
-
-:test (%[[[0 2]]]) ((+0b))
-:test (%[[[1 (0 (0 (0 (0 2))))]]]) ((+1b))
-:test (%(+2b)) ((+2b))
-
 # returns true if a binary number is zero
 zero? [0 true [false] i] ⧗ Binary → Boolean
 
@@ -88,36 +61,15 @@ lsb [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
 :test (lsb (+1b)) (b¹)
 :test (lsb (+42b)) (b⁰)
 
-# extracts most significant bit from a binary number
-# not really useful for binary numbers, but part of interface
-msb [=?0 b⁰ b¹] ⧗ Binary → Bit
+# returns true if the number is even (remainder mod 2 == 0)
+even? ¬‣ ∘ lsb ⧗ Binary → Boolean
 
-:test (msb (+0b)) (b⁰)
-:test (msb (+1b)) (b¹)
-:test (msb (+42b)) (b¹)
+=²?‣ even?
 
-# extracts nth bit from a binary number
-nth …!!… ∘ list! ⧗ Binary → Number → Bit
-
-# logical and on two binary numbers
-and! binary! ∘∘ (ψ* zip-with …⋀?… list!) ⧗ Binary → Binary → Binary
-
-…⋀!… and!
-
-:test (and! (+1b) (+0b)) ((+0b))
-:test (and! (+5b) (+4b)) ((+4b))
-:test (and! (+10b) (+12b)) ((+8b))
-
-# logical or on two binary numbers
-# TODO: Fix for numbers with different length (→ zero padding?)
-or! binary! ∘∘ (ψ* zip-with …⋁?… list!) ⧗ Binary → Binary → Binary
-
-…⋁!… or!
-
-:test (or! (+10b) (+12b)) ((+14b))
-
-# :test (or! (+1b) (+0b)) ((+1b))
-# :test (or! (+5b) (+3b)) ((+7b))
+:test (even? (+0b)) (true)
+:test (even? (+1b)) (false)
+:test (even? (+41b)) (false)
+:test (even? (+42b)) (true)
 
 # converts the normal binary representation into abstract
 abstract! [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
@@ -154,28 +106,16 @@ eq? [[abs 1 →^0]] ⧗ Binary → Binary → Boolean
 :test ([[[1 (0 2)]]] =? [[[1 (0 2)]]]) (true)
 :test ([[[1 2]]] =? (+2b)) (false)
 
-# returns true if two binary numbers are not equal
-not-eq? not! ∘∘ eq? ⧗ Binary → Binary → Boolean
+# rshifts least significant bit of a binary number
+div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+0b)
+	a¹ &[[↑¹1 : 1]]
+	a⁰ &[[↑⁰1 : 1]]
 
-…≠?… not-eq?
+/²‣ div²
 
-:test ((+0b) ≠? (+0b)) (false)
-:test ([[[1 (0 2)]]] ≠? [[[1 (0 2)]]]) (false)
-:test ([[[1 (0 2)]]] ≠? (+2b)) (true)
-
-# prefix for comparing functions
-?‣ &eq?
-
-# adds 1 to a binary number (can introduce leading 0s)
-inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
-	z (+0b) : (+1b)
-	a¹ &[[↑¹1 : ↑⁰0]]
-	a⁰ &[[↑⁰1 : ↑¹1]]
-
-++‣ inc
-
-:test (++(+0b)) ((+1b))
-:test (++(+2b)) ((+3b))
+:test (/²(+6b) =? (+3b)) (true)
+:test (/²(+5b) =? (+2b)) (true)
 
 # subs 1 from a binary number (can introduce leading 0s)
 dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
@@ -188,6 +128,101 @@ dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 :test (--(+0b)) ((+0b))
 :test (--(+1b)) ([[[0 2]]])
 :test (--(+3b)) ((+2b))
+
+# TODO: Remove (duplicate of std/Conversion because of dep loop)
+binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
+	rec zero? 0 case-end case-rec
+		case-rec even? 0 (2 (1 ∘ (T.mul (+2t))) (div² 0)) (2 (1 ∘ T.inc) (dec 0))
+		case-end 1
+
+# returns eq, gt, lt depending on comparison of two numbers
+# TODO: remove ternary conversion
+compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c → Binary → Binary → d
+
+# returns true if number is greater than other number
+# TODO: remove ternary conversion
+gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
+
+…>?… gt?
+
+:test ((+1b) >? (+2b)) (false)
+:test ((+2b) >? (+2b)) (false)
+:test ((+3b) >? (+2b)) (true)
+
+# ============================================================================ #
+# most relevant functions are defined - we can now derive from Generic/Number! #
+# ============================================================================ #
+
+:input std/Generic/Number
+
+# converts a binary number to a list of bits
+list! [0 z a¹ a⁰] ⧗ Binary → (List Bit)
+	z empty
+	a¹ [b¹ : 0]
+	a⁰ [b⁰ : 0]
+
+:test (list! (+0b)) (empty)
+:test (list! (+6b)) (b⁰ : (b¹ : {}b¹))
+
+# converts a list of bits to a binary number
+binary! foldr up (+0b) ⧗ (List Bit) → Binary
+
+:test (binary! (list! (+0b))) ((+0b))
+:test (binary! (list! (+42b))) ((+42b))
+
+# strips leading 0s from a binary number
+strip [^(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : true
+	a¹ &[[↑¹1 : false]]
+	a⁰ &[[(0 (+0b) ↑⁰1) : 0]]
+
+%‣ strip
+
+:test (%[[[0 2]]]) ((+0b))
+:test (%[[[1 (0 (0 (0 (0 2))))]]]) ((+1b))
+:test (%(+2b)) ((+2b))
+
+# extracts most significant bit from a binary number
+# not really useful for binary numbers, but part of interface
+msb [=?0 b⁰ b¹] ⧗ Binary → Bit
+
+:test (msb (+0b)) (b⁰)
+:test (msb (+1b)) (b¹)
+:test (msb (+42b)) (b¹)
+
+# extracts nth bit from a binary number
+nth …!!… ∘ list! ⧗ Binary → Number → Bit
+
+# logical and on two binary numbers
+and! binary! ∘∘ (ψ* zip-with …⋀?… list!) ⧗ Binary → Binary → Binary
+
+…⋀!… and!
+
+:test (and! (+1b) (+0b)) ((+0b))
+:test (and! (+5b) (+4b)) ((+4b))
+:test (and! (+10b) (+12b)) ((+8b))
+
+# logical or on two binary numbers
+# TODO: Fix for numbers with different length (→ zero padding?)
+or! binary! ∘∘ (ψ* zip-with …⋁?… list!) ⧗ Binary → Binary → Binary
+
+…⋁!… or!
+
+:test (or! (+10b) (+12b)) ((+14b))
+
+# :test (or! (+1b) (+0b)) ((+1b))
+# :test (or! (+5b) (+3b)) ((+7b))
+
+# adds 1 to a binary number (can introduce leading 0s)
+inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+1b)
+	a¹ &[[↑¹1 : ↑⁰0]]
+	a⁰ &[[↑⁰1 : ↑¹1]]
+
+++‣ inc
+
+:test (++(+0b)) ((+1b))
+:test (++(+2b)) ((+3b))
 
 # flips the bits of a binary number (1's complement)
 complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
@@ -271,17 +306,6 @@ mul [[1 z a¹ a⁰]] ⧗ Number → Number → Number
 :test ((+42b) ⋅ (+0b) =? (+0b)) (true)
 :test ((+3b) ⋅ (+11b) =? (+33b)) (true)
 
-# rshifts least significant bit of a binary number
-div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
-	z (+0b) : (+0b)
-	a¹ &[[↑¹1 : 1]]
-	a⁰ &[[↑⁰1 : 1]]
-
-/²‣ div²
-
-:test (/²(+6b) =? (+3b)) (true)
-:test (/²(+5b) =? (+2b)) (true)
-
 # ceiled integer log2 by counting bits
 # also counts leading 0s
 log2* [0 (+0b) inc inc] ⧗ Binary → Binary
@@ -295,93 +319,3 @@ log2 log2* ∘ strip ⧗ Binary → Binary
 :test ((log2 (+4b)) =? (+3b)) (true)
 :test ((log2 (+32b)) =? (+6b)) (true)
 :test ((log2 (+48b)) =? (+6b)) (true)
-
-# returns true if the number is even (remainder mod 2 == 0)
-even? ¬‣ ∘ lsb ⧗ Binary → Boolean
-
-=²?‣ even?
-
-:test (even? (+0b)) (true)
-:test (even? (+1b)) (false)
-:test (even? (+41b)) (false)
-:test (even? (+42b)) (true)
-
-# returns true if the number is odd (remainder mod 2 == 1)
-odd? lsb ⧗ Binary → Boolean
-
-≠²?‣ odd?
-
-:test (odd? (+0b)) (false)
-:test (odd? (+1b)) (true)
-:test (odd? (+41b)) (true)
-:test (odd? (+42b)) (false)
-
-# TODO: Remove (duplicate of std/Conversion because of dep loop)
-binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
-	rec zero? 0 case-end case-rec
-		case-rec odd? 0 (2 (1 ∘ T.inc) (dec 0)) (2 (1 ∘ (T.mul (+2t))) (div² 0))
-		case-end 1
-
-# returns true if number is greater than other number
-# TODO: remove ternary conversion
-gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
-
-…>?… gt?
-
-:test ((+1b) >? (+2b)) (false)
-:test ((+2b) >? (+2b)) (false)
-:test ((+3b) >? (+2b)) (true)
-
-# returns true if number is less than other number
-lt? \gt? ⧗ Binary → Binary → Boolean
-
-…<?… lt?
-
-:test ((+1b) <? (+2b)) (true)
-:test ((+2b) <? (+2b)) (false)
-:test ((+3b) <? (+2b)) (false)
-
-# returns true if number is less than or equal to other number
-le? not! ∘∘ gt? ⧗ Binary → Binary → Boolean
-
-…≤?… le?
-
-:test ((+1b) ≤? (+2b)) (true)
-:test ((+2b) ≤? (+2b)) (true)
-:test ((+3b) ≤? (+2b)) (false)
-
-# returns true if number is greater than or equal to other number
-ge? \le? ⧗ Binary → Binary → Boolean
-
-…≥?… ge?
-
-:test ((+1b) ≥? (+2b)) (false)
-:test ((+2b) ≥? (+2b)) (true)
-:test ((+3b) ≥? (+2b)) (true)
-
-# returns eq, gt, lt depending on comparison of two numbers
-# TODO: remove ternary conversion
-compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c → Binary → Binary → d
-
-# returns 1 if a>b, -1 if a<b and 0 if a=b
-# also: spaceship operator
-compare compare-case (+0) (+1) (-1) ⧗ Binary → Binary → Number
-
-…<=>… compare
-
-<=>‣ &compare
-
-:test (compare (+2b) (+2b)) ((+0))
-:test (compare (+2b) (+1b)) ((+1))
-:test (compare (+1b) (+2b)) ((-1))
-
-# prefix for comparing functions
-# returns max number of two
-max [[(1 ≤? 0) 0 1]] ⧗ Binary → Binary → Binary
-
-:test (max (+5b) (+2b)) ((+5b))
-
-# returns min number of two
-min [[(1 ≤? 0) 1 0]] ⧗ Binary → Binary → Binary
-
-:test (min (+5b) (+2b)) ((+2b))

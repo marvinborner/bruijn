@@ -8,7 +8,7 @@ fi
 echo "# useful for running all tests of the standard library" >All.bruijn
 echo >>All.bruijn
 
-FILES="$(find * -type f -name "*.bruijn" ! -name "All.bruijn")"
+FILES="$(find * -type f -name "*.bruijn" ! -name "All.bruijn" ! -path "*Generic*")"
 
 for f in $FILES; do
 	echo ":import std/${f%*.bruijn} ." >>All.bruijn

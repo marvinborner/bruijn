@@ -79,61 +79,19 @@ t⁰? [0 false false true] ⧗ Trit → Boolean
 # rshifts a zero trit into a balanced ternary number (pad)
 →⁰‣ [[[[[4 (0 3) 2 1 0]]]]] ⧗ Number → Number
 
-# infinity
-# WARNING: using this mostly results in undefined behavior! (TODO?)
-infty z [[[[[1 (4 1)]]]]] ⧗ Number
+# rshifts least significant trit of a balanced ternary number
+# WARNING: Not necessarily equivalent to (/ (+3)): e.g. /³(+5) == (+2)!
+div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
+	z (+0) : (+0)
+	a⁻ &[[↑⁻1 : 1]]
+	a⁺ &[[↑⁺1 : 1]]
+	a⁰ &[[↑⁰1 : 1]]
 
-# negates a balanced ternary number
-negate [[[[[4 3 1 2 0]]]]] ⧗ Number → Number
+/³‣ div³
 
--‣ negate
-
-:test (-(+0)) ((+0))
-:test (-(-1)) ((+1))
-:test (-(+42)) ((-42))
-
-# converts a balanced ternary number to a list of trits
-number→trits [0 z a⁻ a⁺ a⁰] ⧗ Number → (List Trit)
-	z [[0]]
-	a⁻ pair t⁻
-	a⁺ pair t⁺
-	a⁰ pair t⁰
-
-:test (number→trits (+0)) ([[0]])
-:test (number→trits (+5)) (t⁻ : (t⁻ : (t⁺ : [[0]])))
-
-# strips leading 0s from a balanced ternary number
-strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
-	z (+0) : true
-	a⁻ &[[↑⁻1 : false]]
-	a⁺ &[[↑⁺1 : false]]
-	a⁰ &[[(0 (+0) ↑⁰1) : 0]]
-
-%‣ strip
-
-:test (%[[[[0 3]]]]) ((+0))
-:test (%[[[[2 (0 (0 (0 (0 3))))]]]]) ((-1))
-:test (%(+42)) ((+42))
-
-# returns true if balanced ternary number is zero
-zero? [0 true [false] [false] i] ⧗ Number → Boolean
-
-=?‣ zero?
-
-:test (=?(+0)) (true)
-:test (=?(-1)) (false)
-:test (=?(+1)) (false)
-:test (=?(+42)) (false)
-
-# returns true if balanced ternary number is not zero
-not-zero? [0 false [true] [true] i] ⧗ Number → Boolean
-
-≠?‣ not-zero?
-
-:test (≠?(+0)) (false)
-:test (≠?(-1)) (true)
-:test (≠?(+1)) (true)
-:test (≠?(+42)) (true)
+:test (/³(+6)) ((+2))
+:test (/³(-6)) ((-2))
+:test (/³(+5)) ((+2))
 
 # extracts least significant trit from a balanced ternary number
 lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
@@ -169,25 +127,29 @@ mst [B.get t⁰ (0 z a⁻ a⁺ a⁰)] ⧗ Number → Trit
 :test (mst (+1)) (t⁺)
 :test (mst (+42)) (t⁺)
 
-# returns true if balanced ternary number is negative
-negative? t⁻? ∘ mst ⧗ Number → Boolean
+# returns true if balanced ternary number is zero
+zero? [0 true [false] [false] i] ⧗ Number → Boolean
 
-<?‣ negative?
+=?‣ zero?
 
-:test (<?(+0)) (false)
-:test (<?(-1)) (true)
-:test (<?(+1)) (false)
-:test (<?(+42)) (false)
+:test (=?(+0)) (true)
+:test (=?(-1)) (false)
+:test (=?(+1)) (false)
+:test (=?(+42)) (false)
 
-# returns true if balanced ternary number is positive
-positive? t⁺? ∘ mst ⧗ Number → Boolean
+# returns true if the number is even (remainder mod 2 == 0)
+# TODO: faster solution (using tupling?)
+even? z [[rec]] ⧗ Number → Boolean
+	rec =?0 case-end case-rec
+		case-rec t⁰? (lst 0) (1 /³0) ¬(1 /³0)
+		case-end true
 
->?‣ positive?
+=²?‣ even?
 
-:test (>?(+0)) (false)
-:test (>?(-1)) (false)
-:test (>?(+1)) (true)
-:test (>?(+42)) (true)
+:test (=²?(+0)) (true)
+:test (=²?(+1)) (false)
+:test (=²?(+41)) (false)
+:test (=²?(+42)) (true)
 
 # converts the normal balanced ternary representation into abstract
 # infinity can't be abstracted in finite time
@@ -228,25 +190,6 @@ eq? [[abs 1 →^0]] ⧗ Number → Number → Boolean
 
 …=?… eq?
 
-# returns true if two balanced ternary numbers are not equal
-not-eq? not! ∘∘ eq? ⧗ Number → Number → Boolean
-
-…≠?… not-eq?
-
-:test ((-42) =? (-42)) (true)
-:test ((-1) =? (-1)) (true)
-:test ((-1) =? (+0)) (false)
-:test ((+0) =? (+0)) (true)
-:test ((+1) =? (+0)) (false)
-:test ((+1) =? (+1)) (true)
-:test ((+42) =? (+42)) (true)
-:test ([[[[(1 (0 (0 (0 (0 3)))))]]]] =? (+1)) (true)
-:test ((+1) ≠? (+0)) (true)
-:test ((-42) ≠? (+42)) (true)
-
-# prefix for comparing functions
-?‣ &eq?
-
 # adds (+1) to a balanced ternary number (can introduce leading 0s)
 inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (+1)
@@ -262,7 +205,7 @@ inc [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 :test (++(++(++(++(++(+0))))) =? (+5)) (true)
 :test (++(+42) =? (+43)) (true)
 
-# subs (+1) from a balanced ternary number (can introduce leading 0s)
+# subtracts (+1) from a balanced ternary number (can introduce leading 0s)
 dec [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : (-1)
 	a⁻ &[[↑⁻1 : ↑⁺0]]
@@ -300,17 +243,39 @@ add [[abs 1 →^0]] ⧗ Number → Number → Number
 :test ((+1) + (+2) =? (+3)) (true)
 :test ((+42) + (+1) =? (+43)) (true)
 
-# subs two balanced ternary numbers (can introduce leading 0s)
+# returns true if balanced ternary number is negative
+negative? t⁻? ∘ mst ⧗ Number → Boolean
+
+<?‣ negative?
+
+:test (<?(+0)) (false)
+:test (<?(-1)) (true)
+:test (<?(+1)) (false)
+:test (<?(+42)) (false)
+
+# returns true if balanced ternary number is positive
+positive? t⁺? ∘ mst ⧗ Number → Boolean
+
+>?‣ positive?
+
+:test (>?(+0)) (false)
+:test (>?(-1)) (false)
+:test (>?(+1)) (true)
+:test (>?(+42)) (true)
+
+# negates a balanced ternary number
+negate [[[[[4 3 1 2 0]]]]] ⧗ Number → Number
+
+-‣ negate
+
+:test (-(+0)) ((+0))
+:test (-(-1)) ((+1))
+:test (-(+42)) ((-42))
+
+# subtracts two numbers
 sub [[1 + -0]] ⧗ Number → Number → Number
 
 …-… sub
-
-:test ((-42) - (-1) =? (-41)) (true)
-:test ((-5) - (+6) =? (-11)) (true)
-:test ((-1) - (+0) =? (-1)) (true)
-:test ((+0) - (+0) =? (+0)) (true)
-:test ((+1) - (+2) =? (-1)) (true)
-:test ((+42) - (+1) =? (+41)) (true)
 
 # returns true if number is greater than other number
 gt? positive? ∘∘ sub ⧗ Number → Number → Boolean
@@ -321,57 +286,38 @@ gt? positive? ∘∘ sub ⧗ Number → Number → Boolean
 :test ((+2) >? (+2)) (false)
 :test ((+3) >? (+2)) (true)
 
-# returns true if number is less than other number
-lt? \gt? ⧗ Number → Number → Boolean
-
-…<?… lt?
-
-:test ((+1) <? (+2)) (true)
-:test ((+2) <? (+2)) (false)
-:test ((+3) <? (+2)) (false)
-
-# returns true if number is less than or equal to other number
-le? not! ∘∘ gt? ⧗ Number → Number → Boolean
-
-…≤?… le?
-
-:test ((+1) ≤? (+2)) (true)
-:test ((+2) ≤? (+2)) (true)
-:test ((+3) ≤? (+2)) (false)
-
-# returns true if number is greater than or equal to other number
-ge? \le? ⧗ Number → Number → Boolean
-
-…≥?… ge?
-
-:test ((+1) ≥? (+2)) (false)
-:test ((+2) ≥? (+2)) (true)
-:test ((+3) ≥? (+2)) (true)
-
 # returns eq, gt, lt depending on comparison of two numbers
 compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 	go [=?0 5 (>?0 4 3)]
 
-# returns 1 if a>b, -1 if a<b and 0 if a=b
-# also: spaceship operator
-compare compare-case (+0) (+1) (-1) ⧗ Number → Number → Number
+# ============================================================================ #
+# most relevant functions are defined - we can now derive from Generic/Number! #
+# ============================================================================ #
 
-…<=>… compare
+:input std/Generic/Number
 
-<=>‣ &compare
+# converts a balanced ternary number to a list of trits
+number→trits [0 z a⁻ a⁺ a⁰] ⧗ Number → (List Trit)
+	z [[0]]
+	a⁻ pair t⁻
+	a⁺ pair t⁺
+	a⁰ pair t⁰
 
-:test (compare (+2) (+2)) ((+0))
-:test (compare (+2) (+1)) ((+1))
-:test (compare (+1) (+2)) ((-1))
+:test (number→trits (+0)) ([[0]])
+:test (number→trits (+5)) (t⁻ : (t⁻ : (t⁺ : [[0]])))
 
-# returns true if comparison result is equal (EQ)
-c-eq? eq? (+0) ⧗ Number → Number
+# strips leading 0s from a balanced ternary number
+strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
+	z (+0) : true
+	a⁻ &[[↑⁻1 : false]]
+	a⁺ &[[↑⁺1 : false]]
+	a⁰ &[[(0 (+0) ↑⁰1) : 0]]
 
-# returns true if comparison result is less than (LT)
-c-lt? eq? (-1) ⧗ Number → Number
+%‣ strip
 
-# returns true if comparison result is greater than (GT)
-c-gt? eq? (+1) ⧗ Number → Number
+:test (%[[[[0 3]]]]) ((+0))
+:test (%[[[[2 (0 (0 (0 (0 3))))]]]]) ((-1))
+:test (%(+42)) ((+42))
 
 # negates a balanced ternary number if <0
 abs [<?0 -0 0] ⧗ Number → Number
@@ -382,23 +328,6 @@ abs [<?0 -0 0] ⧗ Number → Number
 :test (|(-1)) ((+1))
 :test (|(+42)) ((+42))
 
-# returns max number of two
-max [[(1 ≤? 0) 0 1]] ⧗ Number → Number → Number
-
-:test (max (+5) (+2)) ((+5))
-
-# returns min number of two
-min [[(1 ≤? 0) 1 0]] ⧗ Number → Number → Number
-
-:test (min (+5) (+2)) ((+2))
-
-# clamps a number between two numbers
-clamp [[[min 1 (max 0 2)]]] ⧗ Number → Number → Number
-
-:test (clamp (+0) (+5) (+3)) ((+3))
-:test (clamp (+0) (+5) (-2)) ((+0))
-:test (clamp (+0) (+5) (+7)) ((+5))
-
 # apply a function n times to a value
 # ~> substitute church numbers
 apply z [[[rec]]] ⧗ Number → (a → a) → a → a
@@ -408,7 +337,7 @@ apply z [[[rec]]] ⧗ Number → (a → a) → a → a
 
 :test (apply (+5) ++‣ (+3)) ((+8))
 
-# muls two balanced ternary numbers (can introduce leading 0s)
+# multplies two balanced ternary numbers (can introduce leading 0s)
 mul [[1 z a⁻ a⁺ a⁰]] ⧗ Number → Number → Number
 	z (+0)
 	a⁻ [↑⁰0 - 1]
@@ -421,20 +350,6 @@ mul [[1 z a⁻ a⁺ a⁰]] ⧗ Number → Number → Number
 :test ((-1) ⋅ (+42) =? (-42)) (true)
 :test ((+3) ⋅ (+11) =? (+33)) (true)
 :test ((+42) ⋅ (-4) =? (-168)) (true)
-
-# rshifts least significant trit of a balanced ternary number
-# WARNING: Not necessarily equivalent to (/ (+3)): e.g. /³(+5) == (+2)!
-div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
-	z (+0) : (+0)
-	a⁻ &[[↑⁻1 : 1]]
-	a⁺ &[[↑⁺1 : 1]]
-	a⁰ &[[↑⁰1 : 1]]
-
-/³‣ div³
-
-:test (/³(+6)) ((+2))
-:test (/³(-6)) ((-2))
-:test (/³(+5)) ((+2))
 
 # divs a balanced ternary number by two (binary >>1)
 div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
@@ -546,27 +461,3 @@ mod ~‣ ∘∘ quot-rem ⧗ Number → Number → Number
 :test ((-5) % (-3) =? (-2)) (true)
 :test ((-5) % (+3) =? (+1)) (true)
 :test ((+5) % (-3) =? (-1)) (true)
-
-# returns true if the number is even (remainder mod 2 == 0)
-# TODO: faster solution (using tupling?)
-even? z [[rec]] ⧗ Number → Boolean
-	rec =?0 case-end case-rec
-		case-rec t⁰? (lst 0) (1 /³0) ¬(1 /³0)
-		case-end true
-
-=²?‣ even?
-
-:test (=²?(+0)) (true)
-:test (=²?(+1)) (false)
-:test (=²?(+41)) (false)
-:test (=²?(+42)) (true)
-
-# returns true if the number is odd (remainder mod 2 == 1)
-odd? ¬‣ ∘ even? ⧗ Number → Boolean
-
-≠²?‣ odd?
-
-:test (≠²?(+0)) (false)
-:test (≠²?(+1)) (true)
-:test (≠²?(+41)) (true)
-:test (≠²?(+42)) (false)

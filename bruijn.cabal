@@ -35,7 +35,9 @@ data-files:
     std/String.bruijn
     std/test_all.sh
     std/AIT/Beavers.bruijn
+    std/Generic/Number.bruijn
     std/Logic/Binary.bruijn
+    std/Logic/Linear.bruijn
     std/Logic/Ternary.bruijn
     std/Number/Binary.bruijn
     std/Number/Bruijn.bruijn
