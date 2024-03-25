@@ -324,36 +324,36 @@ binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
 
 # returns true if number is greater than other number
 # TODO: remove ternary conversion
-gre? T.gre? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
+gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
 
-…>?… gre?
+…>?… gt?
 
 :test ((+1b) >? (+2b)) (false)
 :test ((+2b) >? (+2b)) (false)
 :test ((+3b) >? (+2b)) (true)
 
 # returns true if number is less than other number
-les? \gre? ⧗ Binary → Binary → Boolean
+lt? \gt? ⧗ Binary → Binary → Boolean
 
-…<?… les?
+…<?… lt?
 
 :test ((+1b) <? (+2b)) (true)
 :test ((+2b) <? (+2b)) (false)
 :test ((+3b) <? (+2b)) (false)
 
 # returns true if number is less than or equal to other number
-leq? not! ∘∘ gre? ⧗ Binary → Binary → Boolean
+le? not! ∘∘ gt? ⧗ Binary → Binary → Boolean
 
-…≤?… leq?
+…≤?… le?
 
 :test ((+1b) ≤? (+2b)) (true)
 :test ((+2b) ≤? (+2b)) (true)
 :test ((+3b) ≤? (+2b)) (false)
 
 # returns true if number is greater than or equal to other number
-geq? \leq? ⧗ Binary → Binary → Boolean
+ge? \le? ⧗ Binary → Binary → Boolean
 
-…≥?… geq?
+…≥?… ge?
 
 :test ((+1b) ≥? (+2b)) (false)
 :test ((+2b) ≥? (+2b)) (true)

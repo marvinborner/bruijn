@@ -333,7 +333,7 @@ cross3 [[[[[[2 : (1 : {}0)] <$> 2] <++> 2] <++> 2]]] ⧗ (List a) → (List a) �
 # returns pair of take-while and drop-while
 span [[(take-while 1 0) : (drop-while 1 0)]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
 
-:test (span (\les? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
+:test (span (\lt? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
 
 # same as span but with inverted predicate
 # slower but equivalent: span ∘ (…∘… ¬‣)
@@ -341,7 +341,7 @@ break [[left : right]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List
 	left take-while (¬‣ ∘ 1) 0
 	right drop-while (¬‣ ∘ 1) 0
 
-:test (break (\gre? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
+:test (break (\gt? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
 
 # groups list by eq predicate
 group-by z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List (List a))
@@ -373,8 +373,8 @@ split-list-by z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List (List a))
 sort-asc z [[rec]]
 	rec 0 [[[case-sort]]] case-end
 		case-sort (4 lesser) ++ {}(2) ++ (4 greater)
-			lesser (\les? 2) <#> 1
-			greater (\geq? 2) <#> 1
+			lesser (\lt? 2) <#> 1
+			greater (\ge? 2) <#> 1
 		case-end empty
 
 :test (sort-asc ((+3) : ((+2) : {}(+1)))) ((+1) : ((+2) : {}(+3)))
@@ -383,14 +383,14 @@ sort-asc z [[rec]]
 sort-desc z [[rec]]
 	rec 0 [[[case-sort]]] case-end
 		case-sort (4 greater) ++ {}(2) ++ (4 lesser)
-			greater (\geq? 2) <#> 1
-			lesser (\les? 2) <#> 1
+			greater (\ge? 2) <#> 1
+			lesser (\lt? 2) <#> 1
 		case-end empty
 
 :test (sort-desc ((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
 
 # inserts an element into a ascendingly sorted list
-insert-sorted [go ∘ (span (\les? 0))]
+insert-sorted [go ∘ (span (\lt? 0))]
 	go [^0 ++ (1 : ~0)]
 
 :test (insert-sorted (+3) ((+1) : ((+2) : {}(+4)))) ((+1) : ((+2) : ((+3) : {}(+4))))
@@ -398,14 +398,14 @@ insert-sorted [go ∘ (span (\les? 0))]
 # returns true if any element in a list matches a predicate
 any? ⋁?‣ ∘∘ map ⧗ (a → Boolean) → (List a) → Boolean
 
-:test (any? (\gre? (+2)) ((+1) : ((+2) : {}(+3)))) (true)
-:test (any? (\gre? (+2)) ((+1) : ((+2) : {}(+2)))) (false)
+:test (any? (\gt? (+2)) ((+1) : ((+2) : {}(+3)))) (true)
+:test (any? (\gt? (+2)) ((+1) : ((+2) : {}(+2)))) (false)
 
 # returns true if all elements in a list match a predicate
 all? ⋀?‣ ∘∘ map ⧗ (a → Boolean) → (List a) → Boolean
 
-:test (all? (\gre? (+2)) ((+3) : ((+4) : {}(+5)))) (true)
-:test (all? (\gre? (+2)) ((+4) : ((+3) : {}(+2)))) (false)
+:test (all? (\gt? (+2)) ((+3) : ((+4) : {}(+5)))) (true)
+:test (all? (\gt? (+2)) ((+4) : ((+3) : {}(+2)))) (false)
 
 # returns true if element is part of a list based on eq predicate
 in? …∘… any? ⧗ (a → a → Boolean) → a → (List a) → Boolean

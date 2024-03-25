@@ -313,36 +313,36 @@ sub [[1 + -0]] ⧗ Number → Number → Number
 :test ((+42) - (+1) =? (+41)) (true)
 
 # returns true if number is greater than other number
-gre? positive? ∘∘ sub ⧗ Number → Number → Boolean
+gt? positive? ∘∘ sub ⧗ Number → Number → Boolean
 
-…>?… gre?
+…>?… gt?
 
 :test ((+1) >? (+2)) (false)
 :test ((+2) >? (+2)) (false)
 :test ((+3) >? (+2)) (true)
 
 # returns true if number is less than other number
-les? \gre? ⧗ Number → Number → Boolean
+lt? \gt? ⧗ Number → Number → Boolean
 
-…<?… les?
+…<?… lt?
 
 :test ((+1) <? (+2)) (true)
 :test ((+2) <? (+2)) (false)
 :test ((+3) <? (+2)) (false)
 
 # returns true if number is less than or equal to other number
-leq? not! ∘∘ gre? ⧗ Number → Number → Boolean
+le? not! ∘∘ gt? ⧗ Number → Number → Boolean
 
-…≤?… leq?
+…≤?… le?
 
 :test ((+1) ≤? (+2)) (true)
 :test ((+2) ≤? (+2)) (true)
 :test ((+3) ≤? (+2)) (false)
 
 # returns true if number is greater than or equal to other number
-geq? \leq? ⧗ Number → Number → Boolean
+ge? \le? ⧗ Number → Number → Boolean
 
-…≥?… geq?
+…≥?… ge?
 
 :test ((+1) ≥? (+2)) (false)
 :test ((+2) ≥? (+2)) (true)
@@ -368,10 +368,10 @@ compare compare-case (+0) (+1) (-1) ⧗ Number → Number → Number
 c-eq? eq? (+0) ⧗ Number → Number
 
 # returns true if comparison result is less than (LT)
-c-les? eq? (-1) ⧗ Number → Number
+c-lt? eq? (-1) ⧗ Number → Number
 
 # returns true if comparison result is greater than (GT)
-c-gre? eq? (+1) ⧗ Number → Number
+c-gt? eq? (+1) ⧗ Number → Number
 
 # negates a balanced ternary number if <0
 abs [<?0 -0 0] ⧗ Number → Number

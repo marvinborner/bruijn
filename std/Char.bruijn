@@ -19,7 +19,7 @@ number→char ternary→binary → (add '0') ⧗ Number → Char
 :test (number→char (+9)) ('9')
 
 # returns true if char is in A-Z
-uppercase? φ and? (\geq? 'A') (\leq? 'Z') ⧗ Char → Boolean
+uppercase? φ and? (\ge? 'A') (\le? 'Z') ⧗ Char → Boolean
 
 :test (uppercase? 'a') (false)
 :test (uppercase? 'z') (false)
@@ -28,7 +28,7 @@ uppercase? φ and? (\geq? 'A') (\leq? 'Z') ⧗ Char → Boolean
 :test (uppercase? '0') (false)
 
 # returns true if char is in a-z
-lowercase? φ and? (\geq? 'a') (\leq? 'z') ⧗ Char → Boolean
+lowercase? φ and? (\ge? 'a') (\le? 'z') ⧗ Char → Boolean
 
 :test (lowercase? 'a') (true)
 :test (lowercase? 'z') (true)
@@ -46,7 +46,7 @@ alpha? φ or? lowercase? uppercase? ⧗ Char → Boolean
 :test (alpha? '0') (false)
 
 # returns true if char is in 0-9
-numeric? φ and? (\geq? '0') (\leq? '9') ⧗ Char → Boolean
+numeric? φ and? (\ge? '0') (\le? '9') ⧗ Char → Boolean
 
 :test (numeric? '0') (true)
 :test (numeric? '9') (true)

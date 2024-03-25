@@ -63,18 +63,18 @@ sub [[0 dec 1]] ⧗ Unary → Unary → Unary
 :test ((+5u) - (+3u)) ((+2u))
 
 # returns true if number is less than or equal to other number
-leq? zero? ∘∘ sub ⧗ Unary → Unary → Boolean
+le? zero? ∘∘ sub ⧗ Unary → Unary → Boolean
 
-…≤?… leq?
+…≤?… le?
 
 :test ((+1u) ≤? (+2u)) (true)
 :test ((+2u) ≤? (+2u)) (true)
 :test ((+3u) ≤? (+2u)) (false)
 
 # returns true if number is greater than or equal to other number
-geq? \leq? ⧗ Unary → Unary → Boolean
+ge? \le? ⧗ Unary → Unary → Boolean
 
-…≥?… geq?
+…≥?… ge?
 
 :test ((+1u) ≥? (+2u)) (false)
 :test ((+2u) ≥? (+2u)) (true)
@@ -82,9 +82,9 @@ geq? \leq? ⧗ Unary → Unary → Boolean
 
 # returns true if number is greater than other number
 # larger numbers should be second argument (performance)
-gre? not! ∘∘ leq? ⧗ Unary → Unary → Boolean
+gt? not! ∘∘ le? ⧗ Unary → Unary → Boolean
 
-…>?… gre?
+…>?… gt?
 
 :test ((+1u) >? (+2u)) (false)
 :test ((+2u) >? (+2u)) (false)
@@ -92,9 +92,9 @@ gre? not! ∘∘ leq? ⧗ Unary → Unary → Boolean
 
 # returns true if number is less than other number
 # smaller numbers should be second argument (performance)
-les? \gre? ⧗ Unary → Unary → Boolean
+lt? \gt? ⧗ Unary → Unary → Boolean
 
-…<?… les?
+…<?… lt?
 
 :test ((+1u) <? (+2u)) (true)
 :test ((+2u) <? (+2u)) (false)

@@ -6,7 +6,7 @@
 lim (+34)
 
 solve [∑(crit <#> (take lim fibs))]
-	crit φ [[0 1 0]] even? (\les? 0)
+	crit φ [[0 1 0]] even? (\lt? 0)
 
 :test ((solve (+4000)) =? (+3382)) ([[1]])
 

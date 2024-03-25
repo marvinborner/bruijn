@@ -35,36 +35,36 @@ compare compare-case (+0) (+1) (-1) ⧗ String → String → Number
 :test (compare "1" "12") ((+1))
 
 # returns true if string is lexically less than other string
-les? c-les? ∘∘ compare ⧗ String → String → Boolean
+lt? c-lt? ∘∘ compare ⧗ String → String → Boolean
 
-…<?… les?
+…<?… lt?
 
 :test ("1" <? "2") (true)
 :test ("2" <? "2") (false)
 :test ("3" <? "2") (false)
 
 # returns true if string is lexically greater than other string
-gre? \les? ⧗ String → String → Boolean
+gt? \lt? ⧗ String → String → Boolean
 
-…>?… gre?
+…>?… gt?
 
 :test ("1" >? "2") (false)
 :test ("2" >? "2") (false)
 :test ("3" >? "2") (true)
 
 # returns true if string is lexically less than or equal to other string
-leq? not! ∘∘ gre? ⧗ String → String → Boolean
+le? not! ∘∘ gt? ⧗ String → String → Boolean
 
-…≤?… leq?
+…≤?… le?
 
 :test ("1" ≤? "2") (true)
 :test ("2" ≤? "2") (true)
 :test ("3" ≤? "2") (false)
 
 # returns true if number is greater than or equal to other string
-geq? \leq? ⧗ String → String → Boolean
+ge? \le? ⧗ String → String → Boolean
 
-…≥?… geq?
+…≥?… ge?
 
 :test ("1" ≥? "2") (false)
 :test ("2" ≥? "2") (true)
@@ -97,7 +97,7 @@ string→signed-number [(sign ^0) (string→unsigned-number ~0)] ⧗ String → 
 :test (%(string→signed-number "-123")) ((-123))
 
 # converts signed/unsigned number strings to a number
-string→number [C.les? ^0 '0' signed unsigned] ⧗ String → Number
+string→number [C.lt? ^0 '0' signed unsigned] ⧗ String → Number
 	signed string→signed-number 0
 	unsigned string→unsigned-number 0
 
