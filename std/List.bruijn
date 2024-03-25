@@ -457,6 +457,15 @@ find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
 :test (find-index (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
 :test (find-index (…=?… (+4)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((-1))
 
+# finds the first element that matches a predicate
+find z [[[rec]]] ⧗ (a → Boolean) → (List a) → a
+	rec 0 [[[case-find]]] case-end
+		case-find (4 2) 2 (5 4 1)
+		case-end Ω
+
+:test (find (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+2))
+:test (find (…=?… (+1)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
+
 # removes first element that matches an eq predicate
 remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)
 	rec 0 [[[case-remove]]] case-end

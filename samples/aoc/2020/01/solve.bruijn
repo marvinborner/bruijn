@@ -1,22 +1,9 @@
-# TODO: While this obviously isn't the most performant solution, it should still
-#       be a lot faster than it currently is. I think there's some problem with
-#       underlying strictness/laziness
-
 :import std/Combinator .
 :import std/String .
 :import std/Math .
-:import std/Pair P
 
-part1 z [[rec]]
-	rec ((P.uncurry …+… ^0) =? (+2020)) case-done case-cont
-		case-done P.uncurry …⋅… ^0
-		case-cont 1 ~0
+solve (find (sum → (eq? (+2020)))) → product
 
-part2 z [[rec]]
-	rec (∑(^0) =? (+2020)) case-done case-cont
-		case-done ∏(^0)
-		case-cont 1 ~0
-
-main [parts nums]
-	nums string→number <$> ~(<~>(lines 0))
-	parts [(part1 (cross 0 0)) : (part2 (cross3 0 0 0))]
+main trim → lines → (map string→number) → (φ (cons ⋔ solve) part1 part2)
+	part1 [[[~1 : {}0] <$> (drop ^0 1)] <++> (enumerate 0)]
+	part2 [[[[~2 : (~1 : {}0)] <$> (drop ^0 2)] <++> (enumerate (drop ^0 1))] <++> (enumerate 0)]
