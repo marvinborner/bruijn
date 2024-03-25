@@ -5,7 +5,7 @@
 # very sad indeed
 
 # increments de Bruijn numeral
-inc [[[2 1]]]
+inc [[[2 1]]] ⧗ Bruijn → Bruijn
 
 ++‣ inc
 
@@ -13,9 +13,18 @@ inc [[[2 1]]]
 :test (++(+5d)) ((+6d))
 
 # decrements de Bruijn numeral
-dec [[1 0 0]]
+dec [[1 0 0]] ⧗ Bruijn → Bruijn
 
 --‣ dec
 
 :test (--(+1d)) ((+0d))
 :test (--(+5d)) ((+4d))
+
+# multiplies de Bruijn numeral with unary number
+mul [[1 0]] ⧗ Unary → Bruijn → Bruijn
+
+…⋅… mul
+
+:test ((+5u) ⋅ (+5d)) ((+25d))
+:test ((+0u) ⋅ (+5d)) ((+0d))
+:test ((+5u) ⋅ (+0d)) ((+0d))

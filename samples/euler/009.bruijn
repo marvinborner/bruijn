@@ -12,6 +12,6 @@ solve [head <#> lst] → head → tail
 		a 1 - 0
 		b (+2) ⋅ 3 ⋅ 2
 		c 1 + 0
-	lst concat-map [map [check] ({ (+1) → --0 })] ({ (+2) → (sqrt 0) })
+	lst [[check] <$> ({ (+1) → --0 })] <++> ({ (+2) → (sqrt 0) })
 
 main [solve (+1000)]

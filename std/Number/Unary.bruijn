@@ -173,6 +173,26 @@ mod* [[1 &[[(0 ⋀? (2 ≤? 1)) case-rec case-end]] (1 : true) k]] ⧗ Unary →
 	case-rec (1 - 3) : true
 	case-end 1 : false
 
+# returns true if the number is even (remainder mod 2 == 0)
+even? [=?(0 % (+2u))] ⧗ Unary → Boolean
+
+=²?‣ even?
+
+:test (=²?(+0u)) (true)
+:test (=²?(+1u)) (false)
+:test (=²?(+41u)) (false)
+:test (=²?(+42u)) (true)
+
+# returns true if the number is odd (remainder mod 2 == 1)
+odd? ¬‣ ∘ even? ⧗ Unary → Boolean
+
+≠²?‣ odd?
+
+:test (≠²?(+0u)) (false)
+:test (≠²?(+1u)) (true)
+:test (≠²?(+41u)) (true)
+:test (≠²?(+42u)) (false)
+
 # exponentiates two unary number
 # doesn't give correct results for x^0
 pow* [[1 0]] ⧗ Unary → Unary → Unary

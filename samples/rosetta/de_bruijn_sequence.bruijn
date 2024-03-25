@@ -2,8 +2,8 @@
 
 :import std/Combinator .
 :import std/Char C
-:import std/Math .
 :import std/List .
+:import std/Math .
 
 # very slow but elegant
 de-bruijn y [[[C.?infix? (take 0 1) ~1 case-end case-rec]]]

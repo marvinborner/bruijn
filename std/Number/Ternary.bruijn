@@ -456,16 +456,16 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 :test (/³*(-6) =? (-2)) (true)
 :test (/³*(+5) =? (+1)) (true)
 
-# ceiled integer log3 by counting number of trits
+# ceiled integer log₃ by counting number of trits
 # also counts leading 0s
-log3* [0 (+0) inc inc inc] ⧗ Number → Number
+log₃* [0 (+0) inc inc inc] ⧗ Number → Number
 
-# ceiled integer log3 by counting number of trits
-log3 log3* ∘ strip ⧗ Number → Number
+# ceiled integer log₃ by counting number of trits
+log₃ log₃* ∘ strip ⧗ Number → Number
 
-:test (log3 (+0)) ((+0))
-:test (log3 (+5)) ((+3))
-:test (log3 (+42)) ((+5))
+:test (log₃ (+0)) ((+0))
+:test (log₃ (+5)) ((+3))
+:test (log₃ (+42)) ((+5))
 
 # returns the smallest number in a range such that a predicate is true
 binary-search z [[[[rec]]]] ⧗ (Number → Boolean) → Number → Number → Number
@@ -487,10 +487,10 @@ ternary-search z [[[[rec]]]] ⧗ (Number → Number) → Number → Number → N
 :test ((ternary-search [-((0 - (+3)) ⋅ (0 - (+3)))] (+0) (+5)) =? (+3)) (true)
 
 # pads a ternary number with 0s until it's as long a another ternary number
-pad y [[[(log3* 0) <? (log3* 1) (2 1 →⁰0) 0]]] ⧗ Number → Number → Number
+pad y [[[(log₃* 0) <? (log₃* 1) (2 1 →⁰0) 0]]] ⧗ Number → Number → Number
 
 # forces number to be exactly n trits long (either pad/trim)
-force [[[0 <? 2 pad trim] (log3* 0)]] ⧗ Number → Number
+force [[[0 <? 2 pad trim] (log₃* 0)]] ⧗ Number → Number
 	pad z [[[=?1 0 (2 --1 →⁰0)]]] (2 - 0) 1
 	trim z [[[=?1 0 (2 --1 ←0)]]] (0 - 2) 1
 
@@ -502,10 +502,10 @@ double-shift [[[[[left : right]] (force 2 1) (force 2 0)]]]
 
 # "efficient" quotient/remainder implementation for balanced ternary
 # technique by Douglas W. Jones
-# algorithm originally intended for fixed-width numbers (=> ugly hacks with force+log3)
+# algorithm originally intended for fixed-width numbers (=> ugly hacks with force+log₃)
 # TODO: remove the final `huh` correction step (probably some off-by-one bug?)
 # TODO: not actually that efficient right now
-quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log3 1) (log3 0)) 0]] ⧗ Number → Number → (Pair Number Number)
+quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log₃ 1) (log₃ 0)) 0]] ⧗ Number → Number → (Pair Number Number)
 	rec =?2 huh (double-shift 5 1 0 [[compare-case eq gt lt 1 (+0)]])
 		huh (>?1 ⋀? 6) ⋁? (<?1 ⋀? \6) (--0 : (1 + 7)) (0 : 1)
 		eq 5 --4 1 0

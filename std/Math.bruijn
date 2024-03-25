@@ -86,6 +86,13 @@ pow […!!… (iterate (…⋅… 0) (+1))] ⧗ Number → Number → Number
 
 :test (((+2) ** (+3)) =? (+8)) (true)
 
+# modulo exponentiation
+pow-mod [[[(f (2 % 0) 1 (+1)) % 0]]] ⧗ Number → Number → Number → Number
+	f y [[[[=?1 0 rec]]]]
+		rec 3 (2 ⋅ 2 % 4) /²1 (=²?1 0 (2 ⋅ 0 % 4))
+
+:test ((pow-mod (+2) (+3) (+5)) =? (+3)) (true)
+
 # power function using ternary exponentiation (TODO: fix, wrong..)
 pow* z [[[rec]]] ⧗ Number → Number → Number
 	rec =?0 case-end case-pow
@@ -172,6 +179,7 @@ sqrt [z [[[[rec]]]] (+1) 0 0] ⧗ Number → Number
 :test ((sqrt (+9)) =? (+3)) (true)
 
 # integer logarithm
+# TODO: could we somehow use the change-of-base rule and efficient log3?
 log z [[[[rec]]]] (+1) ⧗ Number → Number → Number
 	rec [((3 ≤? 1) ⋀? (1 <? 0)) case-end case-rec] (2 ⋅ 1)
 		case-end (+0)
@@ -185,21 +193,21 @@ log z [[[[rec]]]] (+1) ⧗ Number → Number → Number
 :test ((log (+2) (+48)) =? (+5)) (true)
 
 # iterated logarithm
-# note that log* 1 is defined as 1
-log* [z [[rec]] --0] ⧗ Number → Number
+# note that log! 1 is defined as 1
+log! [z [[rec]] --0] ⧗ Number → Number
 	rec (0 ≤? (+1)) case-end case-rec
 		case-end (+1)
 		case-rec ++(1 (log (+2) 0))
 
-:test ((log* (+1)) =? (+1)) (true)
-:test ((log* (+2)) =? (+1)) (true)
-:test ((log* (+3)) =? (+2)) (true)
-:test ((log* (+4)) =? (+2)) (true)
-:test ((log* (+5)) =? (+3)) (true)
-:test ((log* (+16)) =? (+3)) (true)
-:test ((log* (+17)) =? (+4)) (true)
-:test ((log* (+65536)) =? (+4)) (true)
-:test ((log* (+65537)) =? (+5)) (true)
+:test ((log! (+1)) =? (+1)) (true)
+:test ((log! (+2)) =? (+1)) (true)
+:test ((log! (+3)) =? (+2)) (true)
+:test ((log! (+4)) =? (+2)) (true)
+:test ((log! (+5)) =? (+3)) (true)
+:test ((log! (+16)) =? (+3)) (true)
+:test ((log! (+17)) =? (+4)) (true)
+:test ((log! (+65536)) =? (+4)) (true)
+:test ((log! (+65537)) =? (+5)) (true)
 
 # pascal triangle
 # TODO: something is wrong in here

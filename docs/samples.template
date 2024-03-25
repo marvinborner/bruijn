@@ -8,7 +8,8 @@
 	</head>
 	<body>
 		<h1>bruijn samples</h1>
-These are some code samples written in the bruijn programming language. Most of the examples are copies of our solutions on <a href="https://rosettacode.org/wiki/Category:Bruijn">Rosetta Code</a>. All examples are written by bruijn's contributors and may be used according to the <a href="https://en.wikipedia.org/wiki/GNU_Free_Documentation_License">GNU FDL license</a>.
+<p>These are some code samples written in the bruijn programming language. Most of the examples are copies of our solutions on <a href="https://rosettacode.org/wiki/Category:Bruijn">Rosetta Code</a>. All examples are written by bruijn's contributors and may be used according to the <a href="https://en.wikipedia.org/wiki/GNU_Free_Documentation_License">GNU FDL license</a>.</p>
+<p>While solutions to the Project Euler puzzles should not be published in general, we may provide bruijn's solutions to the first 100 puzzles for introductory purposes. This is <a href="https://projecteuler.net/about">tolerated by the creators</a>.</p>
 		<ul>
 			LINKS
 		</ul>

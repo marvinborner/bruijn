@@ -1,0 +1,5 @@
+:import std/Combinator .
+:import std/Math .
+:import std/List .
+
+main [∑([y [[0 =? ++(log (+10) (2 ** 0)) (1 ++0) --0]] (+1)] <$> ({ (+1) → (+9) }))]

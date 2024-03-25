@@ -9,10 +9,10 @@
 # the following functions are only here because of recursive imports of list/ternary
 
 # converts number to list of its digits
-number→list [=?0 {}(+0) <~>(z [[[rec]]] empty 0)] ⧗ Number → (List Number)
+number→list [=?0 {}(+0) (z [[[rec]]] empty 0)] ⧗ Number → (List Number)
 	rec =?0 case-end case-rec
 		case-rec &[[4 (0 : 3) 1]] (quot-rem 0 (+10))
-		case-end empty
+		case-end 1
 
 :test (number→list (+0)) ({}(+0))
 
