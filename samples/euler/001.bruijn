@@ -3,7 +3,7 @@
 :import std/Math .
 
 solve [∑(crit <#> ({ (+0) → --0 }))]
-	crit φ m ((\mod (+3)) → zero?) ((\mod (+5)) → zero?)
+	crit [ψ m ((mod 0) → zero?) (+3) (+5)]
 
 :test ((solve (+10)) =? (+23)) ([[1]])
 

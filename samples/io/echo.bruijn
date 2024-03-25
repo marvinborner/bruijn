@@ -1,9 +1,0 @@
-# "echo text | bruijn echo.bruijn"
-
-:import std/Monad .
-
-# returning the binary encoded argument ⇒ echo
-main [0]
-
-# alternative using monads
-main* read >>= return

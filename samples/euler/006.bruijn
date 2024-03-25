@@ -1,7 +1,7 @@
 :import std/Combinator .
 :import std/Math .
 
-solve [|(sum-of-squares - square-of-sum)]
+solve [square-of-sum - sum-of-squares]
 	sum-of-squares ∑ (+1) → 0 | (\pow (+2))
 	square-of-sum (∑ (+1) → 0 | i) ** (+2)
 

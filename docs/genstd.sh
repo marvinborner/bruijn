@@ -22,7 +22,7 @@ for file in $files; do
 	ntests=$(grep -cP "^:test" "$file" || true)
 	links="$links\n<li><span class='com'>:import</span> <a href=$filename.html>$(basename "$name" .bruijn)</a> <span class='stats'>($ndefs definitions, $ntests tests)</span></li>"
 	awk 'NR==FNR { gsub("<", "\\&lt;", $0); gsub(">", "\\&gt;", $0); a[n++]=$0; next } /CONTENT/ { for (i=0;i<n;++i) print a[i]; next } 1' "$file" content.template >"std/$filename.html"
-	sed -i -e "s@NAME@$name@g" "std/$filename.html"
+	sed -i -e "s@NAME@$name@g" -e "s@INFO@@g" "std/$filename.html"
 
 	tot_ndefs=$((tot_ndefs + ndefs))
 	tot_ntests=$((tot_ntests + ntests))

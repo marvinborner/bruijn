@@ -17,8 +17,21 @@ for file in $files; do
 	fi
 	filename=$(sed s@/@_@g <<<"$name")
 	links="$links\n<li><a href="$filename.html">$name</a></li>"
+
+	if [ "$prefix" = "euler" ]; then
+		info="<a href='https://projecteuler.net/problem=$(basename "$name" .bruijn)'>Problem description</a>"
+	elif [ "$prefix" = "aoc" ]; then
+		year=$(cut -c5-8 <<<"$name")
+		day=$(cut -c10-11 <<<"$name" | sed 's/^0*//')
+		info="<a href='https://adventofcode.com/$year/day/$day'>Problem description</a>"
+	elif [ "$prefix" = "rosetta" ]; then
+		info="<a href='https://rosettacode.org/wiki/$(basename "$name" .bruijn)'>Problem description</a>"
+	else
+		info=""
+	fi
+
 	awk 'NR==FNR { gsub("<", "\\&lt;", $0); gsub(">", "\\&gt;", $0); a[n++]=$0; next } /CONTENT/ { for (i=0;i<n;++i) print a[i]; next } 1' "$file" content.template >"samples/$filename.html"
-	sed -i -e "s@NAME@$name@g" "samples/$filename.html"
+	sed -i -e "s@NAME@$name@g" -e "s@INFO@$info@g" "samples/$filename.html"
 done
 
 sed -e "s@LINKS@$links@g" samples.template >samples/index.html
