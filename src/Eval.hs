@@ -26,7 +26,9 @@ import           Reducer
 import           System.Clock
 import           System.Console.Haskeline
 import           System.Directory
-import           System.FilePath.Posix          ( takeBaseName )
+import           System.FilePath.Posix          ( takeBaseName
+                                                , takeDirectory
+                                                )
 import           System.Mem
 import           Target
 import           Text.Megaparsec         hiding ( State
@@ -185,16 +187,16 @@ evalSubEnv (instr : is) s =
   handleInterrupt (putStrLn "<aborted>" >> return s)
     $ evalInstruction instr s (evalSubEnv is)
 
-fullPath :: String -> IO String
-fullPath path = do
+fullPath :: String -> String -> IO String
+fullPath current path = do
   lib    <- getDataFileName path -- TODO: Use actual lib directory
   exists <- doesFileExist lib
-  pure $ if exists then lib else path
+  pure $ if exists then lib else takeDirectory current ++ "/" ++ path
 
 evalCommand :: String -> EnvState -> Command -> IO EnvState
 evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
   Input path -> do
-    full <- fullPath path
+    full <- fullPath (_path conf) path
     if full `elem` _evalPaths conf
       then
         print
@@ -216,7 +218,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     let
       monitor mtime = do
         threadDelay 100000
-        full <- fullPath path
+        full <- fullPath "" path
         t    <- getModificationTime full
         if t > mtime
           then
@@ -227,7 +229,7 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
     in  getCurrentTime >>= monitor
   Import path namespace -> do
     -- TODO: Merge with Input (very similar)
-    full <- fullPath path
+    full <- fullPath (_path conf) path
     if full `elem` _evalPaths conf
       then
         print
