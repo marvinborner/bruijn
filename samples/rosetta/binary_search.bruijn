@@ -1,6 +1,6 @@
 :import std/Combinator .
-:import std/Math .
 :import std/List .
+:import std/Math .
 :import std/Option .
 
 binary-search [y [[[[[2 <? 3 none go]]]]] (+0) --(∀0) 0]

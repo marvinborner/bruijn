@@ -3,4 +3,4 @@
 main [<~>0 =? 0]
 
 :test (main "tacocat") ([[1]])
-:test (main "bruijn") ([[1]])
+:test (main "bruijn") ([[0]])
