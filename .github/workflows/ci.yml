@@ -18,15 +18,11 @@ jobs:
         run: sudo apt-get install hyperfine
       - name: Install bruijn
         run: stack install
-      - name: Run HigherOrder sample tests
-        run: cd samples/ && ./test_all.sh HigherOrder
       - name: Run HigherOrder tests and measure time
         run: cd std/ && ./test_all.sh HigherOrder
-      - name: Run RKNL sample tests
-        run: cd samples/ && ./test_all.sh RKNL
       - name: Run RKNL tests and measure time
         run: cd std/ && ./test_all.sh RKNL
-      # - name: Run ION sample tests
-      #   run: cd samples/ && ./test_all.sh ION
       # - name: Run ION tests and measure time
       #   run: cd std/ && ./test_all.sh ION
+      - name: Run HigherOrder sample tests
+        run: cd samples/ && ./test_all.sh HigherOrder
