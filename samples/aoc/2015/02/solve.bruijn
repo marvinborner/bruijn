@@ -1,0 +1,14 @@
+:import std/Combinator .
+:import std/String .
+:import std/Math .
+:import std/Char C
+
+parse (split-list-by (C.eq? 'x')) → (map string→number)
+
+main trim → lines → (map parse) → (φ cons part1 part2)
+	part1 foldl \(g add [φ add surface slack (^0 ⋅ ^(~0) : (^(~0) ⋅ ^(~(~0)) : {}(^(~(~0)) ⋅ ^0)))]) (+0)
+		surface foldl \(g add (mul (+2))) (+0)
+		slack lmin
+	part2 foldl \(g add (φ add ribbon bow)) (+0)
+		ribbon sort-asc → (take (+2)) → sum → (mul (+2))
+		bow product

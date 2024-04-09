@@ -4,20 +4,9 @@
 :import std/Char C
 :import std/Pair P
 
-self [[((zip 0) ∘ (drop 1) ∘ cycle) 0]] ⧗ Number → (List Number) → (List (Pair Number Number))
+self [[(zip 0) ∘ (drop 1) ∘ cycle 0]]
 
-part1 sum ∘ eqs ∘ pairs
-	sum foldl [[^0 + 1]] (+0)
-	eqs filter (P.uncurry …=?…)
-	pairs self (+1)
-
-part2 [(sum ∘ eqs ∘ pairs) 0]
-	sum foldl [[^0 + 1]] (+0)
-	eqs filter (P.uncurry …=?…)
-	pairs self /²(length 0)
-
-:test (part1 ((+1) : ((+1) : ((+2) : {}(+2))))) ((+3))
-
-main [parts nums]
-	nums C.char→number <$> ^(lines 0)
-	parts [(part1 0) : (part2 0)]
+main [φ (cons ⋔ solve) part1 part2 (C.char→number <$> (trim 0))]
+	solve (filter (P.uncurry eq?)) → (foldl \(g add head) (+0))
+	part1 self (+1)
+	part2 self /²(length 0)

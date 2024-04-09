@@ -15,17 +15,17 @@ direction! [^0 : (S.string→number ~0)] ⧗ (List Char) → Direction
 # rotation : (x : y)
 start ((+0) : ((+0) : (+0))) ⧗ State
 
-move [[go ((C.eq? ^0 'R' ++‣ --‣) ^1)]] ⧗ State → Direction → State
+move [[go (C.eq? ^0 'R' ++‣ --‣ ^1)]] ⧗ State → Direction → State
 	go [0 : (even? 0 y x)]
-		x (^(~2) + (p ~1)) : ~(~2)
-			p ((0 % (+4)) =? (+3)) -‣ [0]
+		x ^(~2) + (p ~1) : ~(~2)
+			p 0 % (+4) =? (+3) -‣ [0]
 		y ^(~2) : (~(~2) + (p ~1))
-			p ((0 % (+4)) =? (+2)) -‣ [0]
+			p 0 % (+4) =? (+2) -‣ [0]
 
 :test (move start (direction! "R42")) ((+1) : ((+42) : (+0)))
 
 part1 (P.uncurry …+…) ∘ ~‣ ∘ (foldl move start) ⧗ (List Direction) → State
 
 main [parts coords]
-	coords direction! <$> (split-list-by [C.eq? 0 ','] (init 0))
-	parts [(part1 0)]
+	coords direction! <$> (split-list-by (C.eq? ',') (init 0))
+	parts [part1 0]
