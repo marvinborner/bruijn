@@ -8,6 +8,7 @@ import           Control.Monad                  ( ap
                                                 , void
                                                 )
 import           Data.Void
+import           GHC.Real                       ( (%) )
 import           Helper
 import           Text.Megaparsec         hiding ( parseTest )
 import           Text.Megaparsec.Char
@@ -135,6 +136,38 @@ parseNumeral = do
   number :: Parser Integer
   number = ap sign nat
 
+-- parsed float a.b to rational p/q
+convertToRational :: Integer -> Integer -> Rational
+convertToRational a b =
+  let denominator :: Integer
+      denominator = 10 ^ length (show b)
+      numerator   = b + a * denominator
+      common      = gcd numerator denominator
+  in  (numerator `div` common) % (denominator `div` common)
+
+parseFloat :: Parser Expression
+parseFloat = do
+  _    <- string "(" <?> "float start"
+  num  <- signedFloat <?> "signed float"
+  base <- try (oneOf "frc") <|> return 'f'
+  _    <- string ")" <?> "float end"
+  pure $ f base num
+ where
+  f 'f' = floatToRational
+  f 'r' = floatToReal
+  f 'c' = floatToComplex -- TODO: imaginary
+  f _   = invalidProgramState
+  sign :: Parser (Rational -> Rational)
+  sign = (char '-' >> return negate) <|> (char '+' >> return id)
+  float :: Parser Rational
+  float = do
+    a <- read <$> some digitChar <?> "digits"
+    _ <- char '.' <?> "float delimiter"
+    b <- read <$> some digitChar <?> "digits"
+    return $ convertToRational a b
+  signedFloat :: Parser Rational
+  signedFloat = ap sign float
+
 specialEscape :: Parser Char
 specialEscape =
   choice (zipWith (\c r -> r <$ char c) "bnfrt\\\"/" "\b\n\f\r\t\\\"/")
@@ -201,6 +234,7 @@ parseSingleton =
   let parseSingletonExpression =
         parseBruijn
           <|> try parseNumeral
+          <|> try parseFloat
           <|> parseString
           <|> try parseChar
           <|> parseQuote
