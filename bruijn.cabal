@@ -39,6 +39,9 @@ data-files:
     std/Logic/Binary.bruijn
     std/Logic/Linear.bruijn
     std/Logic/Ternary.bruijn
+    std/Math/Complex.bruijn
+    std/Math/Rational.bruijn
+    std/Math/Real.bruijn
     std/Number/Binary.bruijn
     std/Number/Bruijn.bruijn
     std/Number/Conversion.bruijn

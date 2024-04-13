@@ -23,6 +23,7 @@ import           GHC.Generics                   ( Generic )
 import           GHC.Real                       ( denominator
                                                 , numerator
                                                 )
+import           Numeric                        ( showFFloatAlt )
 import           Text.Megaparsec
 
 invalidProgramState :: a
@@ -341,8 +342,9 @@ maybeHumanifyExpression :: Expression -> Maybe String
 maybeHumanifyExpression e =
   unaryToDecimal e
     <|> binaryToChar e
-    <|> binaryToDecimal e
-    <|> ternaryToDecimal e
+    <|> binaryToString e
+    <|> ternaryToString e
+    <|> rationalToFloat e
     <|> humanifyString e
     <|> humanifyList e
     <|> humanifyPair e
@@ -394,7 +396,7 @@ floatToRational f = Abstraction
   q = denominator f
 
 floatToReal :: Rational -> Expression
-floatToReal f = Bruijn 0
+floatToReal = Abstraction . floatToRational
 
 floatToComplex :: Rational -> Expression
 floatToComplex f = Bruijn 0
@@ -452,19 +454,19 @@ unaryToDecimal' e = do
   resolve (Abstraction (Abstraction n)) = resolve' n
   resolve _                             = Nothing
 
-binaryToDecimal :: Expression -> Maybe String
-binaryToDecimal e = (<> "b") . show <$> binaryToDecimal' e
-
 binaryToChar :: Expression -> Maybe String
 binaryToChar e = show <$> binaryToChar' e
 
 binaryToChar' :: Expression -> Maybe Char
 binaryToChar' e = do
-  n <- binaryToDecimal' e
+  n <- binaryToDecimal e
   if n > 31 && n < 127 || n == 10 then Just $ chr $ fromIntegral n else Nothing
 
-binaryToDecimal' :: Expression -> Maybe Integer
-binaryToDecimal' e = do
+binaryToString :: Expression -> Maybe String
+binaryToString e = (<> "b") . show <$> binaryToDecimal e
+
+binaryToDecimal :: Expression -> Maybe Integer
+binaryToDecimal e = do
   res <- resolve e
   return (sum $ zipWith (*) res (iterate (* 2) 1) :: Integer)
  where
@@ -480,10 +482,13 @@ binaryToDecimal' e = do
   resolve (Abstraction (Abstraction (Abstraction n))) = resolve' n
   resolve _ = Nothing
 
-ternaryToDecimal :: Expression -> Maybe String
+ternaryToString :: Expression -> Maybe String
+ternaryToString e = (<> "t") . show <$> ternaryToDecimal e
+
+ternaryToDecimal :: Expression -> Maybe Integer
 ternaryToDecimal e = do
   res <- resolve e
-  return $ show (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer) <> "t"
+  return $ (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer)
  where
   multiplier (Bruijn 0) = Just 0
   multiplier (Bruijn 1) = Just 1
@@ -498,3 +503,20 @@ ternaryToDecimal e = do
   resolve (Abstraction (Abstraction (Abstraction (Abstraction n)))) =
     resolve' n
   resolve _ = Nothing
+
+rationalToFloat :: Expression -> Maybe String
+rationalToFloat (Abstraction (Application (Application (Bruijn 0) a) b)) = do
+  n <- ternaryToDecimal a
+  d <- ternaryToDecimal b
+  -- let (h, r) = properFraction (n % (d + 1))
+  Just
+    $  show n
+    <> "/"
+    <> show (d + 1)
+    <> " (approx. "
+    <> (showFFloatAlt (Just 8)
+                      ((fromIntegral n) / (fromIntegral $ d + 1) :: Double)
+                      ""
+       )
+    <> ")"
+rationalToFloat _ = Nothing

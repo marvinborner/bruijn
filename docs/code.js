@@ -5,11 +5,15 @@
 const term = (t) =>
   t
     .replaceAll(
-      /(?<!\([+-]\d*)(?<![a-z][^&; ]*)(?<!["'])([0-9])/g,
+      /(?<!\([+-]\d*\.?\d*)(?<![a-z][^&; ]*)(?<!["'])([0-9])/g,
       "<span class='index'>$1</span>",
     )
     .replaceAll(/'([^\'])'/g, "<span class='string'>'$1'</span>")
     .replaceAll(/"([^\"]*)"/g, "<span class='string'>\"$1\"</span>")
+    .replaceAll(
+      /(\([+-][0-9]+\.[0-9]+[frc]?\))/g,
+      "<span class='number'>$1</span>",
+    )
     .replaceAll(/(\([+-][0-9]+[ubtd]?\))/g, "<span class='number'>$1</span>")
     .replaceAll(/(?<!\>)(\()/g, "<span class='left-app'>(</span>")
     .replaceAll(/(\))(?!\<)/g, "<span class='right-app'>)</span>")
