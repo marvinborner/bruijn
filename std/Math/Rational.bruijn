@@ -8,6 +8,11 @@
 :import std/Pair .
 :import std/Math N
 
+# converts a balanced ternary number to a rational number
+number→rational [0 : (+0)] ⧗ Number → Rational
+
+:test (number→rational (+5)) ((+5.0))
+
 # returns true if two rational numbers are equal
 eq? &[[&[[N.eq? (N.mul 3 N.++0) (N.mul N.++2 1)]]]] ⧗ Rational → Rational → Boolean
 

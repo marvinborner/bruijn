@@ -1,0 +1,84 @@
+# some ideas by u/DaVinci103
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:import std/Logic .
+:import std/Combinator .
+:import std/Math/Rational .
+:import std/Number N
+
+# converts a balanced ternary number to a real number
+number→real [[number→rational 1]] ⧗ Number → Real
+
+:test (number→real (+5)) ((+5.0r))
+
+approx-eq? [[[eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
+
+# TODO: bigger value (higher performance first!)
+…≈?… approx-eq? (+1000)
+
+# TODO: this value could turn the whole equation to garbage (e.g. in div x ε)
+ε (+0.000000000000000000000001)
+
+# extends φ combinator by canceling further reductions when approximator hits 0
+φ-lim [[[[[N.=?0 ε (4 (3 0) (2 0))] N.--0]]]]
+
+# extends b combinator by canceling further reductions when approximator hits 0
+b-lim [[[N.=?0 ε (2 (1 N.--0))]]]
+
+# adds two real numbers
+add φ-lim add ⧗ Real → Real → Real
+
+…+… add
+
+# subtracts two real numbers
+sub φ-lim sub ⧗ Real → Real → Real
+
+…-… sub
+
+# multiplies two real numbers
+mul φ-lim mul ⧗ Real → Real → Real
+
+…⋅… mul
+
+# divides two real numbers
+div φ-lim div ⧗ Real → Real → Real
+
+…/… div
+
+# negates a real number
+negate b-lim negate ⧗ Real → Real
+
+-‣ negate
+
+# inverts a real number
+invert b-lim invert ⧗ Real → Real
+
+~‣ invert
+
+# finds smallest equivalent representation of a real number
+compress b-lim compress ⧗ Real → Real
+
+%‣ compress
+
+# ---
+
+:import std/List .
+
+# for debugging
+…#… φ-lim cons
+
+# real^number
+pow-n […!!… (iterate (mul 0) (+1.0r))] ⧗ Real → Number → Real
+
+exp [y [[[[rec]]]] (+1) (+1.0r) (+1.0r)]
+	rec (1 / 0) + (3 N.++2 (1 ⋅ 4) (0 ⋅ (number→real 2)))
+
+ln [y [[[rec]]] (+1) 0]
+	rec (N.=²?1 -‣ [0] (0 / (number→real 1))) + (2 N.++1 (3 ⋅ 0))
+
+# power function
+pow [[exp (0 ⋅ (ln 1))]] ⧗ Real → Real → Real
+
+…**… pow
+
+# :test (((+2.0r) ** (+3.0r)) ≈? (+8.0r)) (true)
