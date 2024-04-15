@@ -10,23 +10,35 @@
 # adds two complex numbers
 add &[[&[[(R.add 3 1) : (R.add 2 0)]]]] ⧗ Complex → Complex → Complex
 
+…+… add
+
 # subtracts two complex numbers
 sub &[[&[[(R.sub 3 1) : (R.sub 2 0)]]]] ⧗ Complex → Complex → Complex
+
+…+… sub
 
 # multiplies two complex numbers
 mul &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
 	p R.sub (R.mul 3 1) (R.mul 2 0)
 	q R.add (R.mul 3 0) (R.mul 2 1)
 
+…⋅… mul
+
 # divides two complex numbers
 div &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
 	p R.div (R.add (R.mul 3 1) (R.mul 2 0)) (R.add (R.mul 1 1) (R.mul 0 0))
 	q R.div (R.sub (R.mul 2 1) (R.mul 1 0)) (R.add (R.mul 1 1) (R.mul 0 0))
 
+…/… div
+
 # negates a complex number
 negate &[[(R.negate 1) : (R.negate 0)]] ⧗ Complex → Complex
 
+-‣ negate
+
 # inverts a complex number
-invert &[[p : q]]
+invert &[[p : q]] ⧗ Complex → Complex
 	p R.div 1 (R.add (R.mul 1 1) (R.mul 0 0))
 	q R.div 0 (R.add (R.mul 1 1) (R.mul 0 0))
+
+~‣ invert

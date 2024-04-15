@@ -149,14 +149,33 @@ parseFloat :: Parser Expression
 parseFloat = do
   _    <- string "(" <?> "float start"
   num  <- signedFloat <?> "signed float"
-  base <- try (oneOf "frc") <|> return 'f'
+  base <- try (oneOf "fr") <|> return 'f'
   _    <- string ")" <?> "float end"
   pure $ f base num
  where
   f 'f' = floatToRational
   f 'r' = floatToReal
-  f 'c' = floatToComplex -- TODO: imaginary
   f _   = invalidProgramState
+  sign :: Parser (Rational -> Rational)
+  sign = (char '-' >> return negate) <|> (char '+' >> return id)
+  float :: Parser Rational
+  float = do
+    a <- read <$> some digitChar <?> "digits"
+    _ <- char '.' <?> "float delimiter"
+    b <- read <$> some digitChar <?> "digits"
+    return $ convertToRational a b
+  signedFloat :: Parser Rational
+  signedFloat = ap sign float
+
+parseComplex :: Parser Expression
+parseComplex = do
+  _         <- string "(" <?> "complex start"
+  real      <- signedFloat <?> "signed complex"
+  _         <- char 'i'
+  imaginary <- signedFloat <?> "signed complex"
+  _         <- string ")" <?> "complex end"
+  pure $ floatToComplex real imaginary
+ where
   sign :: Parser (Rational -> Rational)
   sign = (char '-' >> return negate) <|> (char '+' >> return id)
   float :: Parser Rational
@@ -233,6 +252,7 @@ parseSingleton :: Parser Expression
 parseSingleton =
   let parseSingletonExpression =
         parseBruijn
+          <|> try parseComplex
           <|> try parseNumeral
           <|> try parseFloat
           <|> parseString

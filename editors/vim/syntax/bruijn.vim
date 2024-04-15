@@ -10,6 +10,8 @@ syn match bruijnAbstraction /[[\]]/
 syn match bruijnIndex /\([^0-9A-Za-z]\)\@<=\d\([^0-9]\)\@=/
 syn match bruijnChar /'\@<=.'\@=/
 syn match bruijnNumber /([+-]\d\+[dubt]\?)/
+syn match bruijnFloat /([+-]\d\+\.\d\+[fr]\?)/
+syn match bruijnComplex /([+-]\d\+\.\d\+i[+-]\d\+\.\d\+)/
 syn match bruijnDefinition /^\t*\S\+/
 syn match bruijnType /\( ⧗ \)\@<=.*$/
 syn match bruijnTypeDelim / ⧗ /
@@ -22,6 +24,8 @@ syn region bruijnString start=+"+ end=+"+ oneline
 
 hi def link bruijnIndex Special
 hi def link bruijnNumber Number
+hi def link bruijnFloat Number
+hi def link bruijnComplex Number
 hi def link bruijnString String
 hi def link bruijnChar String
 hi def link bruijnDefinition Define
@@ -60,6 +64,7 @@ abbreviate <buffer> kket ⟫
 abbreviate <buffer> <=? ≤
 abbreviate <buffer> >=? ≥
 abbreviate <buffer> /= ≠
+abbreviate <buffer> ~= ≈
 abbreviate <buffer> ! ¬
 abbreviate <buffer> _0 ₀
 abbreviate <buffer> _1 ₁
