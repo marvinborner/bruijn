@@ -3,15 +3,17 @@
 
 :import std/Logic .
 :import std/Combinator .
-:import std/Math/Rational .
+:import std/Pair .
+:import std/Math/Rational Q
 :import std/Number N
 
 # converts a balanced ternary number to a real number
-number→real [[number→rational 1]] ⧗ Number → Real
+number→real [[Q.number→rational 1]] ⧗ Number → Real
 
 :test (number→real (+5)) ((+5.0r))
 
-approx-eq? [[[eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
+# returns true if two real numbers are equal approximately
+approx-eq? [[[Q.eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
 
 # TODO: bigger value (higher performance first!)
 …≈?… approx-eq? (+1000)
@@ -23,42 +25,64 @@ approx-eq? [[[eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
 φ-lim [[[[[N.=?0 ε (4 (3 0) (2 0))] N.--0]]]]
 
 # extends b combinator by canceling further reductions when approximator hits 0
-b-lim [[[N.=?0 ε (2 (1 N.--0))]]]
+b-lim [[[[N.=?0 ε (3 (2 0))] N.--0]]]
 
 # adds two real numbers
-add φ-lim add ⧗ Real → Real → Real
+add φ-lim Q.add ⧗ Real → Real → Real
 
 …+… add
 
+:test ((+1.0r) + (+0.0r) ≈? (+1.0r)) (true)
+:test ((+0.0r) + (-1.0r) ≈? (-1.0r)) (true)
+
 # subtracts two real numbers
-sub φ-lim sub ⧗ Real → Real → Real
+sub φ-lim Q.sub ⧗ Real → Real → Real
 
 …-… sub
 
+:test ((+1.0r) - (+0.5r) ≈? (+0.5r)) (true)
+:test ((+0.0r) - (-1.0r) ≈? (+1.0r)) (true)
+
 # multiplies two real numbers
-mul φ-lim mul ⧗ Real → Real → Real
+mul φ-lim Q.mul ⧗ Real → Real → Real
 
 …⋅… mul
 
+:test ((+5.0r) ⋅ (+5.0r) ≈? (+25.0r)) (true)
+:test ((+1.8r) ⋅ (+1.2r) ≈? (+2.16r)) (true)
+
 # divides two real numbers
-div φ-lim div ⧗ Real → Real → Real
+div φ-lim Q.div ⧗ Real → Real → Real
 
 …/… div
 
+:test ((+8.0r) / (+4.0r) ≈? (+2.0r)) (true)
+:test ((+18.0r) / (+12.0r) ≈? (+1.5r)) (true)
+
 # negates a real number
-negate b-lim negate ⧗ Real → Real
+negate b-lim Q.negate ⧗ Real → Real
 
 -‣ negate
 
+:test (-(+0.0r) ≈? (+0.0r)) (true)
+:test (-(+4.2r) ≈? (-4.2r)) (true)
+:test (-(-4.2r) ≈? (+4.2r)) (true)
+
 # inverts a real number
-invert b-lim invert ⧗ Real → Real
+invert b-lim Q.invert ⧗ Real → Real
 
 ~‣ invert
 
+:test (~(+0.5r) ≈? (+2.0r)) (true)
+:test (~(-0.5r) ≈? (-2.0r)) (true)
+
 # finds smallest equivalent representation of a real number
-compress b-lim compress ⧗ Real → Real
+compress b-lim Q.compress ⧗ Real → Real
 
 %‣ compress
+
+:test (%[(+4) : (+1)] ≈? (+2.0r)) (true)
+:test (%[(+4) : (+7)] ≈? (+0.5r)) (true)
 
 # ---
 

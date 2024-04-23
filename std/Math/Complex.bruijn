@@ -7,6 +7,12 @@
 
 ι (+0.0r) : (+1.0r)
 
+# returns true of two complex numbers are equal approximately
+approx-eq? [[[R.approx-eq? 2 (1 2) (0 2)]]] ⧗ Number → Complex → Complex → Boolean
+
+# TODO: bigger value (higher performance first!)
+…≈?… approx-eq? (+1000)
+
 # adds two complex numbers
 add &[[&[[(R.add 3 1) : (R.add 2 0)]]]] ⧗ Complex → Complex → Complex
 
