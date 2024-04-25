@@ -90,3 +90,10 @@ div [[1 ⋅ ~0]] ⧗ Rational → Rational → Rational
 
 :test ((+8.0) / (+4.0) =? (+2.0)) (true)
 :test ((+18.0) / (+12.0) =? (+1.5)) (true)
+
+# TODO: Regression? Importing this into . won't find Q.eq? anymore
+
+:import std/List L
+
+# rational^number
+pow-n [L.…!!… (L.iterate (mul 0) (+1.0))] ⧗ Rational → Number → Rational
