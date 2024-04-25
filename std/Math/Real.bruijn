@@ -77,6 +77,16 @@ compress b Q.compress ⧗ Real → Real
 :test (%[(+4) : (+1)] ≈? (+2.0r)) (true)
 :test (%[(+4) : (+7)] ≈? (+0.5r)) (true)
 
+# increments a real number
+inc add (+1.0r) ⧗ Real → Real
+
+++‣ inc
+
+# decrements a real number
+dec \sub (+1.0r) ⧗ Real → Real
+
+--‣ dec
+
 # ---
 
 :import std/List L
@@ -87,50 +97,35 @@ unary-1/n² [0 &[[(Q.add 1 op) : N.++0]] start [[0]]] ⧗ Real
 	op (+1) : N.--(N.mul 0 0)
 	start (+0.0f) : (+1)
 
-# ∑(x^n/n!) = e^x
-# inefficient Taylor expansion
-unary-slow-exp [[0 &[[(Q.add 1 op) : N.++0]] start [[0]]]] ⧗ Number → Real
-	op (N.pow 3 0) : N.--(N.fac 0)
-	start (+0.0f) : (+1)
-
-# ∑(x^n/n!) = e^x
-# more efficient Taylor expansion
-unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 op) N.++3]] pow fac]]]]] start [[[[1]]]]]] ⧗ Number → Real
+# e^x using Taylor expansion: ∑(x^n/n!) = e^x
+unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]]]]] start [[[[1]]]]]] ⧗ Number → Real
 	pow N.mul 6 4
 	fac N.mul 1 3
-	op 1 : N.--0
 	start [0 (+1) (+1) (+1.0f) (+1)]
 
 # equivalent to unary-exp but with ternary index using infinite list iteration
-iter-exp [0 [[[[1]]]]] ∘∘ [L.…!!… (L.iterate &[[[[op]]]] start)] ⧗ Number → Real
-	start [0 (+1) (+1) (+1.0f) (+1)]
-	op [[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]
-		pow N.mul 5 4
-		fac N.mul 1 3
+exp [[L.index 0 (L.iterate &[[[[op]]]] start) [[[[1]]]] 0]] ⧗ Real → Real
+	start [0 (+1.0r) (+1.0r) (+1.0r) (+1)]
+	op [[[2 1 0 (4 + (1 / 0)) N.++3]] pow fac]
+		pow 6 ⋅ 4
+		fac (number→real 1) ⋅ 3
 
-# real^number
+# power function: real^number
 pow-n [L.…!!… (L.iterate (mul 0) (+1.0r))] ⧗ Real → Number → Real
 
-lim-exp [[pow-n [(N.add 2 1) : N.--1] 0]]
+# e^x using infinite limit: lim (1+x/n)^n, n to ∞
+lim-exp [[pow-n [(N.add 2 1) : N.--1] 0]] ⧗ Number → Real
 
-iter-slow-ln [0 [[[[1]]]]] ∘∘ [L.…!!… (L.iterate &[[[[op]]]] start)] ⧗ Number → Real
-	start [0 (+1) (+1) (+0.0f) (+0)]
-	op [[[2 1 0 (Q.add 4 go) N.++3]] 4 3]
-		go Q.mul l r
-			l (+2) : (N.mul (+2) 3)
-			r Q.pow-n (N.--7 : 7) N.++(N.mul (+2) 3)
-
-iter-ln [0 [[[1]]]] ∘∘ [L.…!!… (L.iterate &[[[op]]] start)] ⧗ Number → Real
-	start [0 (N.--1 : 1) (+0.0f) (+0)]
+# log_e using Taylor expansion
+ln [[[L.index 1 (L.iterate &[[[op]]] start)] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
+	start [0 1 (+0.0f) (+0)]
 	op [0 pow (Q.add 2 go) N.++1]
-		pow Q.mul 3 (Q.pow-n (N.--4 : 4) (+2))
+		pow Q.mul 3 (Q.pow-n 4 (+2))
 		go Q.mul ((+2) : (N.mul (+2) 1)) 3
 
-derive [[[[((3 (0 + 1)) - (3 0)) / 1]] [(+1) : 1] 0]] ⧗ (Real → Real) → (Real → Real)
+derive [[[[((3 (0 + 1)) - (3 0)) / 1]] ((+1.0r) / 0) 0]] ⧗ (Real → Real) → (Real → Real)
 
-# power function
-pow [[iter-exp (0 ⋅ (iter-ln 1))]] ⧗ Real → Real → Real
+# power function: real^real
+pow [[exp (0 ⋅ (ln 1))]] ⧗ Real → Real → Real
 
 …**… pow
-
-# :test (((+2.0r) ** (+3.0r)) ≈? (+8.0r)) (true)
