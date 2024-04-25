@@ -5,7 +5,9 @@
 :import std/Combinator .
 :import std/Pair .
 :import std/Math/Rational Q
-:import std/Number N
+:import std/Math N
+
+# a Real is just a Unary → Rational!
 
 # converts a balanced ternary number to a real number
 number→real [[Q.number→rational 1]] ⧗ Number → Real
@@ -15,20 +17,11 @@ number→real [[Q.number→rational 1]] ⧗ Number → Real
 # returns true if two real numbers are equal approximately
 approx-eq? [[[Q.eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
 
-# TODO: bigger value (higher performance first!)
-…≈?… approx-eq? (+1000)
-
-# TODO: this value could turn the whole equation to garbage (e.g. in div x ε)
-ε (+0.000000000000000000000001)
-
-# extends φ combinator by canceling further reductions when approximator hits 0
-φ-lim [[[[[N.=?0 ε (4 (3 0) (2 0))] N.--0]]]]
-
-# extends b combinator by canceling further reductions when approximator hits 0
-b-lim [[[[N.=?0 ε (3 (2 0))] N.--0]]]
+# TODO: bigger value??
+…≈?… approx-eq? (+100u)
 
 # adds two real numbers
-add φ-lim Q.add ⧗ Real → Real → Real
+add φ Q.add ⧗ Real → Real → Real
 
 …+… add
 
@@ -36,7 +29,7 @@ add φ-lim Q.add ⧗ Real → Real → Real
 :test ((+0.0r) + (-1.0r) ≈? (-1.0r)) (true)
 
 # subtracts two real numbers
-sub φ-lim Q.sub ⧗ Real → Real → Real
+sub φ Q.sub ⧗ Real → Real → Real
 
 …-… sub
 
@@ -44,7 +37,7 @@ sub φ-lim Q.sub ⧗ Real → Real → Real
 :test ((+0.0r) - (-1.0r) ≈? (+1.0r)) (true)
 
 # multiplies two real numbers
-mul φ-lim Q.mul ⧗ Real → Real → Real
+mul φ Q.mul ⧗ Real → Real → Real
 
 …⋅… mul
 
@@ -52,7 +45,7 @@ mul φ-lim Q.mul ⧗ Real → Real → Real
 :test ((+1.8r) ⋅ (+1.2r) ≈? (+2.16r)) (true)
 
 # divides two real numbers
-div φ-lim Q.div ⧗ Real → Real → Real
+div φ Q.div ⧗ Real → Real → Real
 
 …/… div
 
@@ -60,7 +53,7 @@ div φ-lim Q.div ⧗ Real → Real → Real
 :test ((+18.0r) / (+12.0r) ≈? (+1.5r)) (true)
 
 # negates a real number
-negate b-lim Q.negate ⧗ Real → Real
+negate b Q.negate ⧗ Real → Real
 
 -‣ negate
 
@@ -69,7 +62,7 @@ negate b-lim Q.negate ⧗ Real → Real
 :test (-(-4.2r) ≈? (+4.2r)) (true)
 
 # inverts a real number
-invert b-lim Q.invert ⧗ Real → Real
+invert b Q.invert ⧗ Real → Real
 
 ~‣ invert
 
@@ -77,7 +70,7 @@ invert b-lim Q.invert ⧗ Real → Real
 :test (~(-0.5r) ≈? (-2.0r)) (true)
 
 # finds smallest equivalent representation of a real number
-compress b-lim Q.compress ⧗ Real → Real
+compress b Q.compress ⧗ Real → Real
 
 %‣ compress
 
@@ -88,8 +81,25 @@ compress b-lim Q.compress ⧗ Real → Real
 
 :import std/List .
 
-# for debugging
-…#… φ-lim cons
+# ∑(1/n^2)
+# converges to 1.6449...
+frac-1/n² [^(0 &[[(Q.add 1 op) : N.++0]] start)] ⧗ Real
+	op (+1) : N.--(N.mul 0 0)
+	start (+0.0f) : (+1)
+
+# ∑(x^n/n!) = e^x
+# inefficient Taylor expansion
+frac-slow-exp [[^(0 &[[(Q.add 1 op) : N.++0]] start)]] ⧗ Number → Real
+	op (N.pow 3 0) : N.--(N.fac 0)
+	start (+0.0f) : (+1)
+
+# ∑(x^n/n!) = e^x
+# more efficient Taylor expansion
+frac-exp [[(0 &[[[[[[[2 1 0 (Q.add 4 op) N.++3]] pow fac]]]]] start) [[[[1]]]]]] ⧗ Number → Real
+	pow N.mul 6 4
+	fac N.mul 1 3
+	op 1 : N.--0
+	start [0 (+1) (+1) (+1.0f) (+1)]
 
 # real^number
 pow-n […!!… (iterate (mul 0) (+1.0r))] ⧗ Real → Number → Real
