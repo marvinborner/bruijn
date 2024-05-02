@@ -162,7 +162,7 @@ arrow z [[[[rec]]]] ⧗ Number → Number → Number → Number
 # TODO: faster fib?
 fibs L.map L.head (L.iterate &[[0 : (1 + 0)]] ((+0) : (+1))) ⧗ (List Number)
 
-fib [L.index ++0 fibs] ⧗ Number
+fib [L.index fibs ++0] ⧗ Number
 
 :test (fib (+5)) ((+8))
 
@@ -238,12 +238,10 @@ factors \divs primes ⧗ Number → (List Number)
 # TODO: faster!
 #     → BBP/Bellard's formula with ternary base?
 #       TODO: |log|, better primes/mod/div
-π g (+1) (+180) (+60) (+2) ⧗ (List Number)
-	g z [[[[[calc]]]]]
-		calc b : (4 q r t i)
-			a ↑⁰(↑⁺0 ⋅ (↑⁰0 + (+2)))
-			b (3 ⋅ ↑⁰(↑⁻(↑⁻0)) + ((+5) ⋅ 2)) / ((+5) ⋅ 1)
-			q (+10) ⋅ 3 ⋅ 0 ⋅ --((+2) ⋅ 0)
-			r (+10) ⋅ a ⋅ (3 ⋅ ((+5) ⋅ 0 - (+2)) + 2 - (b ⋅ 1))
-			t 1 ⋅ a
-			i ++0
+π y [[[[[calc]]]]] (+1) (+180) (+60) (+2) ⧗ (List Number)
+	calc [[0 : (6 q r t ++2)]] a b
+		a ↑⁰(↑⁺0 ⋅ (↑⁰0 + (+2)))
+		b (3 ⋅ ↑⁰(↑⁻(↑⁻0)) + ((+5) ⋅ 2)) / ((+5) ⋅ 1)
+		q (+10) ⋅ 5 ⋅ 2 ⋅ --((+2) ⋅ 2)
+		r (+10) ⋅ 1 ⋅ (5 ⋅ ((+5) ⋅ 2 - (+2)) + 4 - (0 ⋅ 3))
+		t 3 ⋅ 1

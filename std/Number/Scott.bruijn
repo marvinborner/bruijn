@@ -1,0 +1,31 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+
+:import std/Combinator .
+:import std/Logic .
+
+zero [[1]] ⧗ Scott
+
+inc [[[0 2]]] ⧗ Scott → Scott
+
+:test (inc zero) ([[0 zero]])
+:test (inc (inc zero)) ([[0 [[0 zero]]]])
+:test (inc (inc (inc zero))) ([[0 [[0 [[0 zero]]]]]])
+
+dec [0 zero [0]] ⧗ Scott → Scott
+
+:test (dec zero) (zero)
+:test (dec (inc zero)) (zero)
+:test (dec (inc (inc zero))) (inc zero)
+
+zero? [0 true [false]] ⧗ Scott → Boolean
+
+:test (zero? zero) (true)
+:test (zero? (inc zero)) (false)
+:test (zero? (inc (inc zero))) (false)
+
+add z [[[1 0 [inc (3 0 1)]]]] ⧗ Scott → Scott → Scott
+
+:test (add zero zero) (zero)
+:test (add zero (inc zero)) (inc zero)
+:test (add (inc zero) zero) (inc zero)
+:test (add (inc zero) (inc zero)) (inc (inc zero))

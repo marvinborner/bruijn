@@ -11,7 +11,7 @@ const term = (t) =>
     .replaceAll(/'([^\'])'/g, "<span class='string'>'$1'</span>")
     .replaceAll(/"([^\"]*)"/g, "<span class='string'>\"$1\"</span>")
     .replaceAll(
-      /(\([+-][0-9]+\.[0-9]+[frc]?\))/g,
+      /(\([+-][0-9]+\.[0-9]+[qr]?\))/g,
       "<span class='number'>$1</span>",
     )
     .replaceAll(/(\([+-][0-9]+[ubtd]?\))/g, "<span class='number'>$1</span>")

@@ -143,6 +143,9 @@ pow [[0 [[3 (1 0)]] pow*]] ⧗ Unary → Unary → Unary
 :test ((+2u) ^ (+3u)) ((+8u))
 :test ((+3u) ^ (+2u)) ((+9u))
 
+# also note that
+# [0 ..i.. 0] (+nu) = n^..i..^n
+
 # fibonacci sequence
 # index +1 vs std/Math fib
 fib [0 [[[2 0 [2 (1 0)]]]] [[1]] [0]] ⧗ Unary → Unary

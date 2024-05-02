@@ -1,0 +1,24 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# see "on the representation of data in lambda-calculus" #5
+# has a "one-step" predecessor *and* addition function
+# has 2x space complexity compared to unary/Church
+
+zero [0]
+
+inc [[[0 2 1]]]
+
+++‣ inc
+
+dec [[1 0 [0]]]
+
+--‣ dec
+
+:test (dec (inc zero)) (zero)
+
+iter [[[0 ι ρ ρ]]]
+	ρ [[3 (1 0 0)]]
+	ι [[4]]
+
+rec [[[0 ι ρ ρ --0]]]
+	ρ [[[4 0 (2 1 1)]]]
+	ι [[[5]]]

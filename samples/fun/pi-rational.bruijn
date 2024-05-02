@@ -1,0 +1,28 @@
+:import std/Pair .
+:import std/Combinator .
+:import std/Number/Unary .
+
+qadd &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
+	p (3 ⋅ ++0) + (1 ⋅ ++2)
+	q (2 ⋅ 0) + (2 + 0)
+
+fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
+
+# challenge: smallest, yet fastest converging, π ratio calculation
+
+# naive
+v1-pi/2 [0 &[[op]] start [[1]]]
+	start ((+0u) : (+0u)) : (+0u)
+	op (qadd 1 (enum : --denom)) : ++0
+		enum (0 (+2u)) ⋅ ((+2u) (fac 0))
+		denom fac ++((+2u) ⋅ 0)
+
+dfac [[1 [[0 (1 [[2 1 (1 (1 0))]])]] [1] i]] ⧗ Unary → Unary
+
+# double factorial
+# dfac and fac could be shared!
+v2-pi/2 [0 &[[op]] start [[1]]]
+	start ((+0u) : (+0u)) : (+0u)
+	op (qadd 1 (enum : --denom)) : ++0
+		enum fac 0
+		denom dfac ++0

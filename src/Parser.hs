@@ -149,11 +149,11 @@ parseFloat :: Parser Expression
 parseFloat = do
   _    <- string "(" <?> "float start"
   num  <- signedFloat <?> "signed float"
-  base <- try (oneOf "fr") <|> return 'f'
+  base <- try (oneOf "qr") <|> return 'q'
   _    <- string ")" <?> "float end"
   pure $ f base num
  where
-  f 'f' = floatToRational
+  f 'q' = floatToRational
   f 'r' = floatToReal
   f _   = invalidProgramState
   sign :: Parser (Rational -> Rational)
@@ -171,8 +171,8 @@ parseComplex :: Parser Expression
 parseComplex = do
   _         <- string "(" <?> "complex start"
   real      <- signedFloat <?> "signed complex"
-  _         <- char 'i'
   imaginary <- signedFloat <?> "signed complex"
+  _         <- char 'i'
   _         <- string ")" <?> "complex end"
   pure $ floatToComplex real imaginary
  where

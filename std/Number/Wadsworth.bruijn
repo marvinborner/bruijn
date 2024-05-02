@@ -1,0 +1,23 @@
+# MIT License, Copyright (c) 2023 Marvin Borner
+# from Wadsworth's "some unusual numeral systems" (p224, see refs in README)
+
+:import std/Combinator .
+
+zero [0 [k]] ⧗ Wadsworth
+
+# increment Wadsworth number
+inc [[[2 [2 (1 0) 1]]]] ⧗ Wadsworth → Wadsworth
+
+:test (inc (inc zero)) ([[[2 (1 (0 (k [[1]]))) 1 0]]])
+
+# decrement Wadsworth number
+dec [[1 [k (1 0)] i]] ⧗ Wadsworth → Wadsworth
+
+:test (dec (dec (inc (inc zero)))) (zero)
+
+# returns true if Wadsworth number is zero
+zero? [0 i (k (k [[0]]))] ⧗ Wadsworth → Bool
+
+:test (zero? zero) ([[1]])
+:test (zero? (inc zero)) ([[0]])
+:test (zero? (inc (inc zero))) ([[0]])

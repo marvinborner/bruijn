@@ -10,8 +10,8 @@ syn match bruijnAbstraction /[[\]]/
 syn match bruijnIndex /\([^0-9A-Za-z]\)\@<=\d\([^0-9]\)\@=/
 syn match bruijnChar /'\@<=.'\@=/
 syn match bruijnNumber /([+-]\d\+[dubt]\?)/
-syn match bruijnFloat /([+-]\d\+\.\d\+[fr]\?)/
-syn match bruijnComplex /([+-]\d\+\.\d\+i[+-]\d\+\.\d\+)/
+syn match bruijnFloat /([+-]\d\+\.\d\+[qr]\?)/
+syn match bruijnComplex /([+-]\d\+\.\d\+[+-]\d\+\.\d\+i)/
 syn match bruijnDefinition /^\t*\S\+/
 syn match bruijnType /\( ⧗ \)\@<=.*$/
 syn match bruijnTypeDelim / ⧗ /

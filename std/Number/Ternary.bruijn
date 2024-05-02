@@ -328,7 +328,7 @@ abs [<?0 -0 0] ⧗ Number → Number
 :test (|(-1)) ((+1))
 :test (|(+42)) ((+42))
 
-# apply a function n times to a value
+# applies a function n times to a value
 # ~> substitute church numbers
 apply z [[[rec]]] ⧗ Number → (a → a) → a → a
 	rec =?1 case-end case-apply
@@ -381,6 +381,12 @@ log₃ log₃* ∘ strip ⧗ Number → Number
 :test (log₃ (+0)) ((+0))
 :test (log₃ (+5)) ((+3))
 :test (log₃ (+42)) ((+5))
+
+# amount of non-zero trits
+hamming-weight [0 (+0) inc inc [0]] ⧗ Number → Number
+
+:test ((hamming-weight (+5)) =? (+3)) (true)
+:test ((hamming-weight (+6)) =? (+2)) (true)
 
 # returns the smallest number in a range such that a predicate is true
 binary-search z [[[[rec]]]] ⧗ (Number → Boolean) → Number → Number → Number

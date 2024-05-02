@@ -91,37 +91,37 @@ dec \sub (+1.0r) ⧗ Real → Real
 
 :import std/List L
 
-# ∑(1/n^2)
-# converges to 1.6449...
-unary-1/n² [0 &[[(Q.add 1 op) : N.++0]] start [[0]]] ⧗ Real
-	op (+1) : N.--(N.mul 0 0)
-	start (+0.0f) : (+1)
-
-# e^x using Taylor expansion: ∑(x^n/n!) = e^x
+# e^x using Taylor expansion
+# tex: \sum_{n=0}^\infty \frac{x^n}{n!}
 unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]]]]] start [[[[1]]]]]] ⧗ Number → Real
 	pow N.mul 6 4
 	fac N.mul 1 3
-	start [0 (+1) (+1) (+1.0f) (+1)]
+	start [0 (+1) (+1) (+1.0q) (+1)]
 
 # equivalent to unary-exp but with ternary index using infinite list iteration
-exp [[L.index 0 (L.iterate &[[[[op]]]] start) [[[[1]]]] 0]] ⧗ Real → Real
+exp [[L.nth-iterate &[[[[op]]]] start 0 [[[[1]]]] 0]] ⧗ Real → Real
 	start [0 (+1.0r) (+1.0r) (+1.0r) (+1)]
 	op [[[2 1 0 (4 + (1 / 0)) N.++3]] pow fac]
 		pow 6 ⋅ 4
 		fac (number→real 1) ⋅ 3
 
 # power function: real^number
-pow-n [L.…!!… (L.iterate (mul 0) (+1.0r))] ⧗ Real → Number → Real
+pow-n [L.nth-iterate (mul 0) (+1.0r)] ⧗ Real → Number → Real
 
-# e^x using infinite limit: lim (1+x/n)^n, n to ∞
+# e^x using infinite limit
+# tex: \lim_{n\to\infty}(1+x/n)^n
 lim-exp [[pow-n [(N.add 2 1) : N.--1] 0]] ⧗ Number → Real
 
-# log_e using Taylor expansion
-ln [[[L.index 1 (L.iterate &[[[op]]] start)] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
-	start [0 1 (+0.0f) (+0)]
+# natural logarithm using Taylor expansion
+# tex: \sum_{n=0}^\infty\frac{2}{2n+1}(\frac{x-1}{x+1})^{2n+1}
+# error: O((x-1)/2)^{2n+1}
+ln [[[L.nth-iterate &[[[op]]] start 1] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
+	start [0 1 (+0.0q) (+0)]
 	op [0 pow (Q.add 2 go) N.++1]
-		pow Q.mul 3 (Q.pow-n 4 (+2))
+		pow Q.mul 3 (Q.mul 4 4)
 		go Q.mul ((+2) : (N.mul (+2) 1)) 3
+
+:test (Q.eq? (ln (+2.0r) (+2)) ((+168) : (+242))) (true)
 
 derive [[[[((3 (0 + 1)) - (3 0)) / 1]] ((+1.0r) / 0) 0]] ⧗ (Real → Real) → (Real → Real)
 
@@ -129,3 +129,41 @@ derive [[[[((3 (0 + 1)) - (3 0)) / 1]] ((+1.0r) / 0) 0]] ⧗ (Real → Real) →
 pow [[exp (0 ⋅ (ln 1))]] ⧗ Real → Real → Real
 
 …**… pow
+
+# square root by x^{0.5}
+sqrt* \pow (+0.5r) ⧗ Real → Real
+
+# Newton's/Heron's method, quadratic convergence
+# tex: x_{n+1}=\frac{x_n+a/x_n}{2}
+sqrt [[y [[[N.=?0 guess go]]] (1 0) 0]] ⧗ Real → Real
+	guess (+1.0q)
+	go [Q.div (Q.add 0 (Q.div 2 0)) (+2.0q)] (2 1 N.--0)
+
+# hypotenuse
+hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
+
+# tex: \sum_{n=0}^\infty\frac{2^n n!^2}{(2n+1)!}
+π/2 [L.nth-iterate &[[[[[op]]]]] start 0 [[[[[3]]]]]] ⧗ Real
+	start [0 (+1) (+0.0q) (+1) (+1) (+1)]
+	op [0 N.++5 (Q.add 4 ((N.mul 3 2) : N.--1)) enum-pow enum-fac denom]
+		enum-pow N.mul 3 (+2)
+		enum-fac N.mul 2 (N.mul 5 5)
+		denom [N.mul 2 (N.mul 0 N.++0)] (N.mul (+2) 5)
+
+# ratio of circle's circumference to its diameter
+# TODO: Gauss-Legendre
+π π/2 ⋅ (+2.0r) ⧗ Real
+
+# arctan by Taylor expansion, only for |x|<=1
+# tex: \sum_{n=0}^\infty(-1)^n \frac{x^{2n+1}}{2n+1}
+arctan* [[[L.nth-iterate &[[[[op]]]] start 1] (1 0) [[[[3]]]]]] ⧗ Real → Real
+	start [0 1 [[0]] (Q.pow-n 1 (+3)) (+3.0q)]
+	op [0 ((3 Q.add Q.sub) 4 (Q.div 2 1)) \3 enum denom]
+		enum Q.mul 2 (Q.mul 5 5)
+		denom Q.add 1 (+2.0q)
+
+# actual arctan for arbitrary x
+arctan [[Q.sub (π/2 0) (arctan* [Q.div (+1.0q) (2 1)] 0)]] ⧗ Real → Real
+
+# TODO: atan2
+atan2 [0] ⧗ Real → Real

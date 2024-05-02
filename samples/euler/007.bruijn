@@ -4,7 +4,7 @@
 :import std/Math .
 :import std/List .
 
-solve dec → (\index primes)
+solve dec → (index primes)
 
 :test ((solve (+6)) =? (+13)) ([[1]])
 

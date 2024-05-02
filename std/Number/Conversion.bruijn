@@ -14,6 +14,8 @@ unary→ternary [0 T.inc (+0t)] ⧗ Unary → Ternary
 :test (¹³(+0u)) ((+0t))
 :test (¹³(+2u)) ((+2t))
 
+binary→unary [[0 (+0u) [U.inc (2 0)] 1]] (U.mul (+2u)) ⧗ Binary → Unary
+
 # converts ternary numbers to unary
 ternary→unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
 

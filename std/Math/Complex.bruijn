@@ -5,9 +5,29 @@
 :import std/Pair .
 :import std/Math/Real R
 
-ι (+0.0r) : (+1.0r)
+ι (+0.0+1.0i)
 
-# returns true of two complex numbers are equal approximately
+# converts a balanced ternary number to a complex number
+number→complex [[0 (R.number→real 1) (+0.0r)]] ⧗ Number → Complex
+
+:test (number→complex (+5)) ((+5.0+0.0i))
+
+# returns real part of a complex number
+real fst ⧗ Complex → Real
+
+:test (real (+5.0+2.0i)) ((+5.0r))
+
+# returns imaginary part of a complex number
+imag snd ⧗ Complex → Real
+
+:test (imag (+5.0+2.0i)) ((+2.0r))
+
+# approximates complex number by turning it into a pair of rationals
+approx &[[[(2 0) : (1 0)]]] ⧗ Complex → Number → (Pair Rational Rational)
+
+:test (approx (+5.0+2.0i) (+2)) ((+5.0q) : (+2.0q))
+
+# returns true if two complex numbers are equal approximately
 approx-eq? [[[R.approx-eq? 2 (1 2) (0 2)]]] ⧗ Number → Complex → Complex → Boolean
 
 # TODO: bigger value (higher performance first!)
@@ -48,3 +68,14 @@ invert &[[p : q]] ⧗ Complex → Complex
 	q R.div 0 (R.add (R.mul 1 1) (R.mul 0 0))
 
 ~‣ invert
+
+# ---
+
+:import std/List L
+
+# power function: complex^number
+pow-n [L.nth-iterate (mul 0) (+1.0+0.0i)] ⧗ Complex → Number → Complex
+
+ln [p : q] ⧗ Complex → Complex
+	p R.ln (&R.hypot 0)
+	q &R.atan2 0
