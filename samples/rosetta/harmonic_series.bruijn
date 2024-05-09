@@ -5,7 +5,7 @@
 
 harmonic [0 &[[(Q.add 1 op) : N.++0]] start [[1]]] ⧗ Unary → Rational
 	op (+1) : N.--0
-	start (+0.0f) : (+1)
+	start (+0.0q) : (+1)
 
 custom-gt? &[[[N.gt? 2 (N.mul 0 N.++1)]]] ⧗ Rational → Νumber → Boolean
 
