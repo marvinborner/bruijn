@@ -2,7 +2,7 @@
 # some of the fastest growing functions per blc length
 
 # 55 bits inflating to 65536 bits, John Tromp
-huge-55 [[0 0 0 0 [[0 [[0]] 1]]] (+2u)
+huge-55 [[0 0 0 0 [[0 [[0]] 1]]] (+2u)]
 
 # 64 bits inflating to ??? bits, John Tromp
 huge-64 [0 0 h 0 0 0] (+2u)

@@ -1,4 +1,5 @@
 # Tromp's version, will reduce to [0] iff Goldbach conjecture is false
+
 :import std/Combinator .
 
 zero [[1]]
