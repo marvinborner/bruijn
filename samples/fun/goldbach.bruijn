@@ -1,0 +1,20 @@
+# Tromp's version, will reduce to [0] iff Goldbach conjecture is false
+:import std/Combinator .
+
+zero [[1]]
+
+one [[0]]
+
+sieve y [[[0 one (2 sn1 f)]]]
+	f y [sn2 0]
+		sn2 [[0 (0 4 1)] [[[[0 2 (1 3)]]]]]
+	sn1 [[0 (0 3 1)] [[[[0 2 (1 3)]]]]]
+
+zeroS [[[[0 zero (1 3)]]]]
+
+primes sieve zeroS
+
+check y [[[[[primes 0 (1 (4 0))] testp1]]]]
+	testp1 [0 0 2 [0 4] 0]
+
+main primes (check [[[[0]]]])

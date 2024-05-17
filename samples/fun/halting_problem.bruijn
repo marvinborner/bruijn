@@ -1,0 +1,10 @@
+:import std/Logic .
+
+# hypothetical halting decider (shall not loop)
+# assuming (Program Arg) reduces to boolean
+halting [[halts (1 0)]] ⧗ Program → Arg → Boolean
+	halts [0 true false]
+
+# basically y combinator
+# paradox!
+e halting [¬(halting 0 0)] [¬(halting 0 0)]

@@ -1,4 +1,18 @@
 # "bruijn huge.bruijn"
-# 55 bits inflating to 65536 bits, John Tromp
+# some of the fastest growing functions per blc length
 
-main [[0 0 0 0 [[0 [[0]] 1]]] [[1 (1 0)]]]
+# 55 bits inflating to 65536 bits, John Tromp
+huge-55 [[0 0 0 0 [[0 [[0]] 1]]] (+2u)
+
+# 64 bits inflating to ??? bits, John Tromp
+huge-64 [0 0 h 0 0 0] (+2u)
+	h [[[0 2 1 0]]]
+
+# 79 bits inflating to ??? bits, John Tromp and Bertram Felgenhauer
+huge-79 [0 0 e 0] (+2u)
+	e [0 g [[0]] d0 0]
+		g [[1 (d 0) (0 [0])]]
+			d [[[2 [2 0 1]]]]
+		d0 [[1 0 0]]
+
+main huge-64

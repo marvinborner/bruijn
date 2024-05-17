@@ -151,8 +151,18 @@ hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
 		denom [N.mul 2 (N.mul 0 N.++0)] (N.mul (+2) 5)
 
 # ratio of circle's circumference to its diameter
-# TODO: Gauss-Legendre
 π π/2 ⋅ (+2.0r) ⧗ Real
+
+# Gauss-Legendre, quadratic convergence
+# Chudnovsky would be even faster but is ugly (i.e. magic numbers)
+π-gauss [L.nth-iterate &[[[[op]]]] start 0 final]
+	start [0 (+1.0q) Q.~(sqrt (+2.0r) 1) (+0.25q) (+1.0q)]
+	op [[1 0 b t p] a]
+		a Q.div (Q.add 4 3) (+2.0q)
+		b sqrt [Q.mul 6 5] 6
+		t Q.sub 3 (Q.mul 2 (Q.pow-n (Q.sub 5 0) (+2)))
+		p Q.mul (+2.0q) 2
+	final [[[[Q.div (Q.pow-n (Q.add 3 2) (+2)) (Q.mul (+4.0q) 1)]]]]
 
 # arctan by Taylor expansion, only for |x|<=1
 # tex: \sum_{n=0}^\infty(-1)^n \frac{x^{2n+1}}{2n+1}
