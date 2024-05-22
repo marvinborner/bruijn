@@ -1,7 +1,7 @@
 # Recursion
 
 Just as normal lambda calculus, bruijn does *not* support typical
-recursion.
+[recursion](recursion.md).
 
 If you want to recursively call a function (or imitate `for`/`while`
 loops), you need to use *fixed-point combinators* like `y`{.bruijn} from
