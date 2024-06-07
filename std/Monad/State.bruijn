@@ -1,0 +1,12 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:import std/Combinator .
+
+# scala: s0 ⇒ { (s1, a) = run(s0); (s1, f(a)) }
+map [[[1 0 [[[0 2 (5 1)]]]]]] ⧗ (a → b) → (State s a) → (State s b)
+
+# monadic bind/flat-map operator
+# scala: s0 ⇒ { (s1, a) = run(s0); f(a).run(s1) }
+bind [[[2 0 [[3 0 1]]]]] ⧗ (State s a) → (a → (State s b)) → (State s b)
+
+…>>=… bind

@@ -1,0 +1,12 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:input std/Monad/List .
+
+:import std/Char C
+:import std/Combinator .
+
+# reads a single char monadically
+get-char read
+
+# reads a line monadically
+get-line y [read >>= [(C.eq? 0 '\n') (pure [[0]]) (1 >>= [pure [0 2 1]])]]

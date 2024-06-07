@@ -1,0 +1,27 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# generates three pseudo-random integers using a state monad
+# printf <seed:number> | bruijn rng-state.bruijn
+
+:import std/Combinator .
+:import std/String .
+:import std/Number .
+:import std/Monad/State .
+
+max (+1000)
+
+rand [[[0 1 1]] rng]
+	rng (+1103515245) ⋅ 0 + (+12345) % max
+
+rand-bool map even? rand
+
+# accumulating bind (reversed)
+triple1 rand >>= (rand >>= (rand >>= [[[[[0 3 [0 3 [0 3 [[0]]]]]]]]]))
+
+:test ((triple1 (+50) [[1]]) =? (+745)) ([[1]])
+
+# normal bind
+triple2 rand >>= [rand >>= [rand >>= [[[0 4 [0 4 [0 4 [[0]]]]]]]]]
+
+:test ((triple2 (+50) [[1]]) =? (+595)) ([[1]])
+
+main string→number → triple2

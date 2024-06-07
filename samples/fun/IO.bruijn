@@ -1,0 +1,6 @@
+# read two lines using monadic I/O
+# printf "i love\nmonads\n" | bruijn IO.bruijn
+
+:import std/IO .
+
+main read-line >>= [read-line >>= [return [0 2 1]]]
