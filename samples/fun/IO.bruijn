@@ -3,4 +3,6 @@
 
 :import std/IO .
 
-main read-line >>= [read-line >>= [return [0 2 1]]]
+main get-line >>= [get-line >>= [return [0 2 1]]]
+
+:test (main "i love\nmonads\n") ([0 [0 "i love" "monads"] [[0]]])
