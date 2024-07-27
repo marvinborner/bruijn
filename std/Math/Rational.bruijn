@@ -43,6 +43,12 @@ add &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
 :test ((+1.8) + (+1.2) =? (+3.0)) (true)
 :test ((-1.8) + (+1.2) =? (-0.6)) (true)
 
+reduce [[[(N.div 2 0) : N.--(N.div 1 0)] (N.gcd 1 0)]]
+
+add' &[[&[[reduce p q]]]]
+	p N.add (N.mul 3 N.++0) (N.mul 1 N.++2)
+	q N.mul N.++0 N.++2
+
 # subtracts two rational numbers
 sub &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
 	p N.sub (N.mul 3 N.++0) (N.mul 1 N.++2)

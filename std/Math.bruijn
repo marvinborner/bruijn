@@ -1,5 +1,6 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
 # experimental functions; sometimes list-based; could work on any base
+# TODO: some functions should be moved to respective bases
 
 :input std/Number
 
@@ -60,18 +61,23 @@ product L.foldl mul (+1) ⧗ (List Number) → Number
 
 :test (∏ (+1) → (+3) | ++‣) ((+24))
 
-# greatest common divisor using repeated subtraction
-gcd* z [[[1 =? 0 case-eq (1 >? 0 case-gre case-les)]]] ⧗ Number → Number → Number
-	case-eq 1
-	case-gre 2 (1 - 0) 0
-	case-les 2 1 (0 - 1)
-
-# greatest common divisor using modulo (mostly faster than gcd*)
-gcd z [[[=?0 1 (2 0 (1 % 0))]]] ⧗ Number → Number → Number
+# greatest common divisor using repeated subtraction enhanced by ternary shifts
+# (temporary)
+gcd z [[[(1 =? 0) 1 (=?1 0 (=?0 1 else))]]] ⧗ Number → Number → Number
+	else [[(1 ⋀? 0) ((+3) ⋅ (4 /³3 /³2)) (1 (4 /³3 2) (0 (4 3 /³2) else))]] (t⁰? (lst 1)) (t⁰? (lst 0))
+		else 3 >? 2 (4 (3 - 2) 2) (4 3 (2 - 3))
 
 :test ((gcd (+2) (+4)) =? (+2)) (true)
 :test ((gcd (+10) (+5)) =? (+5)) (true)
 :test ((gcd (+3) (+8)) =? (+1)) (true)
+
+# greatest common divisor using modulo (mostly slower than gcd)
+# TODO: would be faster if ternary quot-rem was efficient!
+gcd* z [[[=?0 1 (2 0 (1 % 0))]]] ⧗ Number → Number → Number
+
+:test ((gcd* (+2) (+4)) =? (+2)) (true)
+:test ((gcd* (+10) (+5)) =? (+5)) (true)
+:test ((gcd* (+3) (+8)) =? (+1)) (true)
 
 # least common multiple using gcd
 lcm [[=?1 1 (=?0 0 |(1 / (gcd 1 0) ⋅ 0))]] ⧗ Number → Number → Number
@@ -101,7 +107,9 @@ pow* z [[[rec]]] ⧗ Number → Number → Number
 		case-end (+1)
 
 # factorial function
-fac [∏ (+1) → 0 | i] ⧗ Number → Number
+# fac [∏ (+1) → 0 | i] ⧗ Number → Number
+
+fac [0 0] [[=?0 (+1) (0 ⋅ (1 1 --0))]] ⧗ Number → Number
 
 :test ((fac (+3)) =? (+6)) (true)
 
@@ -225,6 +233,9 @@ primes L.map fst (L.filter snd (enumerate characteristic-primes)) ⧗ (List Numb
 
 # slower but cooler prime number sequence
 primes* L.nub ((…≠?… (+1)) ∘∘ gcd) (L.iterate ++‣ (+2)) ⧗ (List Number)
+
+# primality test
+prime? L.index characteristic-primes ⧗ Number → Boolean
 
 # prime factors
 factors \divs primes ⧗ Number → (List Number)

@@ -34,7 +34,7 @@ mod [[[[3 &k (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) ki]]]] ⧗ Unary → Unary �
 :test ((+3u) % (+5u)) ((+3u))
 
 # returns true if the number is even (remainder mod 2 == 0)
-even? [=?(0 % (+2u))] ⧗ Unary → Boolean
+even? [0 not! true] ⧗ Unary → Boolean
 
 =²?‣ even?
 
@@ -161,3 +161,7 @@ fac [[1 [[0 (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
 hyperfac [[1 [[(0 0) (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
 
 :test (hyperfac (+3u)) ((+108u))
+
+# Wilson's theorem
+# very inefficient but very golfable
+prime? [=?(++(fac --0) % 0)] ⧗ Unary → Boolean

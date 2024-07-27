@@ -139,6 +139,12 @@ sqrt [[y [[[N.=?0 guess go]]] (1 0) 0]] ⧗ Real → Real
 	guess (+1.0q)
 	go [Q.div (Q.add 0 (Q.div 2 0)) (+2.0q)] (2 1 N.--0)
 
+# Newton's/Heron's method, quadratic convergence
+# tex: x_{n+1}=\frac{3x_n+a/(x_n^2)}{4}
+cbrt [[y [[[N.=?0 guess go]]] (1 0) 0]] ⧗ Real → Real
+	guess (+1.0q)
+	go [Q.div (Q.add (Q.mul (+3.0q) 0) (Q.div 2 (Q.mul 0 0))) (+4.0q)] (2 1 N.--0)
+
 # hypotenuse
 hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
 
@@ -163,6 +169,18 @@ hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
 		t Q.sub 3 (Q.mul 2 (Q.pow-n (Q.sub 5 0) (+2)))
 		p Q.mul (+2.0q) 2
 	final [[[[Q.div (Q.pow-n (Q.add 3 2) (+2)) (Q.mul (+4.0q) 1)]]]]
+
+# golden ratio from direct formula
+φ ++(sqrt (+5.0r)) / (+2.0r)
+
+# conjugate golden ratio
+ψ -(~φ)
+
+# golden ratio from fibonacci convergence
+φ* [(L.index (L.iterate &[[0 : (N.add 1 0)]] ((+0) : (+1))) 0) [[1 : N.--0]]]
+
+# real fibonacci
+fib [((pow φ 0) - (pow ψ 0)) / (sqrt (+5.0r))]
 
 # arctan by Taylor expansion, only for |x|<=1
 # tex: \sum_{n=0}^\infty(-1)^n \frac{x^{2n+1}}{2n+1}
