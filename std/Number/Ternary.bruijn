@@ -384,12 +384,16 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 # also counts leading 0s
 log₃* [0 (+0) inc inc inc] ⧗ Number → Number
 
+:test (log₃* (+42)) ((+5))
+:test (log₃* [[[[1 (0 (0 (0 (0 3))))]]]]) ((+5))
+
 # ceiled integer log₃ by counting number of trits
 log₃ log₃* ∘ strip ⧗ Number → Number
 
 :test (log₃ (+0)) ((+0))
 :test (log₃ (+5)) ((+3))
 :test (log₃ (+42)) ((+5))
+:test (log₃ [[[[1 (0 (0 (0 (0 3))))]]]]) ((+1))
 
 # amount of non-zero trits
 hamming-weight [0 (+0) inc inc [0]] ⧗ Number → Number
@@ -427,7 +431,7 @@ force [[[0 <? 2 pad trim] (log₃* 0)]] ⧗ Number → Number → Number
 # lshifts after concat, given trit count
 # as introduced by Douglas W. Jones
 double-shift [[[left : right]]] ⧗ Number → Number → Number → (Pair Number Number)
-	trim [(log₃ 0) >? 3 ←0 0]
+	trim [(log₃* 0) >? 3 ←0 0]
 	left trim ((nth-trit --2 0) ↑ 1)
 	right trim ↑⁰0
 
@@ -435,7 +439,7 @@ double-shift [[[left : right]]] ⧗ Number → Number → Number → (Pair Numbe
 # technique by Douglas W. Jones
 # algorithm originally intended for fixed-width numbers (=> ugly hacks)
 # TODO: remove the final `huh` correction step (probably some off-by-one bug?)
-quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log₃ 1) (log₃ 0)) 0]] ⧗ Number → Number → (Pair Number Number)
+quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log₃* 1) (log₃* 0)) 0]] ⧗ Number → Number → (Pair Number Number)
 	rec =?2 huh (double-shift 5 1 0 [[compare-case eq gt lt 1 (+0)]])
 		huh (>?1 ⋀? 6) ⋁? (<?1 ⋀? \6) (--0 : (1 + 7)) (0 : 1)
 		eq 5 --4 1 0
