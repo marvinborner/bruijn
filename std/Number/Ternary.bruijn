@@ -102,6 +102,7 @@ lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
 :test (lst (+42)) (t⁰)
 
 # extracts most significant trit from a balanced ternary number
+# does not ignore leading 0s
 mst* [B.get t⁰ (0 z a⁻ a⁺ a⁰)] ⧗ Number → Trit
 	z B.empty
 	a⁻ \B.store! t⁻
@@ -306,6 +307,14 @@ number→trits [0 z a⁻ a⁺ a⁰] ⧗ Number → (List Trit)
 :test (number→trits (+0)) ([[0]])
 :test (number→trits (+5)) (t⁻ : (t⁻ : (t⁺ : [[0]])))
 
+# extracts nth trit from balanced ternary number (lst = index 0)
+nth-trit \(index ∘ number→trits) ⧗ Number → Number → (List Trit)
+	index z [[[1 [[[=?3 2 (5 1 --3)]]] t⁰]]] ⧗ (List Trit) → Number → Trit
+
+:test (nth-trit (+0) (-42)) (t⁰)
+:test (nth-trit (+4) (-42)) (t⁻)
+:test (nth-trit (+5) (-42)) (t⁰)
+
 # strips leading 0s from a balanced ternary number
 strip [^(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 	z (+0) : true
@@ -411,21 +420,21 @@ ternary-search z [[[[rec]]]] ⧗ (Number → Number) → Number → Number → N
 pad y [[[(log₃* 0) <? (log₃* 1) (2 1 →⁰0) 0]]] ⧗ Number → Number → Number
 
 # forces number to be exactly n trits long (either pad/trim)
-force [[[0 <? 2 pad trim] (log₃* 0)]] ⧗ Number → Number
+force [[[0 <? 2 pad trim] (log₃* 0)]] ⧗ Number → Number → Number
 	pad z [[[=?1 0 (2 --1 →⁰0)]]] (2 - 0) 1
 	trim z [[[=?1 0 (2 --1 ←0)]]] (0 - 2) 1
 
 # lshifts after concat, given trit count
-# TODO: reduce force
-double-shift [[[[[left : right]] (force 2 1) (force 2 0)]]]
-	left force 4 ((mst* 0) ↑ (+0) + (↑⁰1))
-	right force 4 ↑⁰0
+# as introduced by Douglas W. Jones
+double-shift [[[left : right]]] ⧗ Number → Number → Number → (Pair Number Number)
+	trim [(log₃ 0) >? 3 ←0 0]
+	left trim ((nth-trit --2 0) ↑ 1)
+	right trim ↑⁰0
 
 # "efficient" quotient/remainder implementation for balanced ternary
 # technique by Douglas W. Jones
-# algorithm originally intended for fixed-width numbers (=> ugly hacks with force+log₃)
+# algorithm originally intended for fixed-width numbers (=> ugly hacks)
 # TODO: remove the final `huh` correction step (probably some off-by-one bug?)
-# TODO: not actually that efficient right now
 quot-rem [[[[[z [[[[rec]]]] 1 (+0) 4]]] <?0 (max (log₃ 1) (log₃ 0)) 0]] ⧗ Number → Number → (Pair Number Number)
 	rec =?2 huh (double-shift 5 1 0 [[compare-case eq gt lt 1 (+0)]])
 		huh (>?1 ⋀? 6) ⋁? (<?1 ⋀? \6) (--0 : (1 + 7)) (0 : 1)
