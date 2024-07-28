@@ -1,5 +1,7 @@
 <p align="center">
+
 <img width="200" src="https://raw.githubusercontent.com/marvinborner/bruijn/main/docs/res/logo.png" alt="Bruijn logo"/>
+
 </p>
 
 > A purely functional programming language based on lambda calculus and
@@ -13,20 +15,34 @@ Code](https://rosettacode.org/wiki/Category:Bruijn).
 
 ## Features
 
-- **De Bruijn indices** eliminate the complexity of α-equivalence and
-  α-conversion
-- **Call-by-need** reduction with great time/memory complexity by using
-  the RKNL abstract machine (similar to
-  [calm](https://github.com/marvinborner/calm/))
-- **Syntactic sugar** for unary/binary/ternary numerals and
-  binary-encoded strings and chars
+- Substantial **standard library** with 700+ useful functions (see
+  `std/`)
 - **No primitive functions** - every function is implemented in Bruijn
   itself
-- Highly space-efficient compilation to **binary lambda calculus (BLC)**
-  additionally to normal interpretation and REPL
+- 1:1 correspondence to lambda calculus (e.g. space-efficient
+  compilation to **binary lambda calculus (BLC)**)
+- **de Bruijn indices** instead of named variables
+- Lazy evaluation by default (**call-by-need** reduction)
+- **Syntactic sugar** makes writing terms simpler (e.g. numbers,
+  strings, chars, meta terms)
+- **Mixfix** and **prefix** operators
 - **Recursion** can be implemented using combinators such as Y, Z or ω
-- Substantial **standard library** featuring many useful functions (see
-  `std/`)
+
+## Why
+
+- By having a very small core (the reducer), bruijn is safe, consistent,
+  and (potentially) proven to be correct!
+- Since it doesn’t have builtin functions, bruijn is independent of
+  hardware internals and could easily be run on almost any architecture.
+- Compiled binary lambda calculus is incredibly expressive and tiny.
+  Read the articles by [Jart](https://justine.lol/lambda/#why) and
+  [Tromp](https://tromp.github.io/cl/cl.html).
+- Exploring different encodings of data as function abstractions is
+  really fascinating.
+- Naming parameters of functions is annoying. De Bruijn indices are a
+  universal reference independent of the function and can actually help
+  readability!
+- Really, just for fun.
 
 ## Wiki
 
