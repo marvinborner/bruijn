@@ -30,9 +30,9 @@ jobs:
       - name: Generate std
         run: cd docs/ && ./gen.sh
       - name: Generate std map
-        run: 
-          | sudo apt install jq
-          | cd std/ && ./generate_map.sh >../docs/std_map.json
+        run: |
+          sudo apt install jq
+          cd std/ && ./generate_map.sh >../docs/std_map.json
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
