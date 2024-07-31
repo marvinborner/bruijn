@@ -2,6 +2,7 @@
 
 FILES="$(find * -type f -name "*.bruijn" ! -name "All.bruijn" ! -path "*Generic*")"
 
+# TODO: also handle imports for :input intelligence
 list_defs() {
 	grep -Po "^[^:# \t][^ \t]*" "$1" | sed -e "s#\\(.*\\)#{\"name\": \"\\1\", \"source\": \"$1\"}#g"
 	inputs="$(awk '/^:input/ {print $2}' "$1")"

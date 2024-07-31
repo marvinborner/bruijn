@@ -2,11 +2,11 @@ code, pre {
 	tab-size: 4;
 }
 
-.com {
+.pp {
 	color: #ff64bd;
 }
 
-.def {
+.definition {
 	color: #13dbee;
 }
 
@@ -18,11 +18,11 @@ code, pre {
 	color: #ffa120;
 }
 
-.left-abs, .right-abs {
+.abstraction {
 	color: #6b82ff;
 }
 
-.left-app, .right-app {
+.application {
 	color: #ff8750;
 }
 
@@ -30,11 +30,19 @@ code, pre {
 	color: #ff5050;
 }
 
-.number {
+.number, .float, .complex {
 	color: #b1ee13;
 }
 
-/* lol */
-.string, .string * {
-	color: #bb73f0 !important;
+.string, .char {
+	color: #bb73f0;
+}
+
+.code-highlight {
+  filter: saturate(5) brightness(3);
+  -webkit-text-stroke-width: 0.1ex;
+}
+
+.code-clickable {
+  cursor: pointer;
 }
