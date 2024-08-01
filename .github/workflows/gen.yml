@@ -31,7 +31,7 @@ jobs:
         run: cd docs/ && ./gen.sh
       - name: Generate std map
         run: |
-          sudo apt install python
+          sudo apt install python3
           cd std/ && ./generate_map.py >../docs/std_map.json
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
