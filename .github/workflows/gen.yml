@@ -31,8 +31,8 @@ jobs:
         run: cd docs/ && ./gen.sh
       - name: Generate std map
         run: |
-          sudo apt install jq
-          cd std/ && ./generate_map.sh >../docs/std_map.json
+          sudo apt install python
+          cd std/ && ./generate_map.py >../docs/std_map.json
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:

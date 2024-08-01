@@ -188,7 +188,9 @@ const bruijnParse = (stdMap) => {
     } else if (token.classList[0] === "pp") {
       // preprocessor
       const instr = inner.trim();
-      if (instr.startsWith(":import") || instr.startsWith(":input")) {
+      const isImport = instr.startsWith(":import");
+      const isInput = instr.startsWith(":input");
+      if (isImport || isInput) {
         const parts = instr.split(" ");
         const path = parts[1].replace("std/", "") + ".bruijn";
         if (!(path in stdMap)) {
@@ -196,27 +198,28 @@ const bruijnParse = (stdMap) => {
           continue;
         }
 
-        // TODO: inputs currently don't respect its imports
         stdMap[path].forEach((d) => {
-          const name = parts[0].startsWith(":input")
+          const name = isInput
             ? d.name
             : parts[2] == "."
               ? d.name
               : parts[2] + "." + d.name;
           const link = d.source.replace("/", "_");
-          root.children.push({
-            kind: "import",
-            elem: token,
-            indent: 0,
-            action: (f) =>
-              window.open(
-                `https://bruijn.marvinborner.de/std/${link}.html#${f}`,
-                "_blank",
-              ),
-            children: [],
-            nodes: [],
-            name,
-          });
+          const original = path.replace("/", "_");
+          if (isInput || (isImport && d.kind !== "import"))
+            root.children.push({
+              kind: "import",
+              elem: token,
+              indent: 0,
+              action: (f) =>
+                window.open(
+                  `https://bruijn.marvinborner.de/std/${f == "" ? original : link}.html#${f}`,
+                  "_blank",
+                ),
+              children: [],
+              nodes: [],
+              name,
+            });
         });
       } else if (instr.startsWith(":test") || instr.startsWith(":time")) {
         root.children.push(fresh);
@@ -241,12 +244,14 @@ const bruijnParse = (stdMap) => {
         ) {
           // namespaced prefix
           const decoded = decodeHTML(tokens[j].innerHTML.trim());
+          const prefixed =
+            decoded[decoded.length - 1] === "‣" ? decoded : decoded + "‣";
           fresh.nodes.push({
             kind: "prefix",
             elem: tokens[j],
-            name: tokens[j - 1].innerHTML.trim() + decoded + "‣",
+            name: tokens[j - 1].innerHTML.trim() + prefixed,
             bruijnStack: [...bruijnStack], // for subs
-            canonical: decoded.slice(1) + "‣",
+            canonical: prefixed.slice(1),
           });
         } else if (
           tokens[j].classList[0] === "special" &&
@@ -254,21 +259,26 @@ const bruijnParse = (stdMap) => {
         ) {
           // normal prefix
           const decoded = decodeHTML(tokens[j].innerHTML.trim());
+          const prefixed =
+            decoded[decoded.length - 1] === "‣" ? decoded : decoded + "‣";
           fresh.nodes.push({
             kind: "prefix",
             elem: tokens[j],
-            name: decoded + "‣",
+            name: prefixed,
             bruijnStack: [...bruijnStack], // for subs
-            canonical: decoded + "‣",
+            canonical: prefixed,
           });
 
           // normal mixfix TODO: this is a ugly hack and only works if lucky and binary
+          const mixfixed = decoded[decoded.length - 1].includes("…")
+            ? decoded
+            : "…" + decoded + "…";
           fresh.nodes.push({
             kind: "mixfix",
             elem: tokens[j],
-            name: "…" + decoded + "…",
+            name: mixfixed,
             bruijnStack: [...bruijnStack], // for subs
-            canonical: "…" + decoded + "…",
+            canonical: mixfixed,
           });
         } else if (
           j > 1 &&
@@ -362,6 +372,11 @@ const bruijnParse = (stdMap) => {
                 metaStacks[sup.name] = metaStack;
               });
           }
+
+          // TODO: case is missing:
+          // foo [bar]
+          //     baz [0 1 2] # won't get highlighted
+          //     bar [baz]
         }
       }
     }
