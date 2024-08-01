@@ -426,7 +426,6 @@ const bruijnApply = (root) => {
 
       if (res) {
         // densely connected listeners
-        // TODO: do not open multiple tabs when not sure (thrush prefix/mixfix)
         node.elem.addEventListener(
           "click",
           (ev) => {
@@ -462,7 +461,6 @@ const bruijnApply = (root) => {
         });
         if (["definition", "import"].includes(res.kind)) {
           node.elem.title = `Jump to ${res.kind} source`;
-          res.elem.title = "definition";
         }
       } else if (node.kind === "identifier") {
         // TODO: also include prefix/mixfix once better
@@ -494,7 +492,7 @@ const becomeIntelligent = () => {
           "code.language-bruijn span.definition",
         );
         definitions.forEach((definition) => {
-          if (definition.innerText === hash.slice(1))
+          if (definition.innerText === decodeURI(hash).slice(1))
             bruijnScroll(definition)();
         });
       }
