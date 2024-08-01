@@ -1,8 +1,12 @@
 pre {
 	width: 100%;
 	white-space: pre;
-	overflow-x: scroll;
+	overflow: auto !important;
 	display: grid;
+}
+
+code {
+	overflow: auto !important;
 }
 
 /* to match std */

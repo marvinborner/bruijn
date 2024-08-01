@@ -157,7 +157,7 @@ a {
 	padding: 15px;
 	font-size: 1.2em;
 	border-radius: 10px;
-	overflow: scroll;
+	overflow: auto;
 }
 
 .code .repl {
