@@ -1,19 +1,28 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
-# see "on the representation of data in lambda-calculus" #5
+# see "on the representation of data in lambda-calculus" (Parigot 1989)
 # has a "one-step" predecessor *and* addition function
-# has 2x space complexity compared to unary/Church
 
-zero [0]
+# zero Parigot number
+zero [0] ⧗ Parigot
 
-inc [[[0 2 1]]]
+# increments Parigot number
+inc [[[0 (2 1)]]] ⧗ Parigot → Parigot
 
 ++‣ inc
 
-dec [[1 0 [0]]]
+# decrements Parigot number
+dec [[1 0 [0]]] ⧗ Parigot → Parigot
 
 --‣ dec
 
 :test (dec (inc zero)) (zero)
+
+# adds two Parigot numbers
+add [[[2 (1 0)]]] ⧗ Parigot → Parigot → Parigot
+
+…+… add
+
+:test (add (inc (zero)) (inc (inc zero))) (inc (inc (inc zero)))
 
 iter [[[0 ι ρ ρ]]]
 	ρ [[3 (1 0 0)]]

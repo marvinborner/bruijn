@@ -1,0 +1,41 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# see "on the representation of data in lambda-calculus" (Parigot 1989)
+# constant append/snoc
+
+# empty list element
+empty [0] ⧗ (Parigot a)
+
+# prepends an element to a list
+cons [[[[0 3 (2 1)]]]] ⧗ a → (Parigot a) → (Parigot a)
+
+…:… cons
+
+# returns the head of a list or k
+head [0 [0] [[1]]] ⧗ (Parigot a) → a
+
+:test (head ('a' : ('b' : ('c' : empty)))) ('a')
+:test (head empty) ([[1]])
+
+# returns the tail of a list or &ki
+tail [[1 0 [[0]]]] ⧗ (Parigot a) → (Parigot a)
+
+:test (tail ('a' : ('b' : ('c' : empty)))) ('b' : ('c' : empty))
+:test (tail empty) ([0 [[0]]])
+
+# appends two lists
+append [[[2 (1 0)]]] ⧗ (Parigot a) → (Parigot a) → (Parigot a)
+
+…++… append
+
+:test (append ('a' : ('b' : empty)) ('c' : ('d' : empty))) ('a' : ('b' : ('c' : ('d' : empty))))
+
+# appends an element to a list
+snoc [[[2 [0 2 1]]]] ⧗ (Parigot a) → a → (Parigot a)
+
+…;… snoc
+
+:test (snoc ('a' : ('b' : empty)) 'c') ('a' : ('b' : ('c' : empty)))
+
+iter [[[0 ι ρ ρ]]]
+	ρ [[3 (1 0 0)]]
+	ι [[4]]

@@ -1,0 +1,534 @@
+# MIT License, Copyright (c) 2022 Marvin Borner
+# Lists in Church/Boehm-Berarducci encoding using pairs
+# implementations are generally lazy (except when they're broken)
+
+:import std/Combinator .
+:import std/Pair P
+:import std/Logic .
+:import std/Number/Ternary .
+:import std/Box B
+
+# empty list element
+empty false ⧗ (List a)
+
+# returns true if a list is empty
+# can generally be omitted: ∅?c foo bar = c [[[bar]]] foo
+empty? [0 [[[false]]] true] ⧗ (List a) → Boolean
+
+∅?‣ empty?
+
+:test (∅?empty) (true)
+
+# creates list with single element
+singleton [P.pair 0 empty] ⧗ a → (List a)
+
+{}‣ singleton
+
+# prepends an element to a list
+cons P.pair ⧗ a → (List a) → (List a)
+
+…:… cons
+
+:test ((+1) : {}(+2)) (P.pair (+1) (P.pair (+2) empty))
+:test (∅?({}(+2))) (false)
+
+# returns the head of a list or empty
+head P.fst ⧗ (List a) → a
+
+^‣ head
+
+:test (^((+1) : {}(+2))) ((+1))
+
+# returns the tail of a list or empty
+tail P.snd ⧗ (List a) → (List a)
+
+~‣ tail
+
+:test (~((+1) : {}(+2))) ({}(+2))
+
+# returns the length of a list in balanced ternary
+length z [[[rec]]] (+0) ⧗ (List a) → Number
+	rec 0 [[[case-inc]]] case-end
+		case-inc 5 ++4 1
+		case-end 1
+
+∀‣ length
+
+:test (∀((+1) : {}(+2))) ((+2))
+:test (∀empty) ((+0))
+
+# applies each element of a list to a function (left-associative)
+apply z [[[rec]]] ⧗ (a* → b) → (List a) → b
+	rec 0 [[[case-app]]] case-end
+		case-app 5 (4 2) 1
+		case-end 1
+
+…<!… apply
+
+:test (…+… <! ((+1) : {}(+2))) ((+3))
+
+# applies each element of the tail to the head (left-associative)
+eval &apply ⧗ (Pair (a → b) (List a)) → b
+
+!‣ eval
+
+:test (!(…+… : ((+1) : {}(+2)))) ((+3))
+
+# applies each element of the tail to the head (right-associative)
+eval-r z [[rec]]
+	rec 0 [[[case-app]]] case-end
+		case-app ∅?1 2 (2 (4 1))
+		case-end 1
+
+~!‣ eval-r
+
+:test (~!(inc : (inc : {}(+1)))) ((+3))
+
+# returns the element at unary index in list
+index-unary [[P.fst (0 P.snd 1)]] ⧗ (List a) → Unary → a
+
+# returns the element at index in list
+index z [[[rec]]] ⧗ (List a) → Number → a
+	rec 1 [[[case-index]]] case-end
+		case-index =?3 2 (5 1 --3)
+		case-end empty
+
+…!!… index
+
+:test (((+1) : ((+2) : {}(+3))) !! (+0)) ((+1))
+:test (((+1) : ((+2) : {}(+3))) !! (+2)) ((+3))
+:test (((+1) : ((+2) : {}(+3))) !! (-1)) (empty)
+:test (((+1) : ((+2) : {}(+3))) !! (+3)) (empty)
+
+# constructs a list of successively reduced values
+scanl z [[[[1 : rec]]]] ⧗ (b → a → b) → b → (List a) → (List b)
+	rec 0 [[[case-scan]]] case-end
+		case-scan 6 5 (5 4 2) 1
+		case-end 0
+
+:test (scanl …+… (+0) ((+1) : ((+2) : {}(+3)))) ((+0) : ((+1) : ((+3) : {}(+6))))
+
+# applies a left fold on a list
+foldl z [[[[rec]]]] ⧗ (b → a → b) → b → (List a) → b
+	rec 0 [[[case-fold]]] case-end
+		case-fold 6 5 (5 4 2) 1
+		case-end 1
+
+:test ((foldl …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
+:test ((foldl …-… (+6) ((+1) : ((+2) : {}(+3)))) =? (+0)) (true)
+
+# foldl without starting value
+foldl1 [[foldl 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
+
+# applies a right fold on a list
+foldr [[[z [[rec]] 0]]] ⧗ (a → b → b) → b → (List b) → b
+	rec 0 [[[case-fold]]] case-end
+		case-fold 7 2 (4 1)
+		case-end 3
+
+:test ((foldr …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
+:test ((foldr …-… (+2) ((+1) : ((+2) : {}(+3)))) =? (+0)) (true)
+
+# foldr without starting value
+foldr1 [[foldl 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
+
+# applies or to all list elements
+lor? foldr or? false ⧗ (List Boolean) → Boolean
+
+# largest element by compare function
+max-by [foldl1 max'] ⧗ (a → a → Number) → (List a) → a
+	max' [[>?(2 1 0) 1 0]]
+
+:test (max-by (compare ⋔ length) ("abc" : ("ab" : {}"abcd"))) ("abcd")
+
+# smallest element by compare function
+min-by [foldl1 min'] ⧗ (a → a → Number) → (List a) → a
+	min' [[<?(2 1 0) 1 0]]
+
+:test (min-by (compare ⋔ length) ("abc" : ("ab" : {}"abcd"))) ("ab")
+
+⋁?‣ lor?
+
+:test (⋁?(true : {}true)) (true)
+:test (⋁?(true : {}false)) (true)
+:test (⋁?(false : {}false)) (false)
+
+# applies and to all list elements
+land? foldr and? true ⧗ (List Boolean) → Boolean
+
+⋀?‣ land?
+
+:test (⋀?(true : {}true)) (true)
+:test (⋀?(true : {}false)) (false)
+:test (⋀?(false : {}false)) (false)
+
+# reverses a list
+reverse foldl \cons empty ⧗ (List a) → (List a)
+
+<~>‣ reverse
+
+:test (<~>((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
+
+# appends two lists (Tromp)
+append &(z [[[[[0 3 (2 4 1)]]]]]) ⧗ (List a) → (List a) → (List a)
+
+…++… append
+
+:test ({}(+1) ++ empty) ({}(+1))
+:test (empty ++ {}(+1)) ({}(+1))
+:test (empty ++ empty) (empty)
+:test (((+1) : ((+2) : {}(+3))) ++ {}(+4)) ((+1) : ((+2) : ((+3) : {}(+4))))
+
+# appends an element to a list
+snoc [[1 ++ {}0]] ⧗ (List a) → a → (List a)
+
+…;… snoc
+
+:test (empty ; (+1)) ({}(+1))
+:test ({}(+1) ; (+2)) ((+1) : {}(+2))
+
+# generates a variadic box-based function from a list-based function
+# TODO: Find a solution that does not require boxed terms
+variadic [[y [[[[rec]]]] 1 0 [[0]]]] ⧗ ((List a) → b) → ((Box a)* → (Box c) → b)
+	rec B.∅?1 (2 0) [4 3 0 (1 ; (B.get i 2))]
+
+:test (variadic reverse B.<>(+1) B.<>(+2) B.<>(+3) B.empty) ((+3) : ((+2) : {}(+1)))
+
+# constructs list out of boxed terms, ended with an empty box
+list variadic i ⧗ (Box a)* → (Box b) → (List a)
+
+:test (list B.<>(+2) B.<>(+3) B.empty) ((+2) : {}(+3))
+:test (^(list B.<>(+2) B.<>(+3))) ((+2) : {}(+3))
+
+# maps each element to a function
+map z [[[rec]]] ⧗ (a → b) → (List a) → (List b)
+	rec 0 [[[case-map]]] case-end
+		case-map (4 2) : (5 4 1)
+		case-end empty
+
+…<$>… map
+
+:test (++‣ <$> ((+1) : ((+2) : {}(+3)))) ((+2) : ((+3) : {}(+4)))
+
+# filters a list based on a predicate
+filter z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
+	rec 0 [[[case-filter]]] case-end
+		case-filter 4 2 (cons 2) i (5 4 1)
+		case-end empty
+
+…<#>… filter
+
+:test (zero? <#> ((+1) : ((+0) : {}(+3)))) ({}(+0))
+
+# returns the last element of a list
+last ^‣ ∘ <~>‣ ⧗ (List a) → a
+
+_‣ last
+
+:test (_((+1) : ((+2) : {}(+3)))) ((+3))
+
+# returns everything but the last element of a list
+init z [[rec]] ⧗ (List a) → (List a)
+	rec 0 [[[case-init]]] case-end
+		case-init 1 [[[5 : (7 4)]]] empty
+		case-end empty
+
+:test (init ((+1) : ((+2) : {}(+3)))) ((+1) : {}(+2))
+
+# concatenates a list of lists to one list
+concat foldr append empty ⧗ (List a) → (List a) → (List a)
+
+:test (concat (((+1) : {}(+2)) : {}((+3) : {}(+4)))) ((+1) : ((+2) : ((+3) : {}(+4))))
+:test (concat ("a" : {}"b")) ("ab")
+
+# maps a function returning list of list and concatenates
+concat-map concat ∘∘ map ⧗ (a → (List b)) → (List a) → (List b)
+
+…<++>… concat-map
+
+:test ([-0 : {}0] <++> ((+1) : {}(+2))) ((-1) : ((+1) : ((-2) : {}(+2))))
+
+# zips two lists discarding excess elements
+zip z [[[rec]]] ⧗ (List a) → (List b) → (List (Pair a b))
+	rec (∅?1 ⋁? ∅?0) case-end case-zip
+		case-zip (^1 : ^0) : (2 ~1 ~0)
+		case-end empty
+
+:test (zip ((+1) : {}(+2)) ((+2) : {}(+1))) (((+1) : (+2)) : {}((+2) : (+1)))
+
+# zips three lists discarding excess elements
+# TODO: add/use triple type (list element types can be different)
+zip3 z [[[[rec]]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
+	rec (∅?2 ⋁? ∅?1 ⋁? ∅?0) case-end case-zip
+		case-zip (^2 : (^1 : {}(^0))) : (3 ~2 ~1 ~0)
+		case-end empty
+
+:test (zip3 ((+1) : {}(+2)) ((+2) : {}(+1)) ((+3) : {}(+0))) (((+1) : ((+2) : {}(+3))) : {}((+2) : ((+1) : {}(+0))))
+
+# applies pairs of the zipped list as arguments to a function
+zip-with z [[[[rec]]]] ⧗ (a → b → c) → (List a) → (List b) → (List c)
+	rec 1 [[[case-zip]]] case-end
+		case-zip 3 [[[(8 5 2) : (9 8 4 1)]]] empty
+		case-end empty
+
+:test (zip-with …+… ((+1) : {}(+2)) ((+2) : {}(+1))) ((+3) : {}(+3))
+
+# list comprehension
+{…|…} map ⧗ (a → b) → (List a) → (List b)
+
+:test ({ ++‣ | ((+0) : {}(+2)) }) ((+1) : {}(+3))
+
+# doubled list comprehension
+{…|…;…} zip-with ⧗ (a → b → c) → (List a) → (List b) → (List c)
+
+:test ({ …+… | ((+0) : {}(+2)) ; ((+1) : {}(+3)) }) ((+1) : {}(+5))
+
+# returns first n elements of a list
+take z [[[rec]]] ⧗ Number → (List a) → (List a)
+	rec 0 [[[case-take]]] case-end
+		case-take =?4 empty (2 : (5 --4 1))
+		case-end empty
+
+:test (take (+2) ((+1) : ((+2) : {}(+3)))) ((+1) : {}(+2))
+
+# takes elements while a predicate is satisfied
+take-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
+	rec 0 [[[case-take]]] case-end
+		case-take 4 2 (2 : (5 4 1)) empty
+		case-end empty
+
+:test (take-while zero? ((+0) : ((+0) : {}(+1)))) ((+0) : {}(+0))
+
+# removes first n elements of a list
+drop z [[[rec]]] ⧗ Number → (List a) → (List a)
+	rec 0 [[[case-drop]]] case-end
+		case-drop =?4 3 (5 --4 1)
+		case-end empty
+
+:test (drop (+2) ((+1) : ((+2) : {}(+3)))) ({}(+3))
+
+# removes elements from list while a predicate is satisfied
+drop-while z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List a)
+	rec 0 [[[case-drop]]] case-end
+		case-drop 4 2 (5 4 1) 3
+		case-end empty
+
+:test (drop-while zero? ((+0) : ((+0) : {}(+1)))) ({}(+1))
+
+# returns all tails of a list
+tails z [[rec]] ⧗ (List a) → (List a)
+	rec ∅?0 {}empty (0 : (1 ~0))
+
+:test (tails "abc") ("abc" : ("bc" : ("c" : {}empty)))
+
+# returns all combinations of two lists
+cross [[[[1 : 0] <$> 1] <++> 1]] ⧗ (List a) → (List b) → (List (Pair a b))
+
+:test (cross "ab" "cd") (('a' : 'c') : (('a' : 'd') : (('b' : 'c') : {}('b' : 'd'))))
+
+# returns all combinations of three lists
+# TODO: add/use triple type (list element types can be different)
+cross3 [[[[[[2 : (1 : {}0)] <$> 2] <++> 2] <++> 2]]] ⧗ (List a) → (List a) → (List a) → (List (List a))
+
+# returns pair of take-while and drop-while
+span [[(take-while 1 0) : (drop-while 1 0)]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
+
+:test (span (\lt? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
+
+# same as span but with inverted predicate
+# slower but equivalent: span ∘ (…∘… ¬‣)
+break [[left : right]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
+	left take-while (¬‣ ∘ 1) 0
+	right drop-while (¬‣ ∘ 1) 0
+
+:test (break (\gt? (+3)) ((+1) : ((+2) : ((+4) : {}(+1))))) (((+1) : {}(+2)) : ((+4) : {}(+1)))
+
+# groups list by eq predicate
+group-by z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List (List a))
+	rec 0 [[[case-group]]] case-end
+		case-group build (span (4 2) 1)
+			build [(3 : ^0) : (6 5 ~0)]
+		case-end empty
+
+:test (group-by [[(0 - 1) <? (+2)]] ((+1) : ((+2) : ((+3) : {}(+4))))) (((+1) : {}(+2)) : {}((+3) : {}(+4)))
+
+# splits a list into a pair of two lists based on predicate, drops match
+split-by [[left : right]] ⧗ (a → Boolean) → (List a) → (Pair (List a) (List a))
+	left take-while (¬‣ ∘ 1) 0
+	right fix (drop-while (¬‣ ∘ 1) 0)
+		fix [0 [[[1]]] empty]
+
+:test (split-by (…=?… (+1)) ((+2) : ((+1) : ((+3) : {}(+2))))) ({}(+2) : ((+3) : {}(+2)))
+
+# splits a list into lists based on predicate, drops match
+split-list-by z [[[rec]]] ⧗ (a → Boolean) → (List a) → (List (List a))
+	rec 0 [[[case-split]]] case-end
+		case-split build (split-by 4 3)
+			build [^0 : (6 5 ~0)]
+		case-end empty
+
+:test (split-list-by (…=?… (+1)) ((+2) : ((+1) : ((+3) : {}(+2))))) ({}(+2) : {}((+3) : {}(+2)))
+
+# sorts a list of numbers in ascending order using non-inplace (obviously) quicksort
+sort-asc z [[rec]]
+	rec 0 [[[case-sort]]] case-end
+		case-sort (4 lesser) ++ {}(2) ++ (4 greater)
+			lesser (\lt? 2) <#> 1
+			greater (\ge? 2) <#> 1
+		case-end empty
+
+:test (sort-asc ((+3) : ((+2) : {}(+1)))) ((+1) : ((+2) : {}(+3)))
+
+# sorts a list of numbers in descending order using non-inplace (obviously) quicksort
+sort-desc z [[rec]]
+	rec 0 [[[case-sort]]] case-end
+		case-sort (4 greater) ++ {}(2) ++ (4 lesser)
+			greater (\ge? 2) <#> 1
+			lesser (\lt? 2) <#> 1
+		case-end empty
+
+:test (sort-desc ((+1) : ((+2) : {}(+3)))) ((+3) : ((+2) : {}(+1)))
+
+# inserts an element into a ascendingly sorted list
+insert-sorted [go ∘ (span (\lt? 0))]
+	go [^0 ++ (1 : ~0)]
+
+:test (insert-sorted (+3) ((+1) : ((+2) : {}(+4)))) ((+1) : ((+2) : ((+3) : {}(+4))))
+
+# returns true if any element in a list matches a predicate
+any? ⋁?‣ ∘∘ map ⧗ (a → Boolean) → (List a) → Boolean
+
+:test (any? (\gt? (+2)) ((+1) : ((+2) : {}(+3)))) (true)
+:test (any? (\gt? (+2)) ((+1) : ((+2) : {}(+2)))) (false)
+
+# returns true if all elements in a list match a predicate
+all? ⋀?‣ ∘∘ map ⧗ (a → Boolean) → (List a) → Boolean
+
+:test (all? (\gt? (+2)) ((+3) : ((+4) : {}(+5)))) (true)
+:test (all? (\gt? (+2)) ((+4) : ((+3) : {}(+2)))) (false)
+
+# returns true if element is part of a list based on eq predicate
+in? …∘… any? ⧗ (a → a → Boolean) → a → (List a) → Boolean
+
+:test (in? …=?… (+3) ((+1) : ((+2) : {}(+3)))) (true)
+:test (in? …=?… (+0) ((+1) : ((+2) : {}(+3)))) (false)
+
+# returns true if all elements of one list are equal to corresponding elements of other list
+eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolean
+
+:test (eq? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
+:test (eq? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
+:test (eq? …=?… empty empty) (true)
+
+# returns eq, lt, gt depending on comparison of two lists and comparison function
+compare-case z [[[[[[[rec]]]]]]] ⧗ (a → a → Boolean) → c → d → e → (List a) → (List a) → Boolean
+	rec ∅?1 (∅?0 4 3) (∅?0 2 go)
+		go [=?0 (7 6 5 4 3 ~2 ~1) 0] (5 ^1 ^0)
+
+# returns 1 if a>b, -1 if a<b and 0 if a=b
+# also: spaceship operator
+compare [compare-case 0 (+0) (+1) (-1)] ⧗ (a → a → Boolean) → Binary → Binary → Number
+
+# returns true if list is prefix of other list
+prefix? z [[[[rec]]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
+	rec ∅?1 true (∅?0 false go)
+		go 1 [[2 [[(6 3 1) ⋀? (7 6 2 0)]]]]
+
+:test (prefix? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
+:test (prefix? …=?… ((+1) : {}(+2)) ((+0) : ((+1) : {}(+2)))) (false)
+:test (prefix? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
+:test (prefix? …=?… empty empty) (true)
+
+# returns true if list is within other list
+infix? [[[any? (prefix? 2 1) (tails 0)]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
+
+:test (infix? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
+:test (infix? …=?… ((+1) : {}(+2)) ((+0) : ((+1) : {}(+2)))) (true)
+:test (infix? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
+:test (infix? …=?… empty empty) (true)
+
+# finds the first index that matches a predicate
+find-index z [[[rec]]] ⧗ (a → Boolean) → (List a) → Number
+	rec 0 [[[case-find]]] case-end
+		case-find (4 2) (+0) !(5 4 1)
+			!‣ [<?0 0 ++0]
+		case-end (-1)
+
+:test (find-index (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
+:test (find-index (…=?… (+4)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((-1))
+
+# finds the first element that matches a predicate
+find z [[[rec]]] ⧗ (a → Boolean) → (List a) → a
+	rec 0 [[[case-find]]] case-end
+		case-find (4 2) 2 (5 4 1)
+		case-end Ω
+
+:test (find (…=?… (+2)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+2))
+:test (find (…=?… (+1)) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1))
+
+# removes first element that matches an eq predicate
+remove z [[[[rec]]]] ⧗ (a → a → Boolean) → a → (List a) → (List a)
+	rec 0 [[[case-remove]]] case-end
+		case-remove (5 2 4) 1 (2 : (6 5 4 1))
+		case-end empty
+
+:test (remove …=?… (+2) ((+1) : ((+2) : ((+3) : {}(+2))))) ((+1) : ((+3) : {}(+2)))
+
+# removes duplicates from list based on eq predicate (keeps first occurrence)
+nub z [[[rec]]] ⧗ (a → a → Boolean) → (List a) → (List a)
+	rec 0 [[[case-nub]]] case-end
+		case-nub 2 : (5 4 ([¬(5 0 3)] <#> 1))
+		case-end empty
+
+:test (nub …=?… ((+1) : ((+2) : {}(+3)))) ((+1) : ((+2) : {}(+3)))
+:test (nub …=?… ((+1) : ((+2) : {}(+1)))) ((+1) : {}(+2))
+
+# returns a list with infinite-times an element
+repeat z [[rec]] ⧗ a → (List a)
+	rec 0 : (1 0)
+
+:test (take (+3) (repeat (+4))) ((+4) : ((+4) : {}(+4)))
+
+# returns a list with n-times an element
+replicate \(g take repeat) ⧗ Number → a → (List a)
+
+:test (replicate (+3) (+4)) ((+4) : ((+4) : {}(+4)))
+
+# pads a list at end until its length is n
+pad-right [[[0 ++ (replicate |(2 - ∀0) 1)]]] ⧗ Number → a → (List a) → (List a)
+
+:test (pad-right (+6) 'a' "hah") ("hahaaa")
+
+# pads a list at start until its length is n
+pad-left [[[(replicate (2 - ∀0) 1) ++ 0]]] ⧗ Number → a → (List a) → (List a)
+
+:test (pad-left (+6) 'a' "hah") ("aaahah")
+
+# returns an infinite list repeating a finite list
+cycle z [[rec]] ⧗ (List a) → (List a)
+	rec 0 ++ (1 0)
+
+:test (take (+6) (cycle "ab")) ("ababab")
+
+# returns a list with infinite-times previous (or start) value applied to a function
+iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
+	rec 0 : (2 1 (1 0))
+
+:test (take (+5) (iterate ++‣ (+0))) (((+0) : ((+1) : ((+2) : ((+3) : {}(+4))))))
+:test (take (+2) (iterate (%‣ ∘ dec) (+5))) (((+5) : {}(+4)))
+:test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
+:test (take (+0) (iterate ++‣ (+0))) (empty)
+
+# TODO: performance
+nth-iterate index ∘∘ iterate
+
+# enumerate list
+enumerate zip (iterate ++‣ (+0)) ⧗ (List a) → (List (Pair Number a))
+
+:test (enumerate "abc") (((+0) : 'a') : (((+1) : 'b') : {}((+2) : 'c')))
+
+# calculates all fixed points of given functions as a list
+y* [[[0 1] <$> 0] xs] ⧗ (List a) → (List b)
+	xs [[1 <! ([[1 2 0]] <$> 0)]] <$> 0
+
+:test (&(+5) <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)

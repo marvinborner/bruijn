@@ -43,6 +43,6 @@ res = {}
 files = Path(".").glob("**/*.bruijn")
 for file in files:
     path = str(file)
-    if path != "All.bruijn" and "Generic" not in path:
+    if path != "All.bruijn":
         res[path] = list_defs(path, "input", "")
 print(json.dumps(res))
