@@ -162,6 +162,7 @@ parseFloat = do
   float = do
     a <- read <$> some digitChar <?> "digits"
     _ <- char '.' <?> "float delimiter"
+    -- TODO: THIS IS WRONG! 4.002 is read as 4.2!
     b <- read <$> some digitChar <?> "digits"
     return $ convertToRational a b
   signedFloat :: Parser Rational

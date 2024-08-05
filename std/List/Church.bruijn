@@ -511,16 +511,20 @@ cycle z [[rec]] ⧗ (List a) → (List a)
 :test (take (+6) (cycle "ab")) ("ababab")
 
 # returns a list with infinite-times previous (or start) value applied to a function
-iterate z [[[rec]]] ⧗ (a → a) → a → (List a)
-	rec 0 : (2 1 (1 0))
+iterate [z [[rec]]] ⧗ (a → a) → a → (List a)
+	rec 0 : (1 (2 0))
 
 :test (take (+5) (iterate ++‣ (+0))) (((+0) : ((+1) : ((+2) : ((+3) : {}(+4))))))
 :test (take (+2) (iterate (%‣ ∘ dec) (+5))) (((+5) : {}(+4)))
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
 :test (take (+0) (iterate ++‣ (+0))) (empty)
 
-# TODO: performance
-nth-iterate index ∘∘ iterate
+# returns the nth element of infinite list iteration
+# equivalent of index ∘∘ iterate
+nth-iterate [z [[[rec]]]] ⧗ (a → a) → a → Number → a
+	rec =?0 1 (2 (3 1) --0)
+
+:test (nth-iterate ++‣ (+0) (+5)) ((+5))
 
 # enumerate list
 enumerate zip (iterate ++‣ (+0)) ⧗ (List a) → (List (Pair Number a))

@@ -3,69 +3,60 @@
 
 :import std/Combinator .
 :import std/Pair .
+:import std/Number N
+:import std/Math/Rational Q
 :import std/Math/Real R
 
-ι (+0.0+1.0i)
+i (+0.0+1.0i)
 
 # converts a balanced ternary number to a complex number
-number→complex [[0 (R.number→real 1) (+0.0r)]] ⧗ Number → Complex
+number→complex [[(R.number→real 1 0) : ((+0.0r) 0)]] ⧗ Number → Complex
 
 :test (number→complex (+5)) ((+5.0+0.0i))
 
 # returns real part of a complex number
-real fst ⧗ Complex → Real
+real [[1 0 [[1]]]] ⧗ Complex → Real
 
 :test (real (+5.0+2.0i)) ((+5.0r))
 
 # returns imaginary part of a complex number
-imag snd ⧗ Complex → Real
+imag [[1 0 [[0]]]] ⧗ Complex → Real
 
 :test (imag (+5.0+2.0i)) ((+2.0r))
 
-# approximates complex number by turning it into a pair of rationals
-approx &[[[(2 0) : (1 0)]]] ⧗ Complex → Number → (Pair Rational Rational)
-
-:test (approx (+5.0+2.0i) (+2)) ((+5.0q) : (+2.0q))
-
-# returns true if two complex numbers are equal approximately
-approx-eq? [[[R.approx-eq? 2 (1 2) (0 2)]]] ⧗ Number → Complex → Complex → Boolean
-
-# TODO: bigger value (higher performance first!)
-…≈?… approx-eq? (+1000)
-
 # adds two complex numbers
-add &[[&[[(R.add 3 1) : (R.add 2 0)]]]] ⧗ Complex → Complex → Complex
+add φ &[[&[[(Q.add 3 1) : (Q.add 2 0)]]]] ⧗ Complex → Complex → Complex
 
 …+… add
 
 # subtracts two complex numbers
-sub &[[&[[(R.sub 3 1) : (R.sub 2 0)]]]] ⧗ Complex → Complex → Complex
+sub φ &[[&[[(Q.sub 3 1) : (Q.sub 2 0)]]]] ⧗ Complex → Complex → Complex
 
-…+… sub
+…-… sub
 
 # multiplies two complex numbers
-mul &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
-	p R.sub (R.mul 3 1) (R.mul 2 0)
-	q R.add (R.mul 3 0) (R.mul 2 1)
+mul φ &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
+	p Q.sub (Q.mul 3 1) (Q.mul 2 0)
+	q Q.add (Q.mul 3 0) (Q.mul 2 1)
 
 …⋅… mul
 
 # divides two complex numbers
-div &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
-	p R.div (R.add (R.mul 3 1) (R.mul 2 0)) (R.add (R.mul 1 1) (R.mul 0 0))
-	q R.div (R.sub (R.mul 2 1) (R.mul 1 0)) (R.add (R.mul 1 1) (R.mul 0 0))
+div φ &[[&[[p : q]]]] ⧗ Complex → Complex → Complex
+	p Q.div (Q.add (Q.mul 3 1) (Q.mul 2 0)) (Q.add (Q.mul 1 1) (Q.mul 0 0))
+	q Q.div (Q.sub (Q.mul 2 1) (Q.mul 3 0)) (Q.add (Q.mul 1 1) (Q.mul 0 0))
 
 …/… div
 
 # negates a complex number
-negate &[[(R.negate 1) : (R.negate 0)]] ⧗ Complex → Complex
+negate b &[[(Q.negate 1) : (Q.negate 0)]] ⧗ Complex → Complex
 
 -‣ negate
 
 # inverts a complex number
-invert &[[p : q]] ⧗ Complex → Complex
-	p R.div 1 (R.add (R.mul 1 1) (R.mul 0 0))
-	q R.div 0 (R.add (R.mul 1 1) (R.mul 0 0))
+invert b &[[p : q]] ⧗ Complex → Complex
+	p Q.div 1 (Q.add (Q.mul 1 1) (Q.mul 0 0))
+	q Q.div 0 (Q.add (Q.mul 1 1) (Q.mul 0 0))
 
 ~‣ invert
 
@@ -76,6 +67,17 @@ invert &[[p : q]] ⧗ Complex → Complex
 # power function: complex^number
 pow-n [L.nth-iterate (mul 0) (+1.0+0.0i)] ⧗ Complex → Number → Complex
 
-ln [p : q] ⧗ Complex → Complex
-	p R.ln (&R.hypot 0)
-	q &R.atan2 0
+exp [[L.nth-iterate &[[[[op]]]] start 0 [[[[1]]]] 0]] ⧗ Complex → Complex
+	start [0 (+1.0+0.0i) (+1.0+0.0i) (+1.0+0.0i) (+1)]
+	op [[[2 1 0 (4 + (1 / 0)) N.++3]] pow fac]
+		pow 6 ⋅ 4
+		fac 3 ⋅ (number→complex 1)
+
+ln [[[p : q] (1 0)]] ⧗ Complex → Complex
+	p R.ln (&[[R.hypot [2] [1]]] 0) 1
+	q &[[\R.atan2 [2] [1]]] 0 1
+
+# complex power function: complex^complex
+pow [[exp (0 ⋅ (ln 1))]] ⧗ Complex → Complex → Complex
+
+…**… pow

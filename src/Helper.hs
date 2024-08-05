@@ -401,8 +401,9 @@ floatToReal :: Rational -> Expression
 floatToReal = Abstraction . floatToRational
 
 floatToComplex :: Rational -> Rational -> Expression
-floatToComplex r i = Abstraction
-  $ Application (Application (Bruijn 0) (floatToReal r)) (floatToReal i)
+floatToComplex r i = Abstraction $ Abstraction $ Application
+  (Application (Bruijn 0) (Application (floatToReal r) (Bruijn 1)))
+  (Application (floatToReal i) (Bruijn 1))
 
 -- Dec to Bal3 in Bruijn encoding: reversed application with 0=>0; 1=>1; T=>2; end=>3
 -- e.g. 0=0=[[[[3]]]]; 2=1T=[[[[2 (1 3)]]]] -5=T11=[[[[1 (1 (2 3))]]]]
@@ -491,7 +492,7 @@ ternaryToString e = (<> "t") . show <$> ternaryToDecimal e
 ternaryToDecimal :: Expression -> Maybe Integer
 ternaryToDecimal e = do
   res <- resolve e
-  return $ (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer)
+  return (sum $ zipWith (*) res (iterate (* 3) 1) :: Integer)
  where
   multiplier (Bruijn 0) = Just 0
   multiplier (Bruijn 1) = Just 1
@@ -516,10 +517,9 @@ rationalToString (Abstraction (Application (Application (Bruijn 0) a) b)) = do
     <> "/"
     <> show (d + 1)
     <> " (approx. "
-    <> (showFFloatAlt (Just 8)
-                      ((fromIntegral n) / (fromIntegral $ d + 1) :: Double)
-                      ""
-       )
+    <> showFFloatAlt (Just 8)
+                     (fromIntegral n / fromIntegral (d + 1) :: Double)
+                     ""
     <> ")"
 rationalToString _ = Nothing
 
@@ -528,7 +528,7 @@ realToString (Abstraction e) = rationalToString e
 realToString _               = Nothing
 
 complexToString :: Expression -> Maybe String
-complexToString (Abstraction (Application (Application (Bruijn 0) (Abstraction (Abstraction (Application (Application (Bruijn 0) lr) rr)))) (Abstraction (Abstraction (Application (Application (Bruijn 0) li) ri)))))
+complexToString (Abstraction (Abstraction (Application (Application (Bruijn 0) (Abstraction (Application (Application (Bruijn 0) lr) rr))) (Abstraction (Application (Application (Bruijn 0) li) ri)))))
   = do
     nlr <- ternaryToDecimal lr
     drr <- ternaryToDecimal rr
@@ -544,16 +544,12 @@ complexToString (Abstraction (Application (Application (Bruijn 0) (Abstraction (
       <> show (dri + 1)
       <> "i"
       <> " (approx. "
-      <> (showFFloatAlt
-           (Just 8)
-           ((fromIntegral nlr) / (fromIntegral $ drr + 1) :: Double)
-           ""
-         )
+      <> showFFloatAlt (Just 8)
+                       (fromIntegral nlr / fromIntegral (drr + 1) :: Double)
+                       ""
       <> "+"
-      <> (showFFloatAlt
-           (Just 8)
-           ((fromIntegral nli) / (fromIntegral $ dri + 1) :: Double)
-           ""
-         )
+      <> showFFloatAlt (Just 8)
+                       (fromIntegral nli / fromIntegral (dri + 1) :: Double)
+                       ""
       <> "i)"
 complexToString _ = Nothing

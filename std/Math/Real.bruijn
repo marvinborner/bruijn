@@ -7,7 +7,7 @@
 :import std/Math/Rational Q
 :import std/Math N
 
-# a Real is just a Unary → Rational!
+# a Real is just a Number → Rational!
 
 # converts a balanced ternary number to a real number
 number→real [[Q.number→rational 1]] ⧗ Number → Real
@@ -18,7 +18,27 @@ number→real [[Q.number→rational 1]] ⧗ Number → Real
 approx-eq? [[[Q.eq? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
 
 # TODO: bigger value??
-…≈?… approx-eq? (+100u)
+…≈?… approx-eq? (+100)
+
+# returns true if a real number is greater than another
+gt? [[[Q.gt? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
+
+…>?… gt?
+
+# returns true if a real number is less than another
+lt? [[[Q.lt? (1 2) (0 2)]]] ⧗ Number → Real → Real → Boolean
+
+…<?… lt?
+
+# returns true if a real number is positive
+positive? [\(gt? 0) (+0.0r)] ⧗ Number → Real → Boolean
+
+>?‣ positive?
+
+# returns true if a real number is negative
+negative? [\(lt? 0) (+0.0r)] ⧗ Number → Real → Boolean
+
+<?‣ negative?
 
 # adds two real numbers
 add φ Q.add ⧗ Real → Real → Real
@@ -93,7 +113,7 @@ dec \sub (+1.0r) ⧗ Real → Real
 
 # e^x using Taylor expansion
 # tex: \sum_{n=0}^\infty \frac{x^n}{n!}
-unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]]]]] start [[[[1]]]]]] ⧗ Number → Real
+unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]]]]] start [[[[1]]]]]] ⧗ Unary → Real
 	pow N.mul 6 4
 	fac N.mul 1 3
 	start [0 (+1) (+1) (+1.0q) (+1)]
@@ -114,7 +134,7 @@ lim-exp [[pow-n [(N.add 2 1) : N.--1] 0]] ⧗ Number → Real
 
 # natural logarithm using Taylor expansion
 # tex: \sum_{n=0}^\infty\frac{2}{2n+1}(\frac{x-1}{x+1})^{2n+1}
-# error: O((x-1)/2)^{2n+1}
+# error: O(((x-1)/2)^{2n+1})
 ln [[[L.nth-iterate &[[[op]]] start 1] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
 	start [0 1 (+0.0q) (+0)]
 	op [0 pow (Q.add 2 go) N.++1]
@@ -123,7 +143,8 @@ ln [[[L.nth-iterate &[[[op]]] start 1] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
 
 :test (Q.eq? (ln (+2.0r) (+2)) ((+168) : (+242))) (true)
 
-derive [[[[((3 (0 + 1)) - (3 0)) / 1]] ((+1.0r) / 0) 0]] ⧗ (Real → Real) → (Real → Real)
+derive [[[[((3 (2 + 0)) - (3 2)) / 0] ((+1.0r) / conv) 0]]] ⧗ (Real → Real) → (Real → Real)
+	conv number→real (N.pow (+2) (N.mul (+2) 0))
 
 # power function: real^real
 pow [[exp (0 ⋅ (ln 1))]] ⧗ Real → Real → Real
@@ -151,9 +172,9 @@ hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
 # tex: \sum_{n=0}^\infty\frac{2^n n!^2}{(2n+1)!}
 π/2 [L.nth-iterate &[[[[[op]]]]] start 0 [[[[[3]]]]]] ⧗ Real
 	start [0 (+1) (+0.0q) (+1) (+1) (+1)]
-	op [0 N.++5 (Q.add 4 ((N.mul 3 2) : N.--1)) enum-pow enum-fac denom]
-		enum-pow N.mul 3 (+2)
-		enum-fac N.mul 2 (N.mul 5 5)
+	op [0 N.++5 (Q.add 4 ((N.mul 3 2) : N.--1)) num-pow num-fac denom]
+		num-pow N.mul 3 (+2)
+		num-fac N.mul 2 (N.mul 5 5)
 		denom [N.mul 2 (N.mul 0 N.++0)] (N.mul (+2) 5)
 
 # ratio of circle's circumference to its diameter
@@ -177,21 +198,31 @@ hypot [[sqrt ((0 ⋅ 0) + (1 ⋅ 1))]] ⧗ Real → Real → Real
 ψ -(~φ)
 
 # golden ratio from fibonacci convergence
-φ* [(L.index (L.iterate &[[0 : (N.add 1 0)]] ((+0) : (+1))) 0) [[1 : N.--0]]]
+φ* ++[(L.nth-iterate &[[0 : (N.add 1 0)]] ((+0) : (+1)) 0) [[1 : N.--0]]]
 
 # real fibonacci
 fib [((pow φ 0) - (pow ψ 0)) / (sqrt (+5.0r))]
 
 # arctan by Taylor expansion, only for |x|<=1
 # tex: \sum_{n=0}^\infty(-1)^n \frac{x^{2n+1}}{2n+1}
-arctan* [[[L.nth-iterate &[[[[op]]]] start 1] (1 0) [[[[3]]]]]] ⧗ Real → Real
+atan* [[[L.nth-iterate &[[[[op]]]] start 1] (1 0) [[[[3]]]]]] ⧗ Real → Real
 	start [0 1 [[0]] (Q.pow-n 1 (+3)) (+3.0q)]
-	op [0 ((3 Q.add Q.sub) 4 (Q.div 2 1)) \3 enum denom]
-		enum Q.mul 2 (Q.mul 5 5)
+	op [0 ((3 Q.add Q.sub) 4 (Q.div 2 1)) \3 num denom]
+		num Q.mul 2 (Q.mul 5 5)
 		denom Q.add 1 (+2.0q)
 
 # actual arctan for arbitrary x
-arctan [[Q.sub (π/2 0) (arctan* [Q.div (+1.0q) (2 1)] 0)]] ⧗ Real → Real
+atan [[[fallback] (1 0)]] ⧗ Real → Real
+	normal Q.sub π/2-pm conj-atan
+		π/2-pm Q.mul (Q.>?0 (+1.0q) (-1.0q)) (π/2 1)
+		conj-atan atan* [Q.div (+1.0q) 1] 1
+	fallback Q.lt? Q.|0 (+1.0) (atan* [1] 1) normal
 
-# TODO: atan2
-atan2 [0] ⧗ Real → Real
+# 2-argument arctan
+atan2 [[[[[go]] (2 0) (1 0)]]] ⧗ Real → Real → Real
+	go Q.add a (Q.mul b (Q.add c d))
+		z (+0.0q)
+		a Q.=?0 z (atan [Q.div 2 1] 2)
+		b Q.sub (+1.0q) (Q.<?1 (+2.0q) z)
+		c Q.<?0 (π 2) z
+		d Q.=?0 (π/2 2) z

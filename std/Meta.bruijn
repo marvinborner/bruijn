@@ -7,7 +7,6 @@
 :import std/Number/Unary .
 :import std/Number/Pairing .
 :import std/Number/Conversion .
-:import std/Pair P
 
 # constructor of meta abstraction
 abs [[[[0 3]]]] ⧗ Meta → Meta

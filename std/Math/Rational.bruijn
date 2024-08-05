@@ -1,11 +1,10 @@
 # ideas by u/DaVinci103
 # MIT License, Copyright (c) 2024 Marvin Borner
 
-# (p : q) ⇔ (1 / (q + 1))
+# (p : q) ⇔ (p / (q + 1))
 
 :import std/Logic .
 :import std/Combinator .
-:import std/Logic .
 :import std/Pair .
 :import std/Math N
 
@@ -24,6 +23,36 @@ eq? &[[&[[N.eq? (N.mul 3 N.++0) (N.mul N.++2 1)]]]] ⧗ Rational → Rational �
 :test ((+42.0) =? (+42.0)) (true)
 :test ((+0.4) =? (+0.5)) (false)
 
+# returns true if a rational number is greater than another
+gt? &[[&[[N.gt? (N.mul 3 N.++0) (N.mul N.++2 1)]]]] ⧗ Rational → Rational → Boolean
+
+…>?… gt?
+
+# returns true if a rational number is less than another
+lt? &[[&[[N.lt? (N.mul 3 N.++0) (N.mul N.++2 1)]]]] ⧗ Rational → Rational → Boolean
+
+…<?… lt?
+
+# returns true if a rational number is positive
+positive? \gt? (+0.0) ⧗ Rational → Boolean
+
+>?‣ positive?
+
+# returns true if a real number is negative
+negative? \lt? (+0.0) ⧗ Rational → Boolean
+
+<?‣ negative?
+
+# returns true if a rational number is zero
+zero? &[[N.=?1]] ⧗ Rational → Boolean
+
+=?‣ zero?
+
+# negates a rational number if <0
+abs &[[N.|1 : N.|0]] ⧗ Rational → Rational
+
+|‣ abs
+
 # finds smallest equivalent representation of a rational number
 compress &[[[(N.div 2 0) : N.--(N.div N.++1 0)] (N.gcd 1 N.++0)]] ⧗ Rational → Rational
 
@@ -34,7 +63,7 @@ compress &[[[(N.div 2 0) : N.--(N.div N.++1 0)] (N.gcd 1 N.++0)]] ⧗ Rational �
 
 # adds two rational numbers
 add &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
-	p N.add (N.mul 3 N.++0) (N.mul 1 N.++2)
+	p N.add (N.mul 3 N.++0) (N.mul N.++2 1)
 	q N.add (N.mul 2 0) (N.add 2 0)
 
 …+… add
@@ -43,15 +72,15 @@ add &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
 :test ((+1.8) + (+1.2) =? (+3.0)) (true)
 :test ((-1.8) + (+1.2) =? (-0.6)) (true)
 
-reduce [[[(N.div 2 0) : N.--(N.div 1 0)] (N.gcd 1 0)]]
+reduce [[[(N.div 2 0) : N.--(N.div 1 0)] (N.gcd 1 0)]] ⧗ Number → Number → Rational
 
 add' &[[&[[reduce p q]]]]
-	p N.add (N.mul 3 N.++0) (N.mul 1 N.++2)
+	p N.add (N.mul 3 N.++0) (N.mul N.++2 1)
 	q N.mul N.++0 N.++2
 
 # subtracts two rational numbers
 sub &[[&[[p : q]]]] ⧗ Rational → Rational → Rational
-	p N.sub (N.mul 3 N.++0) (N.mul 1 N.++2)
+	p N.sub (N.mul 3 N.++0) (N.mul N.++2 1)
 	q N.add (N.mul 2 0) (N.add 2 0)
 
 …-… sub
@@ -98,10 +127,6 @@ div [[1 ⋅ ~0]] ⧗ Rational → Rational → Rational
 :test ((+8.0) / (+4.0) =? (+2.0)) (true)
 :test ((+18.0) / (+12.0) =? (+1.5)) (true)
 
-gt? &[[&[[(N.gt? 1 3) ⋀? (N.gt? 0 2)]]]]
-
-lt? &[[&[[(N.lt? 1 3) ⋀? (N.lt? 0 2)]]]]
-
 # increments a rational number
 inc add (+1.0) ⧗ Rational → Rational
 
@@ -111,6 +136,11 @@ inc add (+1.0) ⧗ Rational → Rational
 dec \sub (+1.0) ⧗ Rational → Rational
 
 --‣ dec
+
+# approximates a rational number to n digits
+approximate &[[[&[[int : float]] (N.quot-rem 2 N.++1)]]] ⧗ Rational → Number → (List Number)
+	int 1
+	float N.number→list (N.div (N.mul 0 (N.pow (+10) 2)) N.++3)
 
 # TODO: Regression? Importing this into . won't find Q.eq? anymore
 
