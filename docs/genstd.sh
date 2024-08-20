@@ -20,7 +20,12 @@ for file in $files; do
 	filename=$(sed s@/@_@g <<<"$name")
 	ndefs=$(grep -cP "^[^:# \t]" "$file" || true)
 	ntests=$(grep -cP "^:test" "$file" || true)
-	links="$links\n<li><span class='com'>:import</span> <a href=$filename.html>$(basename "$name" .bruijn)</a> <span class='stats'>($ndefs definitions, $ntests tests)</span></li>"
+	if [ "$ndefs" = 0 ]; then
+		stats="<span class='stats'>(alias)</span>"
+	else
+		stats="<span class='stats'>($ndefs definitions, $ntests tests)</span>"
+	fi
+	links="$links\n<li><span class='com'>:import</span> <a href=$filename.html>$(basename "$name" .bruijn)</a> $stats</li>"
 	awk 'NR==FNR { gsub("<", "\\&lt;", $0); gsub(">", "\\&gt;", $0); a[n++]=$0; next } /CONTENT/ { for (i=0;i<n;++i) print a[i]; next } 1' "$file" content.template >"std/$filename.html"
 	sed -i -e "s@NAME@$name@g" -e "s@INFO@@g" "std/$filename.html"
 
