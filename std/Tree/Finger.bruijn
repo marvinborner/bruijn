@@ -1,0 +1,159 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# finger tree implementation, great for sequences / searches
+# originally by R. Hinze, R. Paterson "Finger Trees: a simple general-purpose data structure"
+# efficient translation to LC by me
+
+:import std/Combinator .
+
+# === Node ===
+# Scott-style tagged union, 2 tags
+
+# tagged two elements (tag 0)
+node2 [[[[0 3 2]]]] ⧗ a → a → (Node a)
+
+# tagged three elements (tag 1)
+node3 [[[[[1 4 3 2]]]]] ⧗ a → a → a → (Node a)
+
+foldr-node [[[0 case-node2 case-node3]]] ⧗ (a → b → b) → b → (Node a) → b
+	case-node2 [[4 1 (4 0 3)]]
+	case-node3 [[[5 2 (5 1 (5 0 4))]]]
+
+# === Digit ===
+# Scott-style tagged union with constant cons/snoc, 4 tags
+# alternative would be Parigot lists, but size check requires y-rec
+
+# tagged single element (tag 0)
+one [[[[[0 4]]]]] ⧗ a → (Digit a)
+
+{}‣ one
+
+# tagged two elements (tag 1)
+two [[[[[[1 5 4]]]]]] ⧗ a → a → (Digit a)
+
+# tagged three elements (tag 2)
+three [[[[[[[2 6 5 4]]]]]]] ⧗ a → a → a → (Digit a)
+
+# tagged four elements (tag 3)
+four [[[[[[[[3 7 6 5 4]]]]]]]] ⧗ a → a → a → a → (Digit a)
+
+four? [0 [[[[k]]]] [[[ki]]] [[ki]] [ki]] ⧗ (Digit a) → Boolean
+
+:test (four? (one i)) (ki)
+:test (four? (two i i)) (ki)
+:test (four? (three i i i)) (ki)
+:test (four? (four i i i i)) (k)
+
+# returns first element of digit
+digit-head [0 [[[[3]]]] [[[2]]] [[1]] [0]] ⧗ (Digit a) → a
+
+:test (digit-head (one i)) (i)
+:test (digit-head (two i k)) (i)
+:test (digit-head (three i k k)) (i)
+:test (digit-head (four i k k k)) (i)
+
+# returns trailing elemente of digit
+digit-tail [0 [three] [two] [one] Ω] ⧗ (Digit a) → (Digit a)
+
+:test (digit-tail (two i k)) (one k)
+:test (digit-tail (three i k k)) (two k k)
+:test (digit-tail (four i k k k)) (three k k k)
+
+foldr-digit [[[0 case-four case-three case-two case-one]]] ⧗ (a → b → b) → b → (Digit a) → b
+	case-four [[[[6 3 (6 2 (6 1 (6 0 5)))]]]]
+	case-three [[[5 2 (5 1 (5 0 4))]]]
+	case-two [[4 1 (4 0 3)]]
+	case-one [3 0 2]
+
+# adds element to digit (and updates its tag)
+cons [[1 case-four case-three case-two case-one]] ⧗ (Digit a) → a → (Digit a)
+	case-four Ω
+	case-three [[[[[[[3 4 5 6 7]]]]]]]
+	case-two [[[[[[2 4 5 6]]]]]]
+	case-one [[[[[1 4 5]]]]]
+
+…:… cons
+
+:test ((one i) : k) (two i k)
+:test ((two i i) : k) (three i i k)
+:test ((three i i i) : k) (four i i i k)
+
+# adds element to digit (and updates its tag)
+snoc [[0 case-four case-three case-two case-one]] ⧗ a → (Digit a) → (Digit a)
+	case-four Ω
+	case-three [[[[[[[3 8 4 5 6]]]]]]]
+	case-two [[[[[[2 7 4 5]]]]]]
+	case-one [[[[[1 6 4]]]]]
+
+…;… snoc
+
+:test (k ; (one i)) (two k i)
+:test (k ; (two i i)) (three k i i)
+:test (k ; (three i i i)) (four k i i i)
+
+# === Tree ===
+# Scott-style tagged union, 3 tags
+
+# empty tree (tag 0)
+empty [[[0]]] ⧗ (FingerTree a)
+
+# single tree (tag 1)
+single [[[[1 3]]]] ⧗ a → (FingerTree a)
+
+# deep tree (tag 2)
+deep [[[[[[2 5 4 3]]]]]] ⧗ (Digit a) → (FingerTree (Node a)) → (Digit a) → (FingerTree a)
+
+# TODO: this is wrong! reduce calls are not recursive, but should use the existing ones!
+foldr-tree z [[[[0 case-deep case-single case-empty]]]] ⧗ (a → b → b) → b → (FingerTree a) → b
+	case-deep [[[′5 2 (″5 1 (′5 0 4))]]]
+		′‣ 6
+		″‣ 6 ∘ 6
+	case-single [3 0 2]
+	case-empty 1
+
+# TODO: this is wrong! reduce calls are not recursive, but should use the existing ones!
+foldl-tree z [[[[0 case-deep case-single case-empty]]]] ⧗ (b → a → b) → b → (FingerTree a) → b
+	case-deep [[[′5 (″5 (′5 4 2) 1) 0]]]
+		′‣ 6
+		″‣ 6 ∘ 6
+	case-single [3 2 0]
+	case-empty 1
+
+insert-left z [[[0 case-deep case-single case-empty]]] ⧗ a → (FingerTree a) → (FingerTree a)
+	case-deep [[[four? 2 overflow append]]]
+		overflow deep (two 4 (2 [[[[3]]]] i i i)) (5 (2 [node3]) 1) 0
+		append deep (4 ; 2) 1 0
+	case-single [deep {}2 empty {}0]
+	case-empty single 1
+
+…◁… insert-left
+
+…◁′… \(foldr-tree insert-left)
+
+insert-right z [[[1 case-deep case-single case-empty]]] ⧗ (FingerTree a) → a → (FingerTree a)
+	case-deep [[[four? 0 overflow append]]]
+		overflow deep 2 (5 1 (0 [[[[node3 3 2 1]]]])) (two 3 (0 [[[[0]]]] i i i))
+		append deep 2 1 (0 : 3)
+	case-single [deep {}0 empty {}1]
+	case-empty single 0
+
+…▷… insert-right
+
+…▷′… foldl-tree insert-right
+
+to-tree [0 ◁′ empty]
+
+# === View ===
+
+nil-left [[0]] ⧗ (View a)
+
+cons-left [[[0 (2 1)]]] ⧗ a → (View a) → (View a)
+
+to-list [foldr-tree cons-left 0 nil-left]
+
+view-left z [[0 case-deep case-single case-empty]]
+	case-deep [[[cons-left (digit-head 2) (2 [deep ∘∘∘ three] [deep ∘∘ two] [deep ∘ one] [deep-left] 1 0)]]]
+		deep-left [[[8 1 [[[case-cons]]] case-nil]]]
+			case-cons deep (to-list 2) 1 3
+			case-nil to-tree 1
+	case-single [cons-left 0 empty]
+	case-empty nil-left
