@@ -5,6 +5,7 @@
 
 :import std/Combinator .
 :import std/List L
+:import std/Number N
 
 # === Node ===
 # Scott-style tagged union, 2 tags
@@ -198,6 +199,9 @@ list→tree [L.foldr 0 ◁′ empty] ⧗ (List a) → (FingerTree a)
 # converts a digit to a finger tree
 digit→tree [foldr-digit 0 ◁′ empty] ⧗ (Digit a) → (FingerTree a)
 
+# converts a digit to a list
+digit→list foldr-digit L.cons L.empty ⧗ (Digit a) → (List a)
+
 # converts a node to a digit
 node→digit [0 three two] ⧗ (Node a) → (Digit a)
 
@@ -246,3 +250,43 @@ head-left L.head ∘ view-left ⧗ (FingerTree a) → a
 tail-left L.tail ∘ view-left ⧗ (FingerTree a) → (FingerTree a)
 
 # TODO: implement viewR (mirror image)
+
+# === Concatenation ===
+
+# WARNING: this will only work for lengths with factor 2 or 3
+# case-+ is also not really relevant I think
+list→nodes [z [[[rec]]] 0 L.∀0] ⧗ (List a) → (List (Node a))
+	rec N.eq? 0 (+2) case-2 (N.eq? 0 (+3) case-3 (N.eq? 0 (+4) case-4 case-+))
+		case-2 1 [[L.{}(node2 1 L.^0)]]
+		case-3 1 [[0 [[L.{}(node3 3 1 L.^0)]]]]
+		case-4 1 [[0 [[0 [[L.cons (node2 5 3) L.{}(node2 1 L.^0)]]]]]]
+		case-+ 1 [[0 [[0 [[L.cons (node3 5 3 1) (8 0 (N.sub 6 (+3)))]]]]]]
+
+:test (list→nodes "ab") (L.{}(node2 'a' 'b'))
+:test (list→nodes "abc") (L.{}(node3 'a' 'b' 'c'))
+:test (list→nodes "abcd") (L.cons (node2 'a' 'b') L.{}(node2 'c' 'd'))
+:test (list→nodes "abcde") (L.cons (node3 'a' 'b' 'c') L.{}(node2 'd' 'e'))
+
+append3 z [[[[2 case-deep case-single case-empty]]]] ⧗ (FingerTree a) → (List a) → (FingerTree a) → (FingerTree a)
+	case-deep [[[3 deep-deep deep-single deep-empty]]]
+		deep-deep [[[deep 5 (9 4 new-list 1) 0]]]
+			new-list list→nodes (L.append (L.append (digit→list 3) 7) (digit→list 2))
+		deep-single [(L.foldl 6 ▷′ 5) ▷ 0]
+		deep-empty 5
+	case-single [1 single-deep single-single single-empty]
+		single-deep [[[3 ◁ (L.foldr 5 ◁′ 4)]]]
+		single-single [1 ◁ (L.foldr 3 ◁′ 2)]
+		single-empty 3
+	case-empty 0
+
+append [[append3 1 L.empty 0]]
+
+…++… append
+
+:test (tree→list ((list→tree "a") ++ (list→tree "b"))) ("ab")
+:test (tree→list ((list→tree "abcdefg") ++ (list→tree "hijklmnop"))) ("abcdefghijklmnop")
+:test (tree→list ((list→tree "abcdefghijklmnopqrstuvwxyz1234") ++ (list→tree "abcdefghijklmopqrstuvwxyz"))) ("abcdefghijklmnopqrstuvwxyz1234abcdefghijklmopqrstuvwxyz")
+
+# TODO: annotations, measurement, splitting, random-access
+#   - annotations will require some modifications (more abstractions)
+# TODO: new modules: sequence, pqueue

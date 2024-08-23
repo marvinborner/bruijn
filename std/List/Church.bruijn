@@ -130,7 +130,7 @@ foldr [[[z [[rec]] 0]]] ⧗ (a → b → b) → b → (List b) → b
 :test ((foldr …-… (+2) ((+1) : ((+2) : {}(+3)))) =? (+0)) (true)
 
 # foldr without starting value
-foldr1 [[foldl 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
+foldr1 [[foldr 1 ^0 ~0]] ⧗ (a → a → a) → (List a) → a
 
 # applies or to all list elements
 lor? foldr or? false ⧗ (List Boolean) → Boolean

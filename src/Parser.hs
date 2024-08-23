@@ -41,6 +41,13 @@ mathematicalArrow :: Parser Char
 mathematicalArrow = satisfy isMathematicalOperator
   where isMathematicalOperator c = '←' <= c && c <= '⇿'
 
+generalPunctuation :: Parser Char
+generalPunctuation = satisfy isGeneralPunctuation
+  where isGeneralPunctuation c = '‐' <= c && c <= '⁞' && c /= '…' && c /= '‣'
+
+shapes :: Parser Char
+shapes = satisfy isShapes where isShapes c = '─' <= c && c <= '◿'
+
 -- "'" can't be in special chars because of 'c' char notation and prefixation
 -- "." can't be in special chars because of namespaced functions and UFCS syntax
 -- "," can't be in special chars because of unquote
@@ -49,6 +56,8 @@ specialChar =
   oneOf "!?*@:;+-_#$%^&<>/\\|{}~="
     <|> mathematicalOperator
     <|> mathematicalArrow
+    <|> generalPunctuation
+    <|> shapes
 
 mixfixNone :: Parser MixfixIdentifierKind
 mixfixNone = char '…' >> pure MixfixNone
@@ -289,7 +298,7 @@ parseFunctionType =
 
 parseConstructorType :: Parser ()
 parseConstructorType = do
-  _ <- typeIdentifier
+  _ <- typeIdentifier <|> polymorphicTypeIdentifier
   sc
   _ <- sepBy1 parseTypeSingleton sc
   return () <?> "constructor type"
