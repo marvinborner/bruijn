@@ -1,10 +1,11 @@
 module Main where
 
-import           Eval
-import           Helper                         ( ArgMode(..)
+import           Options.Applicative
+
+import           Config                         ( ArgMode(..)
                                                 , Args(..)
                                                 )
-import           Options.Applicative
+import           Eval
 
 mode :: Parser ArgMode
 mode =

@@ -9,6 +9,7 @@ import           Data.List                      ( elemIndex )
 import           Data.Map.Strict                ( Map )
 import qualified Data.Map.Strict               as Map
 import           Data.Maybe                     ( fromMaybe )
+
 import           Helper
 
 type Store = Map Int Box

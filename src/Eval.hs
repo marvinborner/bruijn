@@ -3,7 +3,6 @@ module Eval
   ( evalMain
   ) where
 
-import           Binary
 import           Control.Concurrent
 import           Control.DeepSeq                ( deepseq )
 import           Control.Exception
@@ -18,11 +17,7 @@ import           Data.List
 import qualified Data.Map                      as M
 import           Data.Maybe
 import           Data.Time.Clock
-import           Helper
-import           Optimizer
-import           Parser
 import           Paths_bruijn
-import           Reducer
 import           System.Clock
 import           System.Console.Haskeline
 import           System.Directory
@@ -34,6 +29,16 @@ import           Target
 import           Text.Megaparsec         hiding ( State
                                                 , try
                                                 )
+
+import           Binary
+import           Config
+import           Conversion
+import           Error
+import           Helper
+import           Humanification
+import           Optimizer
+import           Parser
+import           Reducer
 
 data EnvState = EnvState
   { _env   :: Environment
@@ -217,8 +222,8 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
   Watch path ->
     let
       monitor mtime = do
-        threadDelay 100000
-        full <- fullPath "" path
+        threadDelay 100000 -- TODO: fix watch
+        full <- fullPath (_path conf) path
         t    <- getModificationTime full
         if t > mtime
           then
@@ -237,7 +242,6 @@ evalCommand inp s@(EnvState env@(Environment envDefs) conf cache) = \case
           >> pure s
       else if M.member path (_imported cache)
         then -- load from cache
-
           let
             (Environment env') = fromJust $ M.lookup path (_imported cache)
             prefix | null namespace   = takeBaseName path ++ "."

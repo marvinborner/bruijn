@@ -4,13 +4,16 @@ module Target
   ( toTarget
   ) where
 
-import           Binary
 import           Control.Exception
 import qualified Data.BitString                as Bit
 import qualified Data.ByteString.Lazy.Char8    as Byte
-import           Helper
 import           System.IO
 import           System.Process
+
+import           Binary
+import           Config
+import           Error
+import           Helper
 
 tryIO :: IO a -> IO (Either IOException a)
 tryIO = try

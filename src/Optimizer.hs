@@ -6,6 +6,8 @@ module Optimizer
 
 import           Data.List                      ( tails )
 import qualified Data.Map                      as M
+
+import           Config
 import           Helper
 import           Reducer
 

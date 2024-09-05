@@ -15,6 +15,7 @@ import           Data.Char                      ( chr
                                                 )
 import qualified Data.Map                      as M
 import           Data.Map                       ( Map )
+
 import           Helper
 
 ncomb :: Int

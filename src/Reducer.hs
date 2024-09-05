@@ -4,6 +4,7 @@ module Reducer
   , reduceNoIO
   ) where
 
+import           Config
 import           Helper
 import qualified Reducer.HigherOrder           as HigherOrder
 import qualified Reducer.ION                   as ION

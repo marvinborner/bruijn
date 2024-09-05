@@ -8,6 +8,7 @@ module Binary
   ) where
 
 import qualified Data.BitString                as Bit
+
 import           Helper
 
 toBinary :: Expression -> String

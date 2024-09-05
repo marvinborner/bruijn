@@ -7,11 +7,13 @@ module Parser
 import           Control.Monad                  ( ap
                                                 , void
                                                 )
+import           Conversion
 import           Data.Void
 import           GHC.Real                       ( (%) )
-import           Helper
 import           Text.Megaparsec         hiding ( parseTest )
 import           Text.Megaparsec.Char
+
+import           Helper
 
 type Parser = Parsec Void String
 
