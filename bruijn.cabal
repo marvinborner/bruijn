@@ -21,6 +21,8 @@ data-files:
     std/Box.bruijn
     std/Char.bruijn
     std/Combinator.bruijn
+    std/generate_map.py
+    std/IO.bruijn
     std/List.bruijn
     std/Logic.bruijn
     std/Math.bruijn
@@ -35,19 +37,27 @@ data-files:
     std/test_all.sh
     std/AIT/Beavers.bruijn
     std/Generic/Number.bruijn
+    std/List/Church.bruijn
+    std/List/Parigot.bruijn
     std/Logic/Binary.bruijn
     std/Logic/Linear.bruijn
     std/Logic/Ternary.bruijn
     std/Math/Complex.bruijn
     std/Math/Rational.bruijn
     std/Math/Real.bruijn
+    std/Monad/List.bruijn
+    std/Monad/State.bruijn
     std/Number/Binary.bruijn
     std/Number/Bruijn.bruijn
     std/Number/Conversion.bruijn
     std/Number/Pairing.bruijn
+    std/Number/Parigot.bruijn
+    std/Number/Scott.bruijn
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn
+    std/Number/Wadsworth.bruijn
     std/Tree/Balanced.bruijn
+    std/Tree/Finger.bruijn
     std/Tree/Rose.bruijn
 
 source-repository head
@@ -57,8 +67,12 @@ source-repository head
 library
   exposed-modules:
       Binary
+      Config
+      Conversion
+      Error
       Eval
       Helper
+      Humanification
       Optimizer
       Parser
       Reducer
