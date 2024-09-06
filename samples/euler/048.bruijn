@@ -1,7 +1,6 @@
 # TODO: also very slow
 
 :import std/Combinator .
-:import std/String .
 :import std/Math .
 
 solve [∑ (+1) → 0 | [pow-mod 0 0 (+10000000000)]]

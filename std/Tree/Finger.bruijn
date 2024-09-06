@@ -279,7 +279,7 @@ append3 z [[[[2 case-deep case-single case-empty]]]] ⧗ (FingerTree a) → (Lis
 		single-empty 3
 	case-empty 0
 
-append [[append3 1 L.empty 0]]
+append [[append3 1 L.empty 0]] ⧗ (FingerTree a) → (FingerTree a) → (FingerTree a)
 
 …++… append
 

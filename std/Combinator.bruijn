@@ -23,6 +23,12 @@ b'' [[[[[4 (3 2 1 0)]]]]] ⧗ (d → e) → (a → b → c → d) → a → b �
 
 ∘∘∘‣ b''
 
+# 4x function composition
+# more can be generated using Church application: (+xu) b or even (+xu) b'/b''
+…∘∘∘∘… (+4u) b
+
+∘∘∘∘‣ …∘∘∘∘…
+
 # becard combinator
 b''' [[[[3 (2 (1 0))]]]] ⧗ (c → d) → (b → c) → (a → b) → a → d
 

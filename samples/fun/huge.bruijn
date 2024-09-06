@@ -1,5 +1,5 @@
 # "bruijn huge.bruijn"
-# some of the fastest growing functions per blc length
+# some fun fast growing functions per blc length
 
 # 55 bits inflating to 65536 bits, John Tromp
 huge-55 [[0 0 0 0 [[0 [[0]] 1]]] (+2u)]

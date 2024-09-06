@@ -130,7 +130,7 @@ pow-n [L.nth-iterate (mul 0) (+1.0r)] ⧗ Real → Number → Real
 
 # e^x using infinite limit
 # tex: \lim_{n\to\infty}(1+x/n)^n
-lim-exp [[pow-n [(N.add 2 1) : N.--1] 0]] ⧗ Number → Real
+lim-exp [[pow-n ++(1 / (number→real 0)) 0]] ⧗ Real → Real
 
 # natural logarithm using Taylor expansion
 # tex: \sum_{n=0}^\infty\frac{2}{2n+1}(\frac{x-1}{x+1})^{2n+1}
