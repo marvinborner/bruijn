@@ -18,4 +18,4 @@ primes sieve zeroS
 check y [[[[[primes 0 (1 (4 0))] testp1]]]]
 	testp1 [0 0 2 [0 4] 0]
 
-main primes (check [[[[0]]]])
+main [primes (check [[[[0]]]])]

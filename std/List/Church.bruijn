@@ -532,7 +532,6 @@ enumerate zip (iterate ++‣ (+0)) ⧗ (List a) → (List (Pair Number a))
 :test (enumerate "abc") (((+0) : 'a') : (((+1) : 'b') : {}((+2) : 'c')))
 
 # calculates all fixed points of given functions as a list
-y* [[[0 1] <$> 0] xs] ⧗ (List a) → (List b)
-	xs [[1 <! ([[1 2 0]] <$> 0)]] <$> 0
+y* y [[&(1 0) <$> 0]]
 
 :test (&(+5) <$> (y* ([[[=?0 true (1 --0)]]] : {}[[[=?0 false (2 --0)]]]))) (false : {}true)
