@@ -1,0 +1,68 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:import std/List .
+:import std/Combinator .
+:import std/Char C
+:import std/Result R
+
+error-unexpected ["unexpected symbol " ++ 0] ⧗ Error
+
+error-end-of-input "end of input" ⧗ Error
+
+compose [[1 ++ " or " ++ 0]] ⧗ Error → Error → Error
+
+satisfy [[0 [[[go]]] end]] ⧗ (a → Boolean) → (Parser a)
+	go 4 2 (R.ok (2 : 1)) (R.err (error-unexpected {}2))
+	end R.err error-end-of-input
+
+char [satisfy (C.eq? 0)] ⧗ Char → (Parser a)
+
+:test (char 'a' "abc") (R.ok ('a' : "bc"))
+:test (char 'b' "abc") (R.err (error-unexpected "a"))
+:test (char 'a' [[0]]) (R.err error-end-of-input)
+
+map [[[R.map ok (1 0)]]] ⧗ (a → b) → (Parser a) → (Parser b)
+	ok &[[(4 1) : 0]]
+
+…<$>… map
+
+pure [[R.ok (1 : 0)]] ⧗ a → (Parser a)
+
+ap [[[R.apply (2 0) ok]]] ⧗ (Parser (a → b)) → (Parser a) → (Parser b)
+	ok &[[R.map ok (3 0)]]
+		ok &[[(3 1) : 0]]
+
+…<*>… ap
+
+string y [[0 [[[go]]] (pure [[0]])]] ⧗ String → (Parser a)
+	go cons <$> (char 2) <*> (4 1)
+
+:test (string "ac" "abc") (R.err (error-unexpected "b"))
+:test (string "ab" "abcd") (R.ok ("ab" : "cd"))
+
+return pure ⧗ a → (Parser a)
+
+bind [[[R.apply ok (2 0)]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
+	ok &[[3 1 0]]
+
+…>>=… bind
+
+alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
+	err [2 1 R.ok err]
+		err [R.err (compose 1 0)]
+
+…<|>… alt
+
+:test ((string "ab") <|> (string "cd") "abc") (R.ok ("ab" : "c"))
+:test ((string "ab") <|> (string "cd") "cde") (R.ok ("cd" : "e"))
+:test ((string "ab") <|> (string "cd") "acd") (R.err (compose (error-unexpected "c") (error-unexpected "a")))
+:test ((string "ab") <|> (string "cd") "cbe") (R.err (compose (error-unexpected "c") (error-unexpected "b")))
+
+# =========================================================================== #
+# most relevant functions are defined - we can now derive from Generic/Monad! #
+# =========================================================================== #
+
+:input std/Monad/Generic
+
+:test (k <$ (string "ab") "abc") (R.ok (k : "c"))
+:test ((char '{') *> (string "wow") <* (char '}') "{wow}{owo}") (R.ok ("wow" : "{owo}"))

@@ -45,7 +45,9 @@ data-files:
     std/Math/Complex.bruijn
     std/Math/Rational.bruijn
     std/Math/Real.bruijn
+    std/Monad/Generic.bruijn
     std/Monad/List.bruijn
+    std/Monad/Parser.bruijn
     std/Monad/State.bruijn
     std/Number/Binary.bruijn
     std/Number/Bruijn.bruijn

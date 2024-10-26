@@ -62,3 +62,9 @@ alpha-numeric? φ or? numeric? alpha? ⧗ Char → Boolean
 :test (alpha-numeric? '0') (true)
 :test (alpha-numeric? '9') (true)
 :test (alpha-numeric? '$') (false)
+
+# returns true if char is space
+space? eq? ' '
+
+:test (space? ' ') (true)
+:test (space? '2') (false)

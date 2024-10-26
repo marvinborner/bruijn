@@ -47,4 +47,3 @@ replicate-m >replicate ⧗ Number → (M a) → (M (List a))
 
 # maps elements to a monadic action
 map-m >map ⧗ (a → (M b)) → (List a) → (M (List b))
-
