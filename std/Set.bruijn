@@ -3,6 +3,7 @@
 # can currently only store Numbers (due to std/Tree/Balanced)
 
 :import std/Tree/Balanced T
+:import std/List .
 
 # empty set
 empty T.empty ⧗ Set
@@ -13,8 +14,19 @@ add T.insert ⧗ Number → Set → Set
 # returns true if a number is in a set
 has? T.has? ⧗ Number → Set → Boolean
 
+:test (has? (+5) (add (+5) empty)) ([[1]])
+:test (has? (+5) empty) ([[0]])
+
+# count of elements in set
+size T.size ⧗ Set → Number
+
 # converts a set to a list
-list! T.list! ⧗ Set → (List Number)
+set→list T.tree→list ⧗ Set → (List Number)
 
 # converts a list to a set
-from-list T.from-list ⧗ (List Number) → Set
+list→set T.list→tree ⧗ (List Number) → Set
+
+:test (has? (+0) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
+:test (has? (+5) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
+:test (has? (+6) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[0]])
+:test (has? (+7) (list→set ((+5) : ((+7) : {}(+1))))) ([[1]])

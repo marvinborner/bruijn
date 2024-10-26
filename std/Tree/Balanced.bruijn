@@ -2,14 +2,13 @@
 # Balanced AVL tree for numerical leafs, inspired by Rudy Matela's implementation
 # TODO: Extend for arbitrary orderable types?
 # TODO: Analyze performance bottlenecks
-# TODO: More tests
 
 :import std/Combinator .
 :import std/List L
 :import std/Logic .
-:import std/Number .
 :import std/Option .
 :import std/Pair .
+:import std/Number .
 
 # error return that can't happen (in theory)
 error Ω
@@ -48,10 +47,16 @@ left [^(~0)] ⧗ BalancedTree → (Option BalancedTree)
 
 //‣ left 
 
+:test (//(node none (+0) none)) (none)
+:test (//(node (some (leaf (+3))) (+0) none)) (some (leaf (+3)))
+
 # returns the right branch of a tree
 right [~(~(~0))] ⧗ BalancedTree → (Option BalancedTree)
 
 \\‣ right 
+
+:test (\\(node none (+0) none)) (none)
+:test (\\(node none (+0) (some (leaf (+3))))) (some (leaf (+3)))
 
 # returns the balancing factor of a tree
 factor map-or (+0) d ⧗ (Option BalancedTree) → Number
@@ -59,9 +64,9 @@ factor map-or (+0) d ⧗ (Option BalancedTree) → Number
 
 :test (factor (some (leaf (+42)))) (++(-1))
 
-rotate-ll [node //(!(//0)) ?(//0) (some (node \\(!(//0)))) ?0 \\0] ⧗ BalancedTree → BalancedTree
+rotate-ll [node //(!(//0)) ?(!(//0)) (some (node \\(!(//0)) ?0 \\0))] ⧗ BalancedTree → BalancedTree
 
-rotate-rr [node (some (node //0 ?0 //(!(\\0)))) ?(\\0) \\(!(\\0))] ⧗ BalancedTree → BalancedTree
+rotate-rr [node (some (node //0 ?0 //(!(\\0)))) ?(!(\\0)) \\(!(\\0))] ⧗ BalancedTree → BalancedTree
 
 rotate-lr [rotate-ll (node (some (rotate-rr !(//0))) ?0 \\0)] ⧗ BalancedTree → BalancedTree
 
@@ -69,26 +74,26 @@ rotate-rl [rotate-rr (node //0 ?0 (some (rotate-ll !(\\0))))] ⧗ BalancedTree �
 
 # balances a tree
 balance [go (factor 0)] ⧗ (Option BalancedTree) → (Option BalancedTree)
-	go [=?0 else ((0 >? (+1)) left ((0 <? (-1)) right else))]
-		left some (((factor //(!1)) =? (-1)) (rotate-lr !1) (rotate-ll !1))
-		right some (((factor \\(!1)) =? (+1)) (rotate-rl !1) (rotate-rr !1))
+	go [=?0 else (0 >? (+1) left (0 <? (-1) right else))]
+		left some (((factor //(!1)) =? (-1)) rotate-lr rotate-ll !1)
+		right some (((factor \\(!1)) =? (+1)) rotate-rl rotate-rr !1)
 		else 1
 
 # inserts a number into a tree
 insert z [[[rec]]] ⧗ Number → (Option BalancedTree) → (Option BalancedTree)
 	rec none? 0 (some (leaf 1)) (balance (u 1 ?(!0)))
-		u compare-case eq lt gt
+		u compare-case eq gt lt
 			eq 0
-			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
 			gt some (node //(!0) ?(!0) (2 1 \\(!0)))
+			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
 
 # returns true if a number is in a tree
 has? z [[[rec]]] ⧗ Number → (Option BalancedTree) → Boolean
 	rec none? 0 false (u 1 ?(!0))
-		u compare-case eq lt gt
+		u compare-case eq gt lt
 			eq true
-			lt 2 1 //(!0)
 			gt 2 1 \\(!0)
+			lt 2 1 //(!0)
 
 :test (has? (+42) empty) (false)
 
@@ -99,8 +104,8 @@ size z [[rec]] ⧗ (Option BalancedTree) → Number
 		case-empty (+0)
 
 # converts a tree to a list
-list! z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number)
+tree→list z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number)
 	go [L.append (L.append (2 //0) L.{}(?0)) (2 \\0)]
 
 # converts a list to a tree
-from-list L.foldr insert empty ⧗ (List Number) → (Option BalancedTree)
+list→tree L.foldr insert empty ⧗ (List Number) → (Option BalancedTree)
