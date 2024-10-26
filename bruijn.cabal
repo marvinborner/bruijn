@@ -36,6 +36,7 @@ data-files:
     std/String.bruijn
     std/test_all.sh
     std/AIT/Beavers.bruijn
+    std/Generic/Monad.bruijn
     std/Generic/Number.bruijn
     std/List/Church.bruijn
     std/List/Parigot.bruijn
@@ -45,7 +46,6 @@ data-files:
     std/Math/Complex.bruijn
     std/Math/Rational.bruijn
     std/Math/Real.bruijn
-    std/Monad/Generic.bruijn
     std/Monad/List.bruijn
     std/Monad/Parser.bruijn
     std/Monad/State.bruijn

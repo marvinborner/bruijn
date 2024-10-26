@@ -69,5 +69,3 @@ alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
 
 :test (k <$ (string "ab") "abc") (R.ok (k : "c"))
 :test ((char '{') *> (string "wow") <* (char '}') "{wow}{owo}") (R.ok ("wow" : "{owo}"))
-
-between [[[2 *> 0 <* 1]]] ⧗ (Parser a) → (Parser a) → (Parser a)

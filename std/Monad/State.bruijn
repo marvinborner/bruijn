@@ -1,4 +1,5 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
+# see samples/fun/rng-state for example usage
 
 :import std/Combinator .
 
