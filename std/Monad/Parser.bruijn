@@ -1,15 +1,18 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
+# see samples/fun/minibruijn for example usage
 
 :import std/List .
 :import std/Combinator .
 :import std/Char C
 :import std/Result R
 
+# TODO: don't just use strings for errors
+
 error-unexpected ["unexpected symbol " ++ 0] ⧗ Error
 
 error-end-of-input "end of input" ⧗ Error
 
-compose [[1 ++ " or " ++ 0]] ⧗ Error → Error → Error
+compose [[C.?eq? 1 0 0 (1 ++ " or " ++ 0)]] ⧗ Error → Error → Error
 
 satisfy [[0 [[[go]]] end]] ⧗ (a → Boolean) → (Parser a)
 	go 4 2 (R.ok (2 : 1)) (R.err (error-unexpected {}2))
@@ -62,7 +65,9 @@ alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
 # most relevant functions are defined - we can now derive from Generic/Monad! #
 # =========================================================================== #
 
-:input std/Monad/Generic
+:input std/Generic/Monad
 
 :test (k <$ (string "ab") "abc") (R.ok (k : "c"))
 :test ((char '{') *> (string "wow") <* (char '}') "{wow}{owo}") (R.ok ("wow" : "{owo}"))
+
+between [[[2 *> 0 <* 1]]] ⧗ (Parser a) → (Parser a) → (Parser a)

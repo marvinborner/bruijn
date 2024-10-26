@@ -1,0 +1,33 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:import std/Char C
+:import std/Combinator .
+:import std/List .
+:import std/Meta M
+:import std/Monad/Parser .
+:import std/Number/Conversion O
+:import std/Result R
+
+# meta encoding uses Church numerals instead of binary!
+char→number (\C.sub '0') → O.binary→unary
+
+identifier satisfy (c ∘ C.space?)
+
+spaces many (satisfy C.space?)
+
+newlines some (satisfy (C.eq? '\n'))
+
+parens between (char '(') (char ')')
+
+number char→number <$> (satisfy C.numeric?)
+
+term y [(foldl1 M.app) <$> (some (spaces *> singleton <* spaces))]
+	singleton abs <|> idx <|> (parens 0)
+		abs M.abs <$> (between (char '[') (char ']') 0)
+		idx M.idx <$> number
+
+block identifier <*> term
+
+program block >>= newlines
+
+main (M.eval <$> term) → [0 i i]

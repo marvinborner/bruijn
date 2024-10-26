@@ -1,0 +1,29 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# for now, monads, functors, applicative, etc are all in here..
+
+# TODO: more monad interface
+
+:import std/List L
+
+liftA map ⧗ (a → b) → (M a) → (M b)
+
+liftA2 ap ∘∘ map ⧗ (a → b → c) → (M a) → (M b) → (M c)
+
+liftA3 [[[[(liftA2 3 2 1) <*> 0]]]] ⧗ (a → b → c → d) → (M a) → (M b) → (M c) → (M d)
+
+…<$… map ∘ k ⧗ a → (M b) → (M a)
+
+…*>… [[(i <$ 1) <*> 0]] ⧗ (M a) → (M b) → (M b)
+
+…<*… liftA2 k ⧗ (M a) → (M b) → (M a)
+
+# TODO: traverse, sequence
+# in parser: string = traverse char!
+
+some [y [liftA2 L.cons 1 many]] ⧗ (M a) → (M (List a))
+	many 0 <|> (pure L.empty)
+
+many [y [some <|> (pure L.empty)]] ⧗ (M a) → (M (List a))
+	some liftA2 L.cons 1 0
+
+between [[[2 *> 0 <* 1]]] ⧗ (M a) → (M a) → (M a) → (M a)
