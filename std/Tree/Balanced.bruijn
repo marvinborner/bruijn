@@ -1,6 +1,5 @@
 # MIT License, Copyright (c) 2023 Marvin Borner
-# Balanced AVL tree for numerical leafs, inspired by Rudy Matela's implementation
-# TODO: Extend for arbitrary orderable types?
+# Balanced AVL tree, inspired by Rudy Matela's implementation
 # TODO: Analyze performance bottlenecks
 
 :import std/Combinator .
@@ -80,27 +79,27 @@ balance [go (factor 0)] ⧗ (Option BalancedTree) → (Option BalancedTree)
 		else 1
 
 # inserts a number into a tree
-insert z [[[rec]]] ⧗ Number → (Option BalancedTree) → (Option BalancedTree)
+insert [z [[[rec]]]] ⧗ Compare → Number → (Option BalancedTree) → (Option BalancedTree)
 	rec none? 0 (some (leaf 1)) (balance (u 1 ?(!0)))
-		u compare-case eq gt lt
+		u 3 eq gt lt
 			eq 0
 			gt some (node //(!0) ?(!0) (2 1 \\(!0)))
 			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
 
 # returns true if a number is in a tree
-has? z [[[rec]]] ⧗ Number → (Option BalancedTree) → Boolean
+has? [z [[[rec]]]] ⧗ Compare → Number → (Option BalancedTree) → Boolean
 	rec none? 0 false (u 1 ?(!0))
-		u compare-case eq gt lt
+		u 3 eq gt lt
 			eq true
 			gt 2 1 \\(!0)
 			lt 2 1 //(!0)
 
-:test (has? (+42) empty) (false)
+:test (has? compare-case (+42) empty) (false)
 
 # number of elements in tree (slow)
 size z [[rec]] ⧗ (Option BalancedTree) → Number
 	rec none? 0 case-empty case-full
-		case-full (1 //(!0)) + (1 \\(!0)) + (+1)
+		case-full ++((1 //(!0)) + (1 \\(!0)))
 		case-empty (+0)
 
 # converts a tree to a list
@@ -108,4 +107,4 @@ tree→list z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number
 	go [L.append (L.append (2 //0) L.{}(?0)) (2 \\0)]
 
 # converts a list to a tree
-list→tree L.foldr insert empty ⧗ (List Number) → (Option BalancedTree)
+list→tree [L.foldr (insert 0) empty] ⧗ Compare → (List Number) → (Option BalancedTree)

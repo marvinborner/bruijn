@@ -18,7 +18,9 @@ eq? eq? B.eq? ⧗ String → String → Boolean
 ?‣ &eq?
 
 # returns eq, gt, lt depending on comparison of two numbers
-compare-case B.<=>compare-case ⧗ a → b → c → String → String → d
+compare-case B.<?>compare-case' ⧗ a → b → c → String → String → d
+
+<?>‣ &compare-case
 
 # returns 1 if a>b, -1 if a<b and 0 if a=b
 # also: spaceship operator
@@ -31,8 +33,8 @@ compare compare-case (+0) (+1) (-1) ⧗ String → String → Number
 :test (compare "2" "2") ((+0))
 :test (compare "2" "1") ((+1))
 :test (compare "1" "2") ((-1))
-:test (compare "12" "1") ((-1))
-:test (compare "1" "12") ((+1))
+:test (compare "12" "1") ((+1))
+:test (compare "1" "12") ((-1))
 
 # returns true if string is lexically less than other string
 lt? c-lt? ∘∘ compare ⧗ String → String → Boolean

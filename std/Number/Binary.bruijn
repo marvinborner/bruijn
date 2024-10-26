@@ -139,6 +139,8 @@ binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
 # TODO: remove ternary conversion
 compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c → Binary → Binary → d
 
+<?>‣ &compare-case
+
 # returns true if number is greater than other number
 # TODO: remove ternary conversion
 gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean

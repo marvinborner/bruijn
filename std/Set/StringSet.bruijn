@@ -1,0 +1,23 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# TODO: hash instead of comparing
+
+:input std/Set
+
+:import std/String S
+
+# adds a number of a set
+add S.<?>add ⧗ String → StringSet → StringSet
+
+# returns true if a number is in a set
+has? S.<?>has? ⧗ String → StringSet → Boolean
+
+:test (has? "abc" (add "abc" empty)) ([[1]])
+:test (has? "abc" empty) ([[0]])
+
+# converts a list to a set
+list→set S.<?>list→set ⧗ (List String) → StringSet
+
+:test (has? "0" (list→set ("a" : ("b" : ("d" : ("c" : {}"0")))))) ([[1]])
+:test (has? "a" (list→set ("a" : ("b" : ("d" : ("c" : {}"0")))))) ([[1]])
+:test (has? "e" (list→set ("a" : ("b" : ("d" : ("c" : {}"0")))))) ([[0]])
+:test (has? "c" (list→set ("a" : ("c" : {}"b")))) ([[1]])

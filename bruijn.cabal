@@ -58,6 +58,8 @@ data-files:
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn
     std/Number/Wadsworth.bruijn
+    std/Set/NumberSet.bruijn
+    std/Set/StringSet.bruijn
     std/Tree/Balanced.bruijn
     std/Tree/Finger.bruijn
     std/Tree/Rose.bruijn

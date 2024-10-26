@@ -1,6 +1,6 @@
 # MIT License, Copyright (c) 2023 Marvin Borner
-# Set implementation using AVL trees
-# can currently only store Numbers (due to std/Tree/Balanced)
+# Generic set implementation using AVL trees
+# some functions require a compare-case argument!
 
 :import std/Tree/Balanced T
 :import std/List .
@@ -9,13 +9,10 @@
 empty T.empty ⧗ Set
 
 # adds a number of a set
-add T.insert ⧗ Number → Set → Set
+add T.insert ⧗ Compare → Number → Set → Set
 
 # returns true if a number is in a set
-has? T.has? ⧗ Number → Set → Boolean
-
-:test (has? (+5) (add (+5) empty)) ([[1]])
-:test (has? (+5) empty) ([[0]])
+has? T.has? ⧗ Compare → Number → Set → Boolean
 
 # count of elements in set
 size T.size ⧗ Set → Number
@@ -24,9 +21,4 @@ size T.size ⧗ Set → Number
 set→list T.tree→list ⧗ Set → (List Number)
 
 # converts a list to a set
-list→set T.list→tree ⧗ (List Number) → Set
-
-:test (has? (+0) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
-:test (has? (+5) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
-:test (has? (+6) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[0]])
-:test (has? (+7) (list→set ((+5) : ((+7) : {}(+1))))) ([[1]])
+list→set T.list→tree ⧗ Compare → (List Number) → Set

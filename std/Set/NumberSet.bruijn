@@ -1,0 +1,22 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+
+:input std/Set
+
+:import std/Number T
+
+# adds a number of a set
+add T.<?>add ⧗ Number → NumberSet → NumberSet
+
+# returns true if a number is in a set
+has? T.<?>has? ⧗ Number → NumberSet → Boolean
+
+:test (has? (+5) (add (+5) empty)) ([[1]])
+:test (has? (+5) empty) ([[0]])
+
+# converts a list to a set
+list→set T.<?>list→set ⧗ (List Number) → NumberSet
+
+:test (has? (+0) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
+:test (has? (+5) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[1]])
+:test (has? (+6) (list→set ((+5) : ((+3) : ((+2) : ((+1) : {}(+0))))))) ([[0]])
+:test (has? (+7) (list→set ((+5) : ((+7) : {}(+1))))) ([[1]])

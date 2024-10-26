@@ -291,6 +291,8 @@ gt? positive? ∘∘ sub ⧗ Number → Number → Boolean
 compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 	go [=?0 5 (>?0 4 3)]
 
+<?>‣ &compare-case
+
 # ============================================================================ #
 # most relevant functions are defined - we can now derive from Generic/Number! #
 # ============================================================================ #

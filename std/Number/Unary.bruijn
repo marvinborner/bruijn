@@ -103,6 +103,8 @@ eq? [[=?(1 - 0) ⋀? =?(0 - 1)]] ⧗ Unary → Unary → Boolean
 compare-case [[[[[go (1 - 0) (0 - 1)]]]]] ⧗ a → b → c → Unary → Unary → d
 	go [[=?0 (=?1 6 5) 4]]
 
+<?>‣ &compare-case
+
 # ============================================================================ #
 # most relevant functions are defined - we can now derive from Generic/Number! #
 # ============================================================================ #
