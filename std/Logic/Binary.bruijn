@@ -56,6 +56,8 @@ nor? [[1 1 0 false true]] ⧗ Boolean → Boolean → Boolean
 # true if args are not same bools
 xor? [[0 (1 false 0) 1]] ⧗ Boolean → Boolean → Boolean
 
+…^?… xor?
+
 :test (xor? true true) (false)
 :test (xor? true false) (true)
 :test (xor? false true) (true)

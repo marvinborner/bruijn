@@ -25,6 +25,7 @@ data-files:
     std/IO.bruijn
     std/List.bruijn
     std/Logic.bruijn
+    std/Map.bruijn
     std/Math.bruijn
     std/Meta.bruijn
     std/Monad.bruijn
@@ -58,8 +59,8 @@ data-files:
     std/Number/Ternary.bruijn
     std/Number/Unary.bruijn
     std/Number/Wadsworth.bruijn
-    std/Set/NumberSet.bruijn
-    std/Set/StringSet.bruijn
+    std/Set/Number.bruijn
+    std/Set/String.bruijn
     std/Tree/Balanced.bruijn
     std/Tree/Finger.bruijn
     std/Tree/Rose.bruijn

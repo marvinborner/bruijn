@@ -426,7 +426,7 @@ parseCommandBlock = do
 
 parseDefBlock :: Int -> Parser Instruction
 parseDefBlock lvl =
-  sepEndBy parseComment newline *> string (replicate lvl '\t') *> try
+  sepEndBy (try parseComment) newline *> string (replicate lvl '\t') *> try
     (parseDefine lvl)
 
 parseBlock :: Int -> Parser Instruction

@@ -482,3 +482,9 @@ mod ~‣ ∘∘ quot-rem ⧗ Number → Number → Number
 :test ((-5) % (-3) =? (-2)) (true)
 :test ((-5) % (+3) =? (+1)) (true)
 :test ((+5) % (-3) =? (-1)) (true)
+
+# hash function :)
+# (useful for std/Map)
+hash [0] ⧗ Number → Number
+
+#‣ &hash

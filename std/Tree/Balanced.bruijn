@@ -13,36 +13,36 @@
 error Ω
 
 # unwraps tree from option (only use if not empty!)
-unwrap unwrap-or error ⧗ (Option BalancedTree) → BalancedTree
+unwrap unwrap-or error ⧗ (Option (BalancedTree a)) → (BalancedTree a)
 
 !‣ unwrap
 
 # empty tree
-empty none ⧗ (Option BalancedTree)
+empty none ⧗ (Option (BalancedTree a))
 
 # returns height of tree
-height map-or (-1) ^‣ ⧗ (Option BalancedTree) → Number
+height map-or (-1) ^‣ ⧗ (Option (BalancedTree a)) → Number
 
 :test (height empty) ((-1))
 :test (height (some ((+5) : ((+42) : (none : none))))) ((+5))
 
 # constructs a tree with a label and no branches
-node [[[(max (height 0) ++(height 2)) : (2 : (1 : 0))]]] ⧗ (Option BalancedTree) → Number → (Option BalancedTree) → BalancedTree
+node [[[(max (height 0) ++(height 2)) : (2 : (1 : 0))]]] ⧗ (Option (BalancedTree a)) → a → (Option (BalancedTree a)) → (BalancedTree a)
 
 # constructs a leaf node
-leaf [node none 0 none] ⧗ Number → BalancedTree
+leaf [node none 0 none] ⧗ a → (BalancedTree a)
 
 :test (leaf (+42)) (++(-1) : (none : ((+42) : none)))
 
 # returns the label of a tree
-label [^(~(~0))] ⧗ BalancedTree → Number
+label [^(~(~0))] ⧗ (BalancedTree a) → a
 
 ?‣ label
 
 :test (?(leaf (+42))) ((+42))
 
 # returns the left branch of a tree
-left [^(~0)] ⧗ BalancedTree → (Option BalancedTree)
+left [^(~0)] ⧗ (BalancedTree a) → (Option (BalancedTree a))
 
 //‣ left 
 
@@ -50,7 +50,7 @@ left [^(~0)] ⧗ BalancedTree → (Option BalancedTree)
 :test (//(node (some (leaf (+3))) (+0) none)) (some (leaf (+3)))
 
 # returns the right branch of a tree
-right [~(~(~0))] ⧗ BalancedTree → (Option BalancedTree)
+right [~(~(~0))] ⧗ (BalancedTree a) → (Option (BalancedTree a))
 
 \\‣ right 
 
@@ -58,53 +58,62 @@ right [~(~(~0))] ⧗ BalancedTree → (Option BalancedTree)
 :test (\\(node none (+0) (some (leaf (+3))))) (some (leaf (+3)))
 
 # returns the balancing factor of a tree
-factor map-or (+0) d ⧗ (Option BalancedTree) → Number
+factor map-or (+0) d ⧗ (Option (BalancedTree a)) → Number
 	d [(height //0) - (height \\0)]
 
 :test (factor (some (leaf (+42)))) (++(-1))
 
-rotate-ll [node //(!(//0)) ?(!(//0)) (some (node \\(!(//0)) ?0 \\0))] ⧗ BalancedTree → BalancedTree
+rotate-ll [node //(!(//0)) ?(!(//0)) (some (node \\(!(//0)) ?0 \\0))] ⧗ (BalancedTree a) → (BalancedTree a)
 
-rotate-rr [node (some (node //0 ?0 //(!(\\0)))) ?(!(\\0)) \\(!(\\0))] ⧗ BalancedTree → BalancedTree
+rotate-rr [node (some (node //0 ?0 //(!(\\0)))) ?(!(\\0)) \\(!(\\0))] ⧗ (BalancedTree a) → (BalancedTree a)
 
-rotate-lr [rotate-ll (node (some (rotate-rr !(//0))) ?0 \\0)] ⧗ BalancedTree → BalancedTree
+rotate-lr [rotate-ll (node (some (rotate-rr !(//0))) ?0 \\0)] ⧗ (BalancedTree a) → (BalancedTree a)
 
-rotate-rl [rotate-rr (node //0 ?0 (some (rotate-ll !(\\0))))] ⧗ BalancedTree → BalancedTree
+rotate-rl [rotate-rr (node //0 ?0 (some (rotate-ll !(\\0))))] ⧗ (BalancedTree a) → (BalancedTree a)
 
 # balances a tree
-balance [go (factor 0)] ⧗ (Option BalancedTree) → (Option BalancedTree)
+balance [go (factor 0)] ⧗ (Option (BalancedTree a)) → (Option (BalancedTree a))
 	go [=?0 else (0 >? (+1) left (0 <? (-1) right else))]
 		left some (((factor //(!1)) =? (-1)) rotate-lr rotate-ll !1)
 		right some (((factor \\(!1)) =? (+1)) rotate-rl rotate-rr !1)
 		else 1
 
-# inserts a number into a tree
-insert [z [[[rec]]]] ⧗ Compare → Number → (Option BalancedTree) → (Option BalancedTree)
-	rec none? 0 (some (leaf 1)) (balance (u 1 ?(!0)))
-		u 3 eq gt lt
-			eq 0
-			gt some (node //(!0) ?(!0) (2 1 \\(!0)))
-			lt some (node (2 1 //(!0)) ?(!0) \\(!0))
+# inserts a value into a tree
+insert [z [[[rec]]]] ⧗ (Compare a) → a → (Option (BalancedTree a)) → (Option (BalancedTree a))
+	rec none? 0 (some (leaf 1)) (balance (3 eq gt lt 1 ?(!0)))
+		eq 0
+		gt some (node //(!0) ?(!0) (2 1 \\(!0)))
+		lt some (node (2 1 //(!0)) ?(!0) \\(!0))
 
-# returns true if a number is in a tree
-has? [z [[[rec]]]] ⧗ Compare → Number → (Option BalancedTree) → Boolean
-	rec none? 0 false (u 1 ?(!0))
-		u 3 eq gt lt
-			eq true
-			gt 2 1 \\(!0)
-			lt 2 1 //(!0)
+# returns true if an element is in a tree
+has? [z [[[rec]]]] ⧗ (Compare a) → a → (Option (BalancedTree a)) → Boolean
+	rec none? 0 false (3 eq gt lt 1 ?(!0))
+		eq true
+		gt 2 1 \\(!0)
+		lt 2 1 //(!0)
 
-:test (has? compare-case (+42) empty) (false)
+:test (<?>has? (+42) empty) (false)
+
+# returns the value in a tree
+# could have more information with a clever comparison function
+find [z [[[rec]]]] ⧗ (Compare a) → a → (Option (BalancedTree a)) → (Option a)
+	rec none? 0 0 (3 eq gt lt 1 ?(!0))
+		eq some ?(!0)
+		gt 2 1 \\(!0)
+		lt 2 1 //(!0)
+
+:test (<?>find (+42) empty) (none)
+:test (<?>find (+42) (<?>insert (+42) empty)) (some (+42))
 
 # number of elements in tree (slow)
-size z [[rec]] ⧗ (Option BalancedTree) → Number
+size z [[rec]] ⧗ (Option (BalancedTree a)) → Number
 	rec none? 0 case-empty case-full
 		case-full ++((1 //(!0)) + (1 \\(!0)))
 		case-empty (+0)
 
 # converts a tree to a list
-tree→list z [[map-or L.empty go 0]] ⧗ (Option BalancedTree) → (List Number)
+tree→list z [[map-or L.empty go 0]] ⧗ (Option (BalancedTree a)) → (List a)
 	go [L.append (L.append (2 //0) L.{}(?0)) (2 \\0)]
 
 # converts a list to a tree
-list→tree [L.foldr (insert 0) empty] ⧗ Compare → (List Number) → (Option BalancedTree)
+list→tree [L.foldr (insert 0) empty] ⧗ (Compare a) → (List a) → (Option (BalancedTree a))

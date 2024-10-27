@@ -1,0 +1,34 @@
+# MIT License, Copyright (c) 2024 Marvin Borner
+# Generic map implementation using AVL trees
+# the key-value pair is stored in the tree as a Church pair
+# some functions require a hash function!
+# TODO: what about hash collisions??
+
+:import std/Tree/Balanced T
+:import std/Option O
+:import std/Number N
+:import std/Combinator .
+:import std/List .
+
+<?>‣ &[[[[[N.compare-case 4 3 2 ^1 ^0]]]]] ⧗ (Compare Number)
+
+# key to element (for searching)
+↑‣ [0 : i] ⧗ k → (Pair k v)
+
+# empty map
+empty T.empty ⧗ (Map k v)
+
+# returns true if a value is in a map
+has? [[<?>T.has? ↑(1 0)]] ⧗ (k → Number) → k → (Map k v) → Boolean
+
+# counts the key-value pairs in a map
+size T.size ⧗ (Map k v) → Number
+
+# returns the value of a key (or none)
+lookup (O.map &ki) ∘∘∘ [[<?>T.find ↑(1 0)]] ⧗ (k → Number) → k → (Map k v) → (Option v)
+
+# inserts (or replaces) a key with a value in a map
+insert [[[<?>T.insert ((2 1) : 0)]]] ⧗ (k → Number) → k → v → (Map k v) → (Map k v)
+
+:test (has? i (+2) (insert i (+2) "two" empty)) ([[1]])
+:test (lookup i (+2) (insert i (+2) "two" empty)) (O.some "two")

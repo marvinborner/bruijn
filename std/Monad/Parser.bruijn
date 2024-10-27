@@ -1,5 +1,6 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
 # see samples/fun/minibruijn for example usage
+# TODO: also support line/char offset
 
 :import std/List .
 :import std/Combinator .
@@ -12,7 +13,11 @@ error-unexpected ["unexpected symbol " ++ 0] ⧗ Error
 
 error-end-of-input "end of input" ⧗ Error
 
-compose [[C.?eq? 1 0 0 (1 ++ " or " ++ 0)]] ⧗ Error → Error → Error
+error-expected-end "expected end of input" ⧗ Error
+
+error-custom [0] ⧗ Error
+
+error-compose [[C.?eq? 1 0 0 (1 ++ " or " ++ 0)]] ⧗ Error → Error → Error
 
 satisfy [[0 [[[go]]] end]] ⧗ (a → Boolean) → (Parser a)
 	go 4 2 (R.ok (2 : 1)) (R.err (error-unexpected {}2))
@@ -52,14 +57,18 @@ bind [[[R.apply ok (2 0)]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
 
 alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
 	err [2 1 R.ok err]
-		err [R.err (compose 1 0)]
+		err [R.err (error-compose 1 0)]
 
 …<|>… alt
 
 :test ((string "ab") <|> (string "cd") "abc") (R.ok ("ab" : "c"))
 :test ((string "ab") <|> (string "cd") "cde") (R.ok ("cd" : "e"))
-:test ((string "ab") <|> (string "cd") "acd") (R.err (compose (error-unexpected "c") (error-unexpected "a")))
-:test ((string "ab") <|> (string "cd") "cbe") (R.err (compose (error-unexpected "c") (error-unexpected "b")))
+:test ((string "ab") <|> (string "cd") "acd") (R.err (error-compose (error-unexpected "c") (error-unexpected "a")))
+:test ((string "ab") <|> (string "cd") "cbe") (R.err (error-compose (error-unexpected "c") (error-unexpected "b")))
+
+eof [0 [[[go]]] end] ⧗ (Parser a)
+	go R.err error-expected-end
+	end R.ok ([[0]] : [[0]])
 
 # =========================================================================== #
 # most relevant functions are defined - we can now derive from Generic/Monad! #

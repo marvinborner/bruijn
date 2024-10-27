@@ -3,6 +3,7 @@
 :import std/Char C
 :import std/Math .
 :import std/Number/Binary B
+:import std/Number/Conversion O
 
 :input std/List
 
@@ -129,3 +130,9 @@ lines z [[rec]] ⧗ String → (List String)
 unlines concat-map (\(…;…) '\n') ⧗ (List String) → String
 
 :test (unlines ("ab" : {}"cd")) ("ab\ncd\n")
+
+# slightly stretched DJB2
+# WARNING: this may give weird results with/without padded zeros due to bad xor
+hash O.²³‣ ∘ (foldl [[B.xor! (B.mul (+33b) 1) (B.mul 0 (+208121b))]] (+5381b)) ⧗ String → Number
+
+#‣ &hash

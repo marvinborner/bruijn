@@ -200,9 +200,9 @@ and! binary! ∘∘ (ψ* zip-with …⋀?… list!) ⧗ Binary → Binary → Bi
 
 …⋀!… and!
 
-:test (and! (+1b) (+0b)) ((+0b))
-:test (and! (+5b) (+4b)) ((+4b))
-:test (and! (+10b) (+12b)) ((+8b))
+:test ((+1b) ⋀! (+0b)) ((+0b))
+:test ((+5b) ⋀! (+4b)) ((+4b))
+:test ((+10b) ⋀! (+12b)) ((+8b))
 
 # logical or on two binary numbers
 # TODO: Fix for numbers with different length (→ zero padding?)
@@ -210,10 +210,18 @@ or! binary! ∘∘ (ψ* zip-with …⋁?… list!) ⧗ Binary → Binary → Bin
 
 …⋁!… or!
 
-:test (or! (+10b) (+12b)) ((+14b))
+:test ((+10b) ⋁! (+12b)) ((+14b))
 
 # :test (or! (+1b) (+0b)) ((+1b))
 # :test (or! (+5b) (+3b)) ((+7b))
+
+# logical or on two binary numbers
+# TODO: Fix for numbers with different length (→ zero padding?)
+xor! binary! ∘∘ (ψ* zip-with …^?… list!) ⧗ Binary → Binary → Binary
+
+…^!… xor!
+
+:test (((+10b) ^! (+12b)) =? (+6b)) (true)
 
 # adds 1 to a binary number (can introduce leading 0s)
 inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary

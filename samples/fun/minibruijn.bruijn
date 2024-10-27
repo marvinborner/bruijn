@@ -1,4 +1,14 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
+# usage:
+# write a file test.bruijn
+# ```
+# zero [[0]]
+# inc [[[1 (2 1 0)]]]
+# two inc (inc zero)
+# four two two
+# main four four
+# ```
+# run `cat test.bruijn | bruijn minibruijn.bruijn`
 
 :import std/Char C
 :import std/Combinator .
@@ -6,12 +16,14 @@
 :import std/Meta M
 :import std/Monad/Parser .
 :import std/Number/Conversion O
+:import std/Map H
 :import std/Result R
+:import std/String S
 
 # meta encoding uses Church numerals instead of binary!
 char→number (\C.sub '0') → O.binary→unary
 
-identifier satisfy (c ∘ C.space?)
+identifier some (satisfy C.alpha?)
 
 spaces many (satisfy C.space?)
 
@@ -21,13 +33,26 @@ parens between (char '(') (char ')')
 
 number char→number <$> (satisfy C.numeric?)
 
-term y [(foldl1 M.app) <$> (some (spaces *> singleton <* spaces))]
-	singleton abs <|> idx <|> (parens 0)
+# T := [T]  # Abstraction
+#    | T..T # Application
+#    | (T)  # Parenthesised
+#    | 0-9  # de Bruijn index
+# identifiers ([a-z]*) just get looked up in the hashmap!
+term [y [(foldl1 M.app) <$> (some (spaces *> singleton <* spaces))]]
+	singleton abs <|> idx <|> def <|> (parens 0)
 		abs M.abs <$> (between (char '[') (char ']') 0)
 		idx M.idx <$> number
+		def [S.#H.lookup 0 2 i i] <$> identifier
 
-block identifier <*> term
+:test (term H.empty "()") (R.err (error-compose (error-unexpected "(") (error-unexpected ")")))
+:test (term H.empty "[[0 1]]") (R.ok [0 `[[(0 1)]] empty])
+:test (term (S.#H.insert "foo" `[[1]] H.empty) "[foo 0]") (R.ok [0 `[[[1]] 0] empty])
 
-program block >>= newlines
+block [[[S.#H.insert 1 0 2]] <$> identifier <*> (term 0) <* newlines]
 
-main (M.eval <$> term) → [0 i i]
+:test (block H.empty "main [0]\n") (R.ok [0 (S.#H.insert "main" `[0] H.empty) empty])
+:test (block H.empty "main ()\n") (R.err (error-compose (error-unexpected "(") (error-unexpected ")")))
+
+program y [[[(R.apply (block 1 0) [3 ^0 ~0])] <|> (eof *> (pure 0))]] H.empty
+
+main M.eval <$> ([S.#H.lookup "main" 0 i i] <$> program) → [0 i i]
