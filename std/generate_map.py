@@ -22,7 +22,7 @@ def list_defs(path, kind, prefix):
             res = res + list_defs(import_path, "import", new_prefix)
         elif (
             line.startswith(":")
-            or line.startswith("#")
+            or line.startswith("# ")
             or line.strip() == ""
             or line[0].isspace()
         ):

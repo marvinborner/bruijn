@@ -12,7 +12,7 @@ const decodeHTML = (html) => {
 };
 
 const encodeHTML = (str) =>
-  str.replace(/[\u00A0-\u9999<>\&]/g, (i) => "&#" + i.charCodeAt(0) + ";");
+  str.replace(/[\u00A0-\u9999<>\&\#]/g, (i) => "&#" + i.charCodeAt(0) + ";");
 
 // just basic token parsing
 const parseTerm = (str) => {
@@ -58,6 +58,9 @@ const parseFile = (str) => {
       tree.push({ kind: "input", path: matches[1] });
     } else if ((matches = line.match(/^:import (.*) (.*)$/))) {
       tree.push({ kind: "import", path: matches[1], namespace: matches[2] });
+    } else if ((matches = line.match(/^:import (.*)$/))) {
+      const namespace = matches[1].split("/").slice(-1)[0];
+      tree.push({ kind: "import", path: matches[1], namespace: namespace });
     } else if ((matches = line.match(/^:test (\(.*\)) (\(.*\))$/))) {
       tree.push({
         kind: "test",
