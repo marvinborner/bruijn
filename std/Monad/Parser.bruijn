@@ -34,6 +34,8 @@ map [[[R.map ok (1 0)]]] ⧗ (a → b) → (Parser a) → (Parser b)
 
 …<$>… map
 
+fail [[R.err 1]] ⧗ a → (Parser a)
+
 pure [[R.ok (1 : 0)]] ⧗ a → (Parser a)
 
 ap [[[R.apply (2 0) ok]]] ⧗ (Parser (a → b)) → (Parser a) → (Parser b)
@@ -50,7 +52,7 @@ string y [[0 [[[go]]] (pure [[0]])]] ⧗ String → (Parser a)
 
 return pure ⧗ a → (Parser a)
 
-bind [[[R.apply ok (2 0)]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
+bind [[[R.apply (2 0) ok]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
 	ok &[[3 1 0]]
 
 …>>=… bind
@@ -69,6 +71,11 @@ alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
 eof [0 [[[go]]] end] ⧗ (Parser a)
 	go R.err error-expected-end
 	end R.ok ([[0]] : [[0]])
+
+lift-result [0 pure fail] ⧗ (Result a) → (Parser a)
+
+:test (lift-result (R.ok "ok") "rst") (R.ok ("ok" : "rst"))
+:test (lift-result (R.err "oh") "rst") (R.err "oh")
 
 # =========================================================================== #
 # most relevant functions are defined - we can now derive from Generic/Monad! #

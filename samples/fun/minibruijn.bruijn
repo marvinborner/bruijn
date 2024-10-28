@@ -1,4 +1,5 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
+
 # usage:
 # write a file test.bruijn
 # ```
@@ -10,49 +11,65 @@
 # ```
 # run `cat test.bruijn | bruijn minibruijn.bruijn`
 
-:import std/Char C
+# This parser/interpreter works by parsing the input to the meta encoding
+# (similar to Mogensen-Scott) and reducing it using its self-interpreter!
+# Substituting the definitions is done *while parsing* using hashmaps
+
+:import std/Char
 :import std/Combinator .
 :import std/List .
-:import std/Meta M
+:import std/Meta
 :import std/Monad/Parser .
-:import std/Number/Conversion O
-:import std/Map H
-:import std/Result R
-:import std/String S
+:import std/Number/Conversion
+:import std/Map
+:import std/Result
+:import std/String
+:import std/Option
 
 # meta encoding uses Church numerals instead of binary!
-char→number (\C.sub '0') → O.binary→unary
+char→number (\Char.sub '0') → Conversion.binary→unary
 
-identifier some (satisfy C.alpha?)
+# parses [a-z]+
+identifier some (satisfy Char.alpha?)
 
-spaces many (satisfy C.space?)
+# parses  *
+spaces many (satisfy Char.space?)
 
-newlines some (satisfy (C.eq? '\n'))
+# parses \n+
+newlines some (satisfy (Char.eq? '\n'))
 
+# parses between parentheses
 parens between (char '(') (char ')')
 
-number char→number <$> (satisfy C.numeric?)
+# parses a single number (as number)
+number char→number <$> (satisfy Char.numeric?)
+
+error-identifier error-custom "identifier not found"
 
 # T := [T]  # Abstraction
 #    | T..T # Application
-#    | (T)  # Parenthesised
+#    | (T)  # Parenthesized
 #    | 0-9  # de Bruijn index
 # identifiers ([a-z]*) just get looked up in the hashmap!
-term [y [(foldl1 M.app) <$> (some (spaces *> singleton <* spaces))]]
+term [y [(foldl1 Meta.app) <$> (some (spaces *> singleton <* spaces))]]
 	singleton abs <|> idx <|> def <|> (parens 0)
-		abs M.abs <$> (between (char '[') (char ']') 0)
-		idx M.idx <$> number
-		def [S.#H.lookup 0 2 i i] <$> identifier
+		abs Meta.abs <$> (between (char '[') (char ']') 0)
+		idx Meta.idx <$> number
+		def identifier >>= [lift-result (Option.result-or error-identifier lookup)]
+			lookup String.#Map.lookup 0 2
 
-:test (term H.empty "()") (R.err (error-compose (error-unexpected "(") (error-unexpected ")")))
-:test (term H.empty "[[0 1]]") (R.ok [0 `[[(0 1)]] empty])
-:test (term (S.#H.insert "foo" `[[1]] H.empty) "[foo 0]") (R.ok [0 `[[[1]] 0] empty])
+:test (term Map.empty "()") (Result.err (error-compose (error-unexpected "(") (error-unexpected ")")))
+:test (term Map.empty "[[0 1]]") (Result.ok [0 `[[(0 1)]] empty])
+:test (term (String.#Map.insert "foo" `[[1]] Map.empty) "[foo 0]") (Result.ok [0 `[[[1]] 0] empty])
 
-block [[[S.#H.insert 1 0 2]] <$> identifier <*> (term 0) <* newlines]
+# parses an identifier, a term, and newlines to a hashmap insertion
+block [[[String.#Map.insert 1 0 2]] <$> identifier <*> (term 0) <* newlines]
 
-:test (block H.empty "main [0]\n") (R.ok [0 (S.#H.insert "main" `[0] H.empty) empty])
-:test (block H.empty "main ()\n") (R.err (error-compose (error-unexpected "(") (error-unexpected ")")))
+:test (block Map.empty "main [0]\n") (Result.ok [0 (String.#Map.insert "main" `[0] Map.empty) empty])
+:test (block Map.empty "main ()\n") (Result.err (error-compose (error-unexpected "(") (error-unexpected ")")))
 
-program y [[[(R.apply (block 1 0) [3 ^0 ~0])] <|> (eof *> (pure 0))]] H.empty
+# iterates parsing of blocks starting with an empty hashmap until end
+program y [[((block 0) >>= 1) <|> (eof *> (pure 0))]] Map.empty
 
-main M.eval <$> ([S.#H.lookup "main" 0 i i] <$> program) → [0 i i]
+# evaluates the main function of a program
+main Meta.eval <$> ([String.#Map.lookup "main" 0 i i] <$> program) → [0 i i]

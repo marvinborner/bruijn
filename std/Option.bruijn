@@ -45,3 +45,8 @@ apply [[1 none 0]] ⧗ (Option a) → (a → b) → c
 
 :test (apply none [some ([[1]] 0)]) (none)
 :test (apply (some [[0]]) [some ([[1]] 0)]) (some [[[0]]])
+
+result-or [[0 [[0 3]] [[[1 2]]]]]
+
+:test (result-or "fail" none) ([[0 "fail"]])
+:test (result-or "fail" (some "ok")) ([[1 "ok"]])

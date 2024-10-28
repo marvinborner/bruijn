@@ -385,7 +385,7 @@ parseImport :: Parser Command
 parseImport = do
   _    <- string ":import" <* sc <?> "import instruction"
   path <- importPath
-  ns   <- try (sc *> (namespace <|> string ".")) <|> (eof >> return "")
+  ns   <- try (sc *> (namespace <|> string ".")) <|> return ""
   pure $ Import (path ++ ".bruijn") ns
 
 parseInput :: Parser Command
