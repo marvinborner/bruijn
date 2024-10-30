@@ -69,7 +69,9 @@ const parseFile = (str) => {
       });
     } else if ((matches = line.match(/^:time (.*)$/))) {
       tree.push({ kind: "time", term: parseTerm(matches[1]) });
-    } else if ((matches = line.match(/^([ \t]*[^:\n#][^ ]*) (.*)$/))) {
+    } else if (
+      (matches = line.match(/^([ \t]*(?:#[^ ]|[^:\n#])[^ ]*) (.*)$/))
+    ) {
       tree.push({
         kind: "definition",
         name: matches[1],
