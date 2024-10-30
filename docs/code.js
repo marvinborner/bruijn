@@ -512,8 +512,13 @@ const becomeIntelligent = () => {
           "code.language-bruijn span.definition",
         );
         definitions.forEach((definition) => {
-          if (definition.innerText === decodeURI(hash).slice(1))
+          if (definition.innerText === decodeURI(hash).slice(1)) {
             bruijnScroll(definition)();
+
+            // trigger hover/highlight effect
+            const hover = new Event("mouseenter");
+            definition.dispatchEvent(hover);
+          }
         });
       }
     })
