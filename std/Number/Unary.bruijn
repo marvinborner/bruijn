@@ -18,7 +18,7 @@ uid [[[extract (2 inc init)]]] ⧗ Unary → Unary
 :test (uid (+5u)) ((+5u))
 
 # returns true if a unary number is zero
-zero? [0 [(+0u)] true] ⧗ Unary → Boolean
+zero? [0 [false] true] ⧗ Unary → Boolean
 
 =?‣ zero?
 

@@ -50,3 +50,12 @@ result-or [[0 [[0 3]] [[[1 2]]]]]
 
 :test (result-or "fail" none) ([[0 "fail"]])
 :test (result-or "fail" (some "ok")) ([[1 "ok"]])
+
+pure some ⧗ a → (Option a)
+
+bind [[1 1 0]] ⧗ (Option a) → (a → (Option b)) → (Option a)
+
+…>>=… bind
+
+:test (none >>= (pure "idk")) (none)
+:test ((some 'a') >>= [pure [1]]) (some ['a'])

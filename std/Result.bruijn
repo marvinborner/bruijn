@@ -1,4 +1,5 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
+# TODO: the type signatures are wrong :)
 
 :import std/Combinator .
 :import std/Logic .
@@ -61,3 +62,12 @@ apply [[1 0 err]] ⧗ (Result a) → (a → b) → (Result b)
 
 :test (apply (err [[0]]) [ok ([[1]] 0)]) (err [[0]])
 :test (apply (ok [[0]]) [ok ([[1]] 0)]) (ok [[[0]]])
+
+pure ok ⧗ a → (Result a)
+
+bind [[1 0 err]] ⧗ (Result a) → (a → (Result b)) → (Result a)
+
+…>>=… bind
+
+:test ((err 'a') >>= (pure "idk")) (err 'a')
+:test ((ok 'a') >>= [pure [1]]) (ok ['a'])
