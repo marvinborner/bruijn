@@ -12,7 +12,7 @@
   </head>
   <body>
     <div class="header">
-      <img src="res/logo.png" />
+      <img src="res/logo.png" hsrc="res/qlogo.png" />
       <h1>bruijn</h1>
     </div>
 
@@ -208,5 +208,16 @@ in std/Number/Unary.bruijn:35
     </div>
 
     <script src="script.js" charset="utf-8"></script>
+    <script charset="utf-8">
+      document.querySelectorAll("img[hsrc]").forEach((e) => {
+        const toggle = () => {
+          const temp = e.src;
+          e.src = e.getAttribute("hsrc");
+          e.setAttribute("hsrc", temp);
+        };
+        e.addEventListener("mouseenter", toggle);
+        e.addEventListener("mouseleave", toggle);
+      });
+    </script>
   </body>
 </html>
