@@ -17,6 +17,6 @@ rand-bool map even? rand
 # normal bind
 triple rand >>= [rand >>= [rand >>= [pure [0 1 2 3]]]]
 
-:test ((triple (+50) [[1]]) =? (+595)) ([[[2]]])
+:test ((triple (+50) [[1]] [[[0]]]) =? (+595)) ([[1]])
 
-main string→number → triple
+main string→number → triple → &[[1]]
