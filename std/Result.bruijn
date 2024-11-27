@@ -57,15 +57,10 @@ map-err [[0 ok [err (2 0)]]] ⧗ (a → b) → (Result a) → (Result b)
 :test (map-err [[1]] (ok [[0]])) ((ok [[0]]))
 :test (map-err [[1]] (err [[0]])) ((err [[[0]]]))
 
-# applies encapsulated value to given function (if ok)
-apply [[1 0 err]] ⧗ (Result a) → (a → b) → (Result b)
-
-:test (apply (err [[0]]) [ok ([[1]] 0)]) (err [[0]])
-:test (apply (ok [[0]]) [ok ([[1]] 0)]) (ok [[[0]]])
-
 pure ok ⧗ a → (Result a)
 
-bind [[1 0 err]] ⧗ (Result a) → (a → (Result b)) → (Result a)
+# applies encapsulated value to given function (if ok)
+bind [[1 0 err]] ⧗ (Result a) → (a → (Result b)) → (Result b)
 
 …>>=… bind
 

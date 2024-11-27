@@ -11,3 +11,8 @@ map [[[1 0 [[[0 2 (5 1)]]]]]] ⧗ (a → b) → (State s a) → (State s b)
 bind [[[2 0 [[3 0 1]]]]] ⧗ (State s a) → (a → (State s b)) → (State s b)
 
 …>>=… bind
+
+pure [[[0 2 1]]] ⧗ a → (State s a)
+
+:test ((w' ∘ c) >>= [(w' ∘ c) >>= [pure 0]] [[0]]) (w' [[0]])
+:test ((w' ∘ c) >>= [(w' ∘ c) >>= [pure 0]] [[1]]) (w' [[1]])

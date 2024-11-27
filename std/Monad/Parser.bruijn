@@ -38,7 +38,7 @@ fail [[R.err 1]] ⧗ a → (Parser a)
 
 pure [[R.ok (1 : 0)]] ⧗ a → (Parser a)
 
-ap [[[R.apply (2 0) ok]]] ⧗ (Parser (a → b)) → (Parser a) → (Parser b)
+ap [[[R.bind (2 0) ok]]] ⧗ (Parser (a → b)) → (Parser a) → (Parser b)
 	ok &[[R.map ok (3 0)]]
 		ok &[[(3 1) : 0]]
 
@@ -52,14 +52,14 @@ string y [[0 [[[go]]] (pure [[0]])]] ⧗ String → (Parser a)
 
 return pure ⧗ a → (Parser a)
 
-bind [[[R.apply (2 0) ok]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
+bind [[[R.bind (2 0) ok]]] ⧗ (Parser a) → (a → (Parser b)) → (Parser a)
 	ok &[[3 1 0]]
 
 …>>=… bind
 
 alt [[[2 0 R.ok err]]] ⧗ (Parser a) → (Parser a) → (Parser a)
 	err [2 1 R.ok err]
-		err [R.err (error-compose 1 0)]
+		err R.err ∘ (error-compose 0)
 
 …<|>… alt
 

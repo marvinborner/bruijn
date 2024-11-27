@@ -14,14 +14,9 @@ rand [[[0 1 1]] rng]
 
 rand-bool map even? rand
 
-# accumulating bind (reversed)
-triple1 rand >>= (rand >>= (rand >>= [[[[[0 3 [0 3 [0 3 [[0]]]]]]]]]))
-
-:test ((triple1 (+50) [[1]]) =? (+745)) ([[1]])
-
 # normal bind
-triple2 rand >>= [rand >>= [rand >>= [[[0 4 [0 4 [0 4 [[0]]]]]]]]]
+triple rand >>= [rand >>= [rand >>= [pure [0 1 2 3]]]]
 
-:test ((triple2 (+50) [[1]]) =? (+595)) ([[1]])
+:test ((triple (+50) [[1]]) =? (+595)) ([[[2]]])
 
-main string→number → triple2
+main string→number → triple
