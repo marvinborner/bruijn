@@ -78,11 +78,11 @@ describe(
 );
 describe(
   "mixfix",
-  "This is a mixfix operator. They can be defined like …*… where the … can then be any other term. You can use them without the … as a notation of function application. Click to jump to its definition.",
+  "This is a mixfix operator. They can be defined like …*… where the … can then be any other term. You can use them without the … as a notation of function application. <u>Click</u> to jump to its definition.",
 );
 describe(
   "prefix",
-  "This is a prefix operator. They can be defined like *‣ where the ‣ can then be any other term. Click to jump to its definition.",
+  "This is a prefix operator. They can be defined like *‣ where the ‣ can then be any other term. <u>Click</u> to jump to its definition.",
 );
 describe("repl", "This indicates a REPL input.");
 describe("right-abs", "The closing bracket of a function abstraction.");
