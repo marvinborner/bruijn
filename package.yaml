@@ -50,7 +50,6 @@ library:
   ghc-options:
   - -O3
   - -optc-O3
-  - -fllvm
   - -funfolding-use-threshold=16
   - -Wall
   - -Wextra
@@ -66,7 +65,6 @@ executables:
     ghc-options:
     - -O3
     - -optc-O3
-    - -fllvm
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
