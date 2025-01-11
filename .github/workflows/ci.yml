@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get install hyperfine llvm
       - uses: freckle/stack-action@v5
-      - name: Install hyperfine
-        run: sudo apt-get install hyperfine
       - name: Install bruijn
         run: stack install
       - name: Run HigherOrder tests and measure time
