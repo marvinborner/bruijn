@@ -9,7 +9,7 @@
 :import std/Logic .
 
 # returns true if number is not zero
-not-zero? not! ∘∘ zero? ⧗ Generic → Boolean
+not-zero? not! ∘ zero? ⧗ Generic → Boolean
 
 ≠?‣ not-zero?
 
