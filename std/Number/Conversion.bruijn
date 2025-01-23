@@ -5,6 +5,7 @@
 :import std/Number/Unary U
 :import std/Number/Binary B
 :import std/Number/Ternary T
+:import std/Number/Parigot P
 
 # converts unary numbers to ternary
 unary→ternary [0 T.inc (+0t)] ⧗ Unary → Ternary
@@ -23,6 +24,14 @@ ternary→unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
 
 :test (³¹(+0t)) ((+0u))
 :test (³¹(+2t)) ((+2u))
+
+# converts Parigot numbers to unary
+parigot→unary [[[P.iter 0 1 2]]] ⧗ Parigot → Unary
+
+ᵖ¹‣ parigot→unary
+
+:test (ᵖ¹P.zero) ((+0u))
+:test (ᵖ¹(P.inc (P.inc P.zero))) ((+2u))
 
 # converts binary numbers to ternary
 # constructs reversed path of composed functions and applies to ternary
