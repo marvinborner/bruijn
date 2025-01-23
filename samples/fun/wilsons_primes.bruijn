@@ -1,0 +1,17 @@
+# 208-bit golfed characteristic prime sequence using Wilson's theorem
+# (Tromp's prime sieve only takes 143 bit)
+
+# b' not-zero? mod
+zmod [[1 [0 [[1]]] (1 [1 [[[0 (2 [[1]]) 1]]] [1] [[0]]] [[[0]]]) [[0]]]]
+
+zero? [0 [[[0]]] [[1]]] ⧗ Unary → Boolean
+
+# experiment with repeated subtraction (flipped args, zero? not golfed yet)
+# TODO: consider Parigot for trivial predecessor?
+zmod' [[0 0] [[[zero? (0 3 1) (2 2 (0 1 3)) (zero? 1)] sub]]]
+	sub [[0 [[[2 [[0 (1 3)]] [1] [0]]]] 1]]
+
+# y [[[(zmod 1 0) : (2 (1 ⋅ (0 ⋅ 0)) ++0)]]] (+1u) (+1u)
+loop [0 0] [[[[0 (2 [0 [[1]]] (2 [2 [[[0 (2 [[1]]) 1]]] [1] [[0]]] [[[0]]]) [[0]]) (3 3 [3 (2 (2 0))] [[1 (3 1 0)]])]]]] (+1u) (+1u)
+
+main [loop]
