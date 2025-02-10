@@ -34,7 +34,7 @@ mathematicalOperator :: Parser Char
 mathematicalOperator =
   satisfy isMathematicalUnicodeBlock
     <|> satisfy isMiscMathematicalAUnicodeBlock
-    <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾"
+    <|> oneOf "¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵇᶜᵈᵉᶠᵍʰʲᵏˡᵐᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁺⁻⁼⁽⁾"
  where
   isMathematicalUnicodeBlock c = '∀' <= c && c <= '⋿'
   isMiscMathematicalAUnicodeBlock c = '⟀' <= c && c <= '⟯'
