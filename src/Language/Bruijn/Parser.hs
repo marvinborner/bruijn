@@ -13,15 +13,16 @@ import           Data.Bruijn                    ( Identifier(..)
                                                 , MixfixIdentifier(..)
                                                 , Name
                                                 , SyntacticSugar(..)
+                                                , TermAnn(..)
                                                 , TermF(..)
                                                 )
 import           Data.Fix                       ( Fix(..) )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Void
-import           Language.Generic.Annotation    ( AnnF
-                                                , SrcSpan
-                                                , ann
+import           Language.Generic.Annotation    ( ann )
+import           Language.Generic.Error         ( ErrorOr
+                                                , throwError
                                                 )
 import           Text.Megaparsec         hiding ( State
                                                 , parse
@@ -30,9 +31,6 @@ import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Parser = ParsecT Void Text (State SourcePos)
-
-type TermAnnF = AnnF SrcSpan TermF
-type TermAnn = Fix TermAnnF
 
 -- | sync position in State
 syncPos :: Parser a -> Parser a
@@ -97,7 +95,7 @@ application =
   ann $ ApplicationF <$> (symbol "(" *> some (lexeme singleton) <* symbol ")")
 
 index :: Parser TermAnn
-index = ann $ IndexF . read . pure <$> digitChar
+index = ann $ IndexF . read . return <$> digitChar
 
 singleton :: Parser TermAnn
 singleton = lexeme $ abstraction <|> application <|> index
@@ -127,9 +125,9 @@ program = ann $ do
   next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next
 
-parse :: Text -> Either String TermAnn
+parse :: Text -> ErrorOr TermAnn
 parse s = prettify
   $ evalState (runParserT (program <* eof) "" s) (initialPos "foo")
  where
-  prettify (Right t  ) = Right t
-  prettify (Left  err) = Left $ errorBundlePretty err
+  prettify (Right t  ) = return t
+  prettify (Left  err) = throwError $ T.pack $ errorBundlePretty err

@@ -34,7 +34,7 @@ data AnnUnit ann expr = AnnUnit
   { annotation :: ann
   , annotated  :: expr
   }
-  deriving Show
+  deriving (Show, Functor)
 
 deriveShow1 ''AnnUnit
 

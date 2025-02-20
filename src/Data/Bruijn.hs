@@ -8,10 +8,15 @@ module Data.Bruijn
   , MixfixIdentifier(..)
   , SyntacticSugar(..)
   , Name
+  , TermAnn(..)
+  , TermAnnF(..)
   ) where
 
 import           Data.Fix                       ( Fix(..) )
 import           Data.Text                      ( Text )
+import           Language.Generic.Annotation    ( AnnF
+                                                , SrcSpan
+                                                )
 import           Text.Show.Deriving             ( deriveShow1 )
 
 type Name = Text
@@ -50,3 +55,6 @@ data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
 deriveShow1 ''TermF
 
 type Term = Fix TermF
+
+type TermAnnF = AnnF SrcSpan TermF
+type TermAnn = Fix TermAnnF

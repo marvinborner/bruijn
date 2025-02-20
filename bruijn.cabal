@@ -26,6 +26,9 @@ library
       Data.Bruijn
       Language.Bruijn.Parser
       Language.Generic.Annotation
+      Language.Generic.Error
+      Language.Bruijn.Transformer.Lambda
+      Data.Lambda
   other-modules:
       Paths_bruijn
   hs-source-dirs:
