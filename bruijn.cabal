@@ -16,54 +16,6 @@ license:        MIT
 build-type:     Simple
 extra-source-files:
     readme.md
-data-files:
-    config
-    std/Box.bruijn
-    std/Char.bruijn
-    std/Combinator.bruijn
-    std/generate_map.py
-    std/IO.bruijn
-    std/List.bruijn
-    std/Logic.bruijn
-    std/Map.bruijn
-    std/Math.bruijn
-    std/Meta.bruijn
-    std/Monad.bruijn
-    std/Number.bruijn
-    std/Option.bruijn
-    std/Pair.bruijn
-    std/Result.bruijn
-    std/Set.bruijn
-    std/String.bruijn
-    std/test_all.sh
-    std/AIT/Beavers.bruijn
-    std/Generic/Monad.bruijn
-    std/Generic/Number.bruijn
-    std/List/Church.bruijn
-    std/List/Parigot.bruijn
-    std/Logic/Binary.bruijn
-    std/Logic/Linear.bruijn
-    std/Logic/Ternary.bruijn
-    std/Math/Complex.bruijn
-    std/Math/Rational.bruijn
-    std/Math/Real.bruijn
-    std/Monad/List.bruijn
-    std/Monad/Parser.bruijn
-    std/Monad/State.bruijn
-    std/Number/Binary.bruijn
-    std/Number/Bruijn.bruijn
-    std/Number/Conversion.bruijn
-    std/Number/Pairing.bruijn
-    std/Number/Parigot.bruijn
-    std/Number/Scott.bruijn
-    std/Number/Ternary.bruijn
-    std/Number/Unary.bruijn
-    std/Number/Wadsworth.bruijn
-    std/Set/Number.bruijn
-    std/Set/String.bruijn
-    std/Tree/Balanced.bruijn
-    std/Tree/Finger.bruijn
-    std/Tree/Rose.bruijn
 
 source-repository head
   type: git
@@ -71,45 +23,25 @@ source-repository head
 
 library
   exposed-modules:
-      Binary
-      Config
-      Conversion
-      Error
-      Eval
-      Helper
-      Humanification
-      Optimizer
-      Parser
-      Reducer
-      Reducer.HigherOrder
-      Reducer.ION
-      Reducer.RKNL
-      Target
+      Data.Bruijn
+      Language.Bruijn.Parser
+      Language.Generic.Annotation
   other-modules:
       Paths_bruijn
   hs-source-dirs:
       src
   default-extensions:
       LambdaCase
+      OverloadedStrings
+      DeriveFunctor
   ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
-      array
-    , base >=4.7 && <5
-    , binary
-    , bitstring
-    , bytestring
-    , clock
-    , containers
-    , deepseq
-    , directory
-    , filepath
-    , haskeline
+      base >=4.7 && <5
+    , text
     , megaparsec
     , mtl
-    , optparse-applicative
-    , process
-    , random
-    , time
+    , data-fix
+    , deriving-compat
   default-language: Haskell2010
 
 executable bruijn
@@ -120,24 +52,11 @@ executable bruijn
       app
   default-extensions:
       LambdaCase
+      OverloadedStrings
   ghc-options: -O3 -optc-O3 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      array
-    , base >=4.7 && <5
-    , binary
-    , bitstring
+      base >=4.7 && <5
+    , text
     , bruijn
-    , bytestring
-    , clock
-    , containers
-    , deepseq
-    , directory
-    , filepath
-    , haskeline
-    , megaparsec
-    , mtl
     , optparse-applicative
-    , process
-    , random
-    , time
   default-language: Haskell2010

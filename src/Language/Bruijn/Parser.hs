@@ -5,33 +5,40 @@ module Language.Bruijn.Parser
   ) where
 
 import           Control.Monad                  ( void )
-import           Data.Bruijn                    ( Command(..)
-                                                , Identifier(..)
-                                                , Lambda(..)
+import           Control.Monad.State            ( State
+                                                , evalState
+                                                , put
+                                                )
+import           Data.Bruijn                    ( Identifier(..)
                                                 , MixfixIdentifier(..)
                                                 , Name
                                                 , SyntacticSugar(..)
-                                                , Term(..)
+                                                , TermF(..)
                                                 )
-import           Data.Functor                   ( (<$) )
+import           Data.Fix                       ( Fix(..) )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Void
+import           Language.Generic.Annotation    ( AnnF
+                                                , SrcSpan
+                                                , ann
+                                                )
 import           Text.Megaparsec         hiding ( State
                                                 , parse
                                                 )
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer    as L
 
-data Cofree f a = a :> (f (Cofree f a))
+type Parser = ParsecT Void Text (State SourcePos)
 
--- data Located a = Located
---   { loc  :: SourcePos
---   , node :: a
---   }
---   deriving Eq
+type TermAnnF = AnnF SrcSpan TermF
+type TermAnn = Fix TermAnnF
 
-type Parser = Parsec Void Text
+-- | sync position in State
+syncPos :: Parser a -> Parser a
+syncPos p = do
+  put =<< getSourcePos
+  p
 
 -- | single line comment
 lineComment :: Parser ()
@@ -43,11 +50,12 @@ blockComment = L.skipBlockComment "###" "###"
 
 -- | space consumer including comments and newlines
 scn :: Parser ()
-scn = L.space space1 lineComment blockComment
+scn = syncPos $ L.space space1 lineComment blockComment
 
 -- | space consumer including comments without newlines
 sc :: Parser ()
-sc = L.space (void $ some (oneOf (" \t" :: String))) lineComment blockComment
+sc = syncPos
+  $ L.space (void $ some (oneOf (" \t" :: String))) lineComment blockComment
 
 -- | lexeme consumer without newline
 lexeme :: Parser a -> Parser a
@@ -60,10 +68,6 @@ symbol = L.symbol sc
 -- | symbol consumer with newline
 symbolN :: Text -> Parser Text
 symbolN = L.symbol scn
-
-upto1 :: Int -> Parser a -> Parser [a]
-upto1 n p | n > 0 = (:) <$> p <*> upto1 (n - 1) p
-upto1 _ _         = return []
 
 namespace :: Parser Name
 namespace = T.pack <$> ((:) <$> upperChar <*> many letterChar)
@@ -84,46 +88,48 @@ mixfix = Mixfix <$> many mixfixIdentifier
 identifier :: Parser Identifier
 identifier = local <|> namespaced <|> mixfix
 
-abstraction :: Parser Lambda
-abstraction = Abstraction <$> (symbol "[" *> lexeme lambda <* symbol "]")
+abstraction :: Parser TermAnn
+abstraction =
+  ann $ AbstractionF <$> (symbol "[" *> lexeme lambda <* symbol "]")
 
-application :: Parser Lambda
+application :: Parser TermAnn
 application =
-  Application <$> (symbol "(" *> some (lexeme singleton) <* symbol ")")
+  ann $ ApplicationF <$> (symbol "(" *> some (lexeme singleton) <* symbol ")")
 
-index :: Parser Lambda
-index = Index . read . pure <$> digitChar
+index :: Parser TermAnn
+index = ann $ IndexF . read . pure <$> digitChar
 
-singleton :: Parser Lambda
+singleton :: Parser TermAnn
 singleton = lexeme $ abstraction <|> application <|> index
 
-lambda :: Parser Lambda
-lambda = Application <$> some (lexeme singleton)
+lambda :: Parser TermAnn
+lambda = ann $ ApplicationF <$> some (lexeme singleton)
 
-definition :: Parser (Term -> Term -> Term)
-definition = Definition <$> lexeme identifier <*> lexeme lambda
+definition :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+definition = DefinitionF <$> lexeme identifier <*> lexeme lambda
 
-command :: Parser Command
-command = char ':' *> test
+command :: Parser TermAnn
+command = ann $ char ':' *> test
  where
   test =
-    Test
+    TestF
       <$> (symbol "test" *> symbol "(" *> lexeme lambda <* symbol ")")
       <*> (symbol "(" *> lexeme lambda <* symbol ")")
 
-preprocessor :: Parser (Term -> Term -> Term)
-preprocessor = Preprocessor <$> lexeme command
+preprocessor :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+preprocessor = PreprocessorF <$> lexeme command
 
-program :: Parser Term
-program = do
+program :: Parser TermAnn
+program = ann $ do
   indent <- scn *> L.indentLevel
   instr  <- try definition <|> preprocessor
-  sub    <- try (L.indentGuard scn GT indent *> program) <|> (Empty <$ scn)
-  next   <- try (L.indentGuard scn EQ indent *> program) <|> (Empty <$ scn)
+  sub    <- try (L.indentGuard scn GT indent *> program) <|> ann (EmptyF <$ scn)
+  next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next
 
-parse :: Text -> Either String Term
-parse s = prettify $ runParser (program <* eof) "" s
+parse :: Text -> Either String TermAnn
+parse s = prettify
+  $ evalState (runParserT (program <* eof) "" s) (initialPos "foo")
  where
   prettify (Right t  ) = Right t
   prettify (Left  err) = Left $ errorBundlePretty err

@@ -1,22 +1,20 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
+{-# LANGUAGE TemplateHaskell #-}
 
 module Data.Bruijn
-  ( Term(..)
-  , Lambda(..)
+  ( TermF(..)
+  , Term(..)
   , Identifier(..)
   , MixfixIdentifier(..)
   , SyntacticSugar(..)
-  , Command(..)
   , Name
   ) where
 
+import           Data.Fix                       ( Fix(..) )
 import           Data.Text                      ( Text )
+import           Text.Show.Deriving             ( deriveShow1 )
 
 type Name = Text
-
-data Command = Test Lambda Lambda -- | :test (<lambda>) (<lambda>)
-               | Import Text Text           -- | :import <path> <namespace>
-               deriving Show
 
 data SyntacticSugar = String Text
                       | UnaryNumber Integer
@@ -25,21 +23,30 @@ data SyntacticSugar = String Text
                       | Rational Integer Integer
                       | Real Integer Integer
                       | Complex Integer Integer
-                      deriving Show
+                      deriving (Show, Eq)
 
-data MixfixIdentifier = Wildcard | Special Name deriving Show
+data MixfixIdentifier = Wildcard | Special Name
+  deriving (Show, Eq)
 
-data Identifier = Local Name | Namespaced Name Identifier | Mixfix [MixfixIdentifier] deriving Show
+data Identifier = Local Name | Namespaced Name Identifier | Mixfix [MixfixIdentifier]
+  deriving (Show, Eq)
 
-data Lambda = Abstraction Lambda         -- | Abstractions of a term
-              | Application [Lambda]     -- | Left application of terms
-              | Index Int                -- | de Bruijn index
-              | Substitution Identifier  -- | Usage of a definition
-              | Prefix Identifier Lambda -- | Prefixed term
-              | Sugar SyntacticSugar     -- | Syntactic sugar eventually desugared to Lambdas
-              deriving Show
+data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
+            | PreprocessorF f f f           -- | <command> [<sub> <next>]
+            | EmptyF
 
-data Term = Definition Identifier Lambda Term Term -- | <name> <term> [<sub> <next>]
-            | Preprocessor Command Term Term       -- | <command> [<sub> <next>]
-            | Empty
-            deriving Show
+            | AbstractionF f                -- | Abstraction of a term
+            | ApplicationF [f]              -- | Left application of terms
+            | IndexF Int                    -- | de Bruijn index
+            | SubstitutionF Identifier      -- | Usage of a definition
+            | PrefixF Identifier f          -- | Prefixed term
+            | SugarF SyntacticSugar         -- | Syntactic sugar eventually desugared to Lambdas
+
+            | TestF f f                     -- | :test (<lambda>) (<lambda>)
+            | ImportF Text Text             -- | :import <path> <namespace>
+
+            deriving (Show, Eq, Functor)
+
+deriveShow1 ''TermF
+
+type Term = Fix TermF
