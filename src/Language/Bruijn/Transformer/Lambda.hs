@@ -11,9 +11,7 @@ import           Data.Bruijn                    ( Identifier(..)
                                                 , TermAnnF(..)
                                                 , TermF(..)
                                                 )
-import           Data.Fix                       ( Fix(..)
-                                                , foldFix
-                                                )
+import           Data.Fix                       ( Fix(..) )
 import           Data.Functor.Compose           ( getCompose )
 import qualified Data.Lambda                   as Lambda
                                                 ( Term(..)
@@ -22,28 +20,28 @@ import qualified Data.Lambda                   as Lambda
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Language.Generic.Annotation    ( AnnUnit(..) )
-import           Language.Generic.Error         ( ErrorOr
+import           Language.Generic.Error         ( MonadError
                                                 , throwError
                                                 )
 
 cata :: Functor f => (f a -> a) -> Fix f -> a
 cata f (Fix x) = f (fmap (cata f) x)
 
-transFix :: TermF f -> ErrorOr Lambda.Term
-transFix (DefinitionF name term sub next) = throwError ""
-transFix (PreprocessorF command sub next) = throwError ""
-transFix EmptyF                           = throwError ""
+transform :: (MonadError Text m) => TermAnn -> m Lambda.Term
+transform = cata (go . annotated . getCompose)
+ where
+  go :: (MonadError Text m) => TermF f -> m Lambda.Term
+  go (DefinitionF name term sub next) = throwError ""
+  go (PreprocessorF command sub next) = throwError ""
+  go EmptyF                           = throwError ""
 
-transFix (AbstractionF  term    )         = throwError ""
-transFix (ApplicationF  terms   )         = throwError ""
-transFix (IndexF        n       )         = throwError ""
+  go (AbstractionF  term    )         = throwError ""
+  go (ApplicationF  terms   )         = throwError ""
+  go (IndexF        n       )         = throwError ""
 
-transFix (SubstitutionF name    )         = throwError ""
-transFix (PrefixF name term     )         = throwError ""
-transFix (SugarF sugar          )         = throwError ""
+  go (SubstitutionF name    )         = throwError ""
+  go (PrefixF name term     )         = throwError ""
 
-transFix (TestF   left right    )         = throwError ""
-transFix (ImportF path namespace)         = throwError ""
-
-transform :: TermAnn -> ErrorOr Lambda.Term
-transform = cata (transFix . annotated . getCompose)
+  go (SugarF sugar          )         = throwError ""
+  go (TestF   left right    )         = throwError "unexpected test"
+  go (ImportF path namespace)         = throwError "unexpected import"

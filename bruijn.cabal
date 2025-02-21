@@ -28,6 +28,7 @@ library
       Language.Generic.Annotation
       Language.Generic.Error
       Language.Bruijn.Transformer.Lambda
+      Language.Bruijn.Preprocessor
       Data.Lambda
   other-modules:
       Paths_bruijn
@@ -36,7 +37,10 @@ library
   default-extensions:
       LambdaCase
       OverloadedStrings
+      PatternSynonyms
       DeriveFunctor
+      DeriveTraversable
+      FlexibleContexts
   ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
@@ -56,6 +60,7 @@ executable bruijn
   default-extensions:
       LambdaCase
       OverloadedStrings
+      FlexibleContexts
   ghc-options: -O3 -optc-O3 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

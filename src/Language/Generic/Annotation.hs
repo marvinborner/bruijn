@@ -2,11 +2,13 @@
 -- inspired by Tim Williams' "Recursion Schemes"
 --         and John Wiegley's hnix (BSD-3-Clause)
 
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Language.Generic.Annotation
   ( AnnF
+  , pattern AnnF
   , SrcSpan(..)
   , AnnUnit(..)
   , ann
@@ -17,6 +19,7 @@ import           Control.Monad.State            ( MonadState
                                                 )
 import           Data.Fix                       ( Fix(..) )
 import           Data.Functor.Compose           ( Compose(..) )
+import           Data.Kind                      ( Type )
 import           Text.Megaparsec                ( ParsecT
                                                 , SourcePos
                                                 , TraversableStream
@@ -34,12 +37,24 @@ data AnnUnit ann expr = AnnUnit
   { annotation :: ann
   , annotated  :: expr
   }
-  deriving (Show, Functor)
+  deriving (Show, Functor, Foldable, Traversable)
 
 deriveShow1 ''AnnUnit
 
 type AnnF ann f = Compose (AnnUnit ann) f
+
+pattern AnnF :: ann -> f a -> Compose (AnnUnit ann) f a
+pattern AnnF ann f = Compose (AnnUnit ann f)
+{-# complete AnnF #-}
+
 type Ann ann f = Fix (AnnF ann f)
+
+pattern Ann
+  :: forall ann (f :: Type -> Type) . ann
+  -> f (Ann ann f)
+  -> Ann ann f
+pattern Ann ann a = Fix (AnnF ann a)
+{-# complete Ann #-}
 
 annUnitToAnn :: AnnUnit ann (f (Ann ann f)) -> Ann ann f
 annUnitToAnn (AnnUnit ann a) = Fix (Compose (AnnUnit ann a))

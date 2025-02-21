@@ -10,11 +10,14 @@ module Data.Bruijn
   , Name
   , TermAnn(..)
   , TermAnnF(..)
+  , cata
   ) where
 
 import           Data.Fix                       ( Fix(..) )
+import           Data.Functor.Compose           ( getCompose )
 import           Data.Text                      ( Text )
 import           Language.Generic.Annotation    ( AnnF
+                                                , AnnUnit(..)
                                                 , SrcSpan
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
@@ -50,7 +53,7 @@ data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
             | TestF f f                     -- | :test (<lambda>) (<lambda>)
             | ImportF Text Text             -- | :import <path> <namespace>
 
-            deriving (Show, Eq, Functor)
+            deriving (Show, Eq, Functor, Foldable, Traversable)
 
 deriveShow1 ''TermF
 
@@ -58,3 +61,7 @@ type Term = Fix TermF
 
 type TermAnnF = AnnF SrcSpan TermF
 type TermAnn = Fix TermAnnF
+
+-- cata :: (TermF f -> m a) -> TermAnn -> m a
+cata g = cata (g . annotated . getCompose)
+  where cata f (Fix x) = f (fmap (cata f) x)

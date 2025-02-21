@@ -1,17 +1,15 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
+-- simple wrapper around MonadError
 
 module Language.Generic.Error
-  ( ErrorOr
-  , throwError
-  , runError
+  ( throwError
+  , runExcept
+  , module Control.Monad.Except
   ) where
 
-import qualified Control.Monad.Except          as Except
+import           Control.Monad.Except
 import           Data.Text                      ( Text )
 
-type ErrorOr = Except.Except Text
+-- type ErrorOr = MonadError Text
 
-throwError :: Text -> ErrorOr a
-throwError = Except.throwError
-
-runError = Except.runExcept
+-- TODO: error gathering

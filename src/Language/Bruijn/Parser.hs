@@ -21,7 +21,7 @@ import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Void
 import           Language.Generic.Annotation    ( ann )
-import           Language.Generic.Error         ( ErrorOr
+import           Language.Generic.Error         ( MonadError
                                                 , throwError
                                                 )
 import           Text.Megaparsec         hiding ( State
@@ -125,7 +125,7 @@ program = ann $ do
   next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next
 
-parse :: Text -> ErrorOr TermAnn
+parse :: (MonadError Text m) => Text -> m TermAnn
 parse s = prettify
   $ evalState (runParserT (program <* eof) "" s) (initialPos "foo")
  where
