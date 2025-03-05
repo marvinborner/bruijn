@@ -17,6 +17,14 @@ uid [[[extract (2 inc init)]]] ⧗ Unary → Unary
 :test (uid (+1u)) ((+1u))
 :test (uid (+5u)) ((+5u))
 
+# folds unary number left
+foldl [[1 [0 1]]] ⧗ Unary → a
+
+:test (foldl [[1 (1 (1 0))]]) ([[0 1 1 1]])
+
+# unary infinity
+∞ [[[0 0] [2 (0 0)]]]
+
 # returns true if a unary number is zero
 zero? [0 [false] true] ⧗ Unary → Boolean
 
@@ -166,4 +174,16 @@ hyperfac [[1 [[(0 0) (1 [[2 1 (1 0)]])]] [1] i]] ⧗ Unary → Unary
 
 # Wilson's theorem
 # very inefficient but very golfable
-prime? [=?(++(fac --0) % 0)] ⧗ Unary → Boolean
+prime?* [=?(++(fac --0) % 0)] ⧗ Unary → Boolean
+
+# more efficient primality test, based on Tromp's characteristic sequence
+# golfed to 208 bit
+prime? [0 [0 ki] [0 ki [0 ki (sieve y s0)]] k] ⧗ Unary → Boolean
+	sieve [0 [[[0 k ([3 0 (4 0)] [[[[0 2 (1 (5 3))]]]])]]]]
+	s0 [[[[0 ki (1 3)]]]]
+
+:test (prime? (+2u)) ([[1]])
+:test (prime? (+3u)) ([[1]])
+:test (prime? (+4u)) ([[0]])
+:test (prime? (+5u)) ([[1]])
+:test (prime? (+6u)) ([[0]])

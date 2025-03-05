@@ -223,8 +223,7 @@ pascal L.iterate [L.zip-with …+… (L.{}(+0) ++ 0) (0 ; (+0))] (L.{}(+1))
 
 # characteristic prime sequence by Tromp
 characteristic-primes ki : (ki : (sieve s0)) ⧗ (List Bool)
-	sieve y [[k : ([(2 0) (y' 0)] (ssucc 0))]]
-		y' [[0 0] [1 (0 0)]]
+	sieve y [[k : ([(2 0) (y 0)] (ssucc 0))]]
 		ssucc [[[[1 : (0 (3 2))]]]]
 	s0 [[[ki : (0 2)]]]
 
@@ -236,6 +235,12 @@ primes* L.nub ((…≠?… (+1)) ∘∘ gcd) (L.iterate ++‣ (+2)) ⧗ (List Nu
 
 # primality test
 prime? L.index characteristic-primes ⧗ Number → Boolean
+
+:test (prime? (+2)) ([[1]])
+:test (prime? (+3)) ([[1]])
+:test (prime? (+4)) ([[0]])
+:test (prime? (+5)) ([[1]])
+:test (prime? (+6)) ([[0]])
 
 # prime factors
 factors \divs primes ⧗ Number → (List Number)
