@@ -1,0 +1,18 @@
+# state monad example: logger/writer
+
+:import std/Combinator .
+:import std/List .
+:import std/Number .
+:import std/Monad/State .
+
+log [[[[0 (1 ++ 2) 3]]]]
+
+deepthought answer >>= [correct >>= [check >>= [return]]]
+	answer log (+42) "Finding answer... "
+	correct log (0 =? (+42)) "Checking answer... "
+	check 0 (log [[0]] "Is correct!") (log [[0]] "Is false!")
+	return pure 2
+
+:test (deepthought [[0]]) ([0 (+42) "Finding answer... Checking answer... Is correct!"])
+
+main [deepthought [[0]] [[0]]]
