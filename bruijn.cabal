@@ -23,12 +23,13 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Bruijn
-      Language.Bruijn.Parser
       Language.Generic.Annotation
       Language.Generic.Error
-      Language.Bruijn.Transformer.Lambda
+      Data.Bruijn
+      Language.Bruijn.Parser
+      Language.Bruijn.Tracer
       Language.Bruijn.Preprocessor
+      Language.Bruijn.Transformer.Lambda
       Data.Lambda
   other-modules:
       Paths_bruijn

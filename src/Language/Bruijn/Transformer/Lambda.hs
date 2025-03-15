@@ -15,33 +15,39 @@ import           Data.Fix                       ( Fix(..) )
 import           Data.Functor.Compose           ( getCompose )
 import qualified Data.Lambda                   as Lambda
                                                 ( Term(..)
+                                                , TermAnn(..)
+                                                , TermAnnF(..)
                                                 , TermF(..)
                                                 )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
-import           Language.Generic.Annotation    ( AnnUnit(..) )
+import           Language.Generic.Annotation    ( AnnUnit(..)
+                                                , pattern AnnF
+                                                )
 import           Language.Generic.Error         ( MonadError
                                                 , throwError
+                                                , Error(..)
                                                 )
 
 cata :: Functor f => (f a -> a) -> Fix f -> a
 cata f (Fix x) = f (fmap (cata f) x)
 
-transform :: (MonadError Text m) => TermAnn -> m Lambda.Term
-transform = cata (go . annotated . getCompose)
- where
-  go :: (MonadError Text m) => TermF f -> m Lambda.Term
-  go (DefinitionF name term sub next) = throwError ""
-  go (PreprocessorF command sub next) = throwError ""
-  go EmptyF                           = throwError ""
+-- TODO: this should transform to annotated term
+--       we later have multiple reduction approaches, where most will strip the annotations beforehand
+--       this will allow us to add really cool debugging features!
+transform :: (MonadError m) => TermAnn -> m Lambda.TermAnn
+transform = cata $ \case
+  (AnnF a (DefinitionF name term sub next)) -> throwError $ TransformError a ""
+  (AnnF a (PreprocessorF command sub next)) -> throwError $ TransformError a ""
+  (AnnF a EmptyF                          ) -> throwError $ TransformError a ""
 
-  go (AbstractionF  term    )         = throwError ""
-  go (ApplicationF  terms   )         = throwError ""
-  go (IndexF        n       )         = throwError ""
+  (AnnF a (AbstractionF  term    )        ) -> Fix . AnnF a . Lambda.AbstractionF <$> term
+  (AnnF a (ApplicationF  terms   )        ) -> throwError $ TransformError a ""
+  (AnnF a (IndexF        n       )        ) -> throwError $ TransformError a ""
 
-  go (SubstitutionF name    )         = throwError ""
-  go (PrefixF name term     )         = throwError ""
+  (AnnF a (SubstitutionF name    )        ) -> throwError $ TransformError a ""
+  (AnnF a (PrefixF name term     )        ) -> throwError $ TransformError a ""
 
-  go (SugarF sugar          )         = throwError ""
-  go (TestF   left right    )         = throwError "unexpected test"
-  go (ImportF path namespace)         = throwError "unexpected import"
+  (AnnF a (SugarF sugar          )        ) -> throwError $ TransformError a "unexpected sugar"
+  (AnnF a (TestF   left right    )        ) -> throwError $ TransformError a "unexpected test"
+  (AnnF a (ImportF path namespace)        ) -> throwError $ TransformError a "unexpected import"

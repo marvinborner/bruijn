@@ -1,9 +1,13 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
+{-# LANGUAGE TypeApplications #-}
 
 module Language.Bruijn.Preprocessor
   ( preprocess
   ) where
 
+import           Control.Exception              ( IOException
+                                                , try
+                                                )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
@@ -11,9 +15,8 @@ import           Data.Bruijn                    ( Identifier(..)
                                                 , Name
                                                 , SyntacticSugar(..)
                                                 , TermAnn
-                                                , TermAnnF
                                                 , TermF(..)
-                                                , cata
+                                                , mapIdentifiers
                                                 )
 import           Data.Fix                       ( Fix(..)
                                                 , foldFix
@@ -21,10 +24,11 @@ import           Data.Fix                       ( Fix(..)
 import           Data.List                      ( genericReplicate )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
-import           Data.Text.IO                   ( readFile )
+import           Data.Text.IO.Utf8              ( readFile )
 import           Language.Generic.Annotation    ( pattern AnnF, SrcSpan )
 import           Language.Generic.Error         ( MonadError
                                                 , throwError
+                                                , Error(..)
                                                 )
 import           Prelude                 hiding ( readFile )
 
@@ -44,31 +48,30 @@ desugar ann (UnaryNumber n) = f
   where f = Fix . AnnF ann
 desugar _ _ = error "not implemented yet"
 
--- | Map all identifiers to a function
-mapIdentifiers :: (Identifier -> Identifier) -> TermAnn -> TermAnn
-mapIdentifiers func = foldFix $ \case
-  (AnnF a (DefinitionF ident term sub next)) ->
-    Fix $ AnnF a $ DefinitionF (func ident) term sub next
-  (AnnF a (SubstitutionF ident)) -> Fix $ AnnF a $ SubstitutionF (func ident)
-  t                              -> Fix t
-
 -- | Desugar import to linked definitions
 importPath
-  :: (MonadIO m, MonadError Text m)
-  => (Text -> m TermAnn)
+  :: (MonadIO m, MonadError m)
+  => SrcSpan
+  -> (Text -> Text -> m TermAnn)
   -> Text
   -> Name
   -> m TermAnn
-importPath process path namespace = do
-  contents <- liftIO $ readFile $ T.unpack path -- TODO: amend path
-  mapIdentifiers (Namespaced namespace) <$> process contents
+importPath ann process path namespace = do
+  -- TODO: also search in std
+  let file = path <> ".bruijn"
+  maybeContents <- liftIO
+    $ try @IOException $ readFile $ T.unpack $ file
+  case maybeContents of
+    Left err -> throwError $ PreprocessError ann $ T.pack $ show err
+    Right contents ->
+      mapIdentifiers (Namespaced namespace) <$> process file contents
 
 preprocess
-  :: (MonadIO m, MonadError Text m)
-  => (Text -> m TermAnn)
+  :: (MonadIO m, MonadError m)
+  => (Text -> Text -> m TermAnn)
   -> TermAnn
   -> m TermAnn
 preprocess process = foldFix $ \case
-  (AnnF ann (SugarF sugar)) -> pure (desugar ann sugar)
-  (AnnF _ (ImportF path namespace)) -> importPath process path namespace
+  (AnnF ann (SugarF sugar)) -> pure $ desugar ann sugar
+  (AnnF ann (ImportF path namespace)) -> importPath ann process path namespace
   t -> Fix <$> sequenceA t

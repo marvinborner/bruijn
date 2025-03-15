@@ -21,7 +21,8 @@ import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Void
 import           Language.Generic.Annotation    ( ann )
-import           Language.Generic.Error         ( MonadError
+import           Language.Generic.Error         ( Error(..)
+                                                , MonadError
                                                 , throwError
                                                 )
 import           Text.Megaparsec         hiding ( State
@@ -67,6 +68,9 @@ symbol = L.symbol sc
 symbolN :: Text -> Parser Text
 symbolN = L.symbol scn
 
+path :: Parser Text
+path = T.pack <$> some alphaNumChar
+
 namespace :: Parser Name
 namespace = T.pack <$> ((:) <$> upperChar <*> many letterChar)
 
@@ -107,12 +111,16 @@ definition :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
 definition = DefinitionF <$> lexeme identifier <*> lexeme lambda
 
 command :: Parser TermAnn
-command = ann $ char ':' *> test
+command = ann $ char ':' *> (try test <|> imp)
  where
   test =
     TestF
       <$> (symbol "test" *> symbol "(" *> lexeme lambda <* symbol ")")
       <*> (symbol "(" *> lexeme lambda <* symbol ")")
+  imp =
+    ImportF
+      <$> (symbol "import" *> lexeme path)
+      <*> (lexeme namespace <|> symbol ".")
 
 preprocessor :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
 preprocessor = PreprocessorF <$> lexeme command
@@ -125,9 +133,11 @@ program = ann $ do
   next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next
 
-parse :: (MonadError Text m) => Text -> m TermAnn
-parse s = prettify
-  $ evalState (runParserT (program <* eof) "" s) (initialPos "foo")
+parse :: (MonadError m) => Text -> Text -> m TermAnn
+parse file input = prettify $ evalState
+  (runParserT (program <* eof) (T.unpack file) input)
+  (initialPos $ T.unpack file)
  where
-  prettify (Right t  ) = return t
-  prettify (Left  err) = throwError $ T.pack $ errorBundlePretty err
+  prettify (Right t) = return t
+  prettify (Left err) =
+    throwError $ ParseError $ T.pack $ errorBundlePretty err

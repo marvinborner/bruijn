@@ -12,6 +12,7 @@ module Language.Generic.Annotation
   , SrcSpan(..)
   , AnnUnit(..)
   , ann
+  , showAnnotation
   ) where
 
 import           Control.Monad.State            ( MonadState
@@ -20,8 +21,11 @@ import           Control.Monad.State            ( MonadState
 import           Data.Fix                       ( Fix(..) )
 import           Data.Functor.Compose           ( Compose(..) )
 import           Data.Kind                      ( Type )
+import           Data.Text                      ( Text )
+import qualified Data.Text                     as T
 import           Text.Megaparsec                ( ParsecT
-                                                , SourcePos
+                                                , SourcePos(..)
+                                                , unPos
                                                 , TraversableStream
                                                 , getSourcePos
                                                 )
@@ -32,6 +36,17 @@ data SrcSpan = SrcSpan
   , spanEnd   :: SourcePos
   }
   deriving (Show, Ord, Eq)
+
+-- TODO: this will later need IO to read/highlight the annotated file
+showSourcePos :: (Monad m) => SourcePos -> m Text
+showSourcePos (SourcePos { sourceName = file, sourceLine = line, sourceColumn = column }) =
+  return $ T.pack file <> ":" <> (T.pack . show . unPos) line <> ":" <> (T.pack . show . unPos) column
+
+showAnnotation :: (Monad m) => SrcSpan -> m Text
+showAnnotation (SrcSpan { spanBegin = begin, spanEnd = end }) = do
+  begin' <- showSourcePos begin
+  end' <- showSourcePos end
+  return $ begin' <> " to " <> end'
 
 data AnnUnit ann expr = AnnUnit
   { annotation :: ann

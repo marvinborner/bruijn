@@ -11,12 +11,16 @@ module Data.Bruijn
   , TermAnn(..)
   , TermAnnF(..)
   , cata
+  , mapIdentifiers
   ) where
 
-import           Data.Fix                       ( Fix(..) )
+import           Data.Fix                       ( Fix(..)
+                                                , foldFix
+                                                )
 import           Data.Functor.Compose           ( getCompose )
 import           Data.Text                      ( Text )
 import           Language.Generic.Annotation    ( AnnF
+                                                , pattern AnnF
                                                 , AnnUnit(..)
                                                 , SrcSpan
                                                 )
@@ -62,6 +66,14 @@ type Term = Fix TermF
 type TermAnnF = AnnF SrcSpan TermF
 type TermAnn = Fix TermAnnF
 
--- cata :: (TermF f -> m a) -> TermAnn -> m a
-cata g = cata (g . annotated . getCompose)
-  where cata f (Fix x) = f (fmap (cata f) x)
+-- to cata only on term: `cata (go . annotation . getCompose)`
+cata :: Functor f => (f a -> a) -> Fix f -> a
+cata f (Fix x) = f (fmap (cata f) x)
+
+-- | Map all identifiers to a function
+mapIdentifiers :: (Identifier -> Identifier) -> TermAnn -> TermAnn
+mapIdentifiers func = foldFix $ \case
+  (AnnF a (DefinitionF ident term sub next)) ->
+    Fix $ AnnF a $ DefinitionF (func ident) term sub next
+  (AnnF a (SubstitutionF ident)) -> Fix $ AnnF a $ SubstitutionF (func ident)
+  t                              -> Fix t
