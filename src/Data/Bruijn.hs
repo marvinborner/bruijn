@@ -12,6 +12,7 @@ module Data.Bruijn
   , TermAnnF(..)
   , mapIdentifiers
   , mapTermAnn
+  , mapTermAlgebra
   , linkIn
   ) where
 
@@ -72,6 +73,9 @@ type TermAnn = Fix TermAnnF
 -- mapTermAnn :: (TermAnnF TermAnn -> TermAnnF TermAnn) -> TermAnn -> TermAnn
 mapTermAnn f (Fix termAnnF) = Fix (f termAnnF)
 
+mapTermAlgebra f = mapTermAnn $ \case
+  AnnF a inn -> AnnF a (f inn)
+
 mapAnn f (Fix (AnnF a termF)) = Fix (AnnF (f a) termF)
 
 -- | Map all identifiers to a function
@@ -84,13 +88,13 @@ mapIdentifiers func = foldFix $ \case
 
 -- | Link term into next-chain
 linkIn :: TermAnn -> TermAnn -> TermAnn
-linkIn term subst = flip mapTermAnn term $ \case
-  AnnF a (DefinitionF name term sub (Fix (AnnF _ EmptyF))) ->
-    AnnF a $ DefinitionF name term sub subst
-  AnnF a (DefinitionF name term sub next) ->
-    AnnF a $ DefinitionF name term sub $ linkIn next subst
-  AnnF a (PreprocessorF command sub (Fix (AnnF _ EmptyF))) ->
-    AnnF a $ PreprocessorF command sub subst
-  AnnF a (PreprocessorF command sub next) ->
-    AnnF a $ PreprocessorF command sub $ linkIn next subst
+linkIn term subst = flip mapTermAlgebra term $ \case
+  DefinitionF name term sub (Fix (AnnF _ EmptyF)) ->
+    DefinitionF name term sub subst
+  DefinitionF name term sub next ->
+    DefinitionF name term sub $ linkIn next subst
+  PreprocessorF command sub (Fix (AnnF _ EmptyF)) ->
+    PreprocessorF command sub subst
+  PreprocessorF command sub next ->
+    PreprocessorF command sub $ linkIn next subst
   t -> t

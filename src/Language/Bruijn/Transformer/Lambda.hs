@@ -38,55 +38,62 @@ import           Language.Generic.Error         ( Error(..)
 -- TODO: this should use outermost Abstraction Application via shift (trivial!)
 transformSub :: TermAnn -> TermAnn -> TermAnn
 transformSub sub term = flip mapTermAnn sub $ \case
-  (AnnF _ (DefinitionF subName subTerm subSub subNext)) -> do
-    let sub' = transformDefinition subName subTerm subSub subNext
+  AnnF _ (DefinitionF subName subTerm subSub subNext) -> do
+    let sub'  = transformDefinition subName subTerm subSub subNext
     let term' = transformSub subNext term
     unFix $ flip foldFix term' $ \case
-      (AnnF _ (SubstitutionF name)) | name == subName -> sub'
+      AnnF _ (SubstitutionF name) | name == subName -> sub'
       t -> Fix t
   _ -> unFix term
 
 transformNext :: Identifier -> TermAnn -> TermAnn -> TermAnn
 transformNext name term next = flip foldFix next $ \case
-  (AnnF _ (SubstitutionF nextName)) | nextName == name -> term
+  AnnF _ (SubstitutionF nextName) | nextName == name -> term
   t -> Fix t
 
 -- via Abstraction Application: (!!)
 
 -- subst sub (all next recursively) in term
 -- subst term' in next (all next recursively)
--- transformDefinition :: ... -> TermAnn
+transformDefinition :: Identifier -> TermAnn -> TermAnn -> TermAnn -> TermAnn
 transformDefinition name term sub next = do
   let term' = transformSub sub term
-  transformNext name term' next
+  flip mapTermAnn next $ \case
+    AnnF a EmptyF -> unFix term'
+    _             -> unFix $ transformNext name term' next
 
 transformSubstitution :: TermAnn -> TermAnn
-transformSubstitution = foldFix $ \case
-  (AnnF a (DefinitionF name term sub next)) ->
-    transformDefinition name term sub next
-  t -> Fix t
+transformSubstitution = mapTermAnn $ \case
+  AnnF a (DefinitionF name term sub next) ->
+    unFix $ transformDefinition name term sub next
+  t -> t
 
+transformTerm :: (MonadError m) => TermAnn -> m Lambda.TermAnn
+transformTerm = foldFix $ \case
+  AnnF a (AbstractionF term) -> Fix . AnnF a . Lambda.AbstractionF <$> term
+  AnnF a (ApplicationF terms) ->
+    Fix . AnnF a . Lambda.ApplicationF <$> sequenceA terms
+  AnnF a (IndexF n) -> return $ Fix $ AnnF a $ Lambda.IndexF n
+
+  -- this shall never surface (but still always gets transformed!)
+  AnnF a EmptyF     -> return $ Fix $ AnnF a $ Lambda.IndexF (-1)
+
+  -- else: throw error
+  AnnF a termM ->
+    sequenceA termM
+      >>= throwError
+      .   TransformError a
+      .   ("unexpected " <>)
+      .   T.pack
+      .   show
+
+-- | "main" is just a placeholder for whatever the last remaining function is
+transformMain :: (MonadError m) => TermAnn -> m Lambda.TermAnn
+transformMain (Fix (AnnF a (DefinitionF _ main _ _))) = transformTerm main
+transformMain (Fix (AnnF a _)) =
+  throwError $ TransformError a "expected main function"
+
+-- TODO: the definitions tree has to be inversed first to preserve substitution order!
+--       optimally, also make "main" head for easier filtering
 transform :: (MonadError m) => TermAnn -> m Lambda.TermAnn
-transform term = do
-  -- TODO: the definitions tree has to be inversed first to preserve substitution order!
-  --       optimally, also make "main" head for easier filtering
-  let term' = transformSubstitution term
-  flip foldFix term' $ \case
-    (AnnF a (DefinitionF name term sub next)) ->
-      throwError $ TransformError a "definition"
-
-    (AnnF a (AbstractionF term)) -> Fix . AnnF a . Lambda.AbstractionF <$> term
-    (AnnF a (ApplicationF  terms)) -> throwError $ TransformError a "app"
-    (AnnF a (IndexF        n    )) -> throwError $ TransformError a "idx"
-
-    (AnnF a (SubstitutionF name )) -> throwError $ TransformError a "subst"
-    (AnnF a (PrefixF name term  )) -> throwError $ TransformError a "prefix"
-
-    -- this should never surface
-    (AnnF a EmptyF               ) -> pure $ Fix $ AnnF a $ Lambda.IndexF (-1)
-
-    (AnnF a (PreprocessorF{})) ->
-      throwError $ TransformError a "unexpected preprocessor"
-    (AnnF a (SugarF{} )) -> throwError $ TransformError a "unexpected sugar"
-    (AnnF a (TestF{}  )) -> throwError $ TransformError a "unexpected test"
-    (AnnF a (ImportF{})) -> throwError $ TransformError a "unexpected import"
+transform = transformMain . transformSubstitution

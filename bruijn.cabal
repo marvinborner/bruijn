@@ -25,12 +25,14 @@ library
   exposed-modules:
       Language.Generic.Annotation
       Language.Generic.Error
+      Language.Generic.PrettyPrinter
       Data.Bruijn
       Language.Bruijn.Parser
       Language.Bruijn.Tracer
       Language.Bruijn.Preprocessor
       Language.Bruijn.PrettyPrinter
       Language.Bruijn.Transformer.Lambda
+      Language.Lambda.PrettyPrinter
       Data.Lambda
   other-modules:
       Paths_bruijn

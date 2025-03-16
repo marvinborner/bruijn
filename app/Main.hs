@@ -27,6 +27,8 @@ import           Language.Generic.Error         ( MonadError
                                                 , runErrorT
                                                 , showError
                                                 )
+import qualified Language.Lambda.PrettyPrinter as Lambda
+                                                ( prettyPrintAnnotated )
 import           Prelude                 hiding ( putStrLn )
 
 bruijnPipeline :: (MonadIO m, MonadError m) => Text -> Text -> m Bruijn.TermAnn
@@ -39,8 +41,11 @@ bruijnPipeline file input = do
 -- pipeline :: (MonadIO m, MonadError m) => Text -> Text -> m Lambda.Term
 pipeline file input = do
   bruijn <- bruijnPipeline file input
+  liftIO $ putStrLn "PARSED:"
   liftIO $ putStrLn $ Bruijn.prettyPrintAnnotated bruijn
   lambda <- Bruijn2Lambda.transform bruijn
+  liftIO $ putStrLn "\nTRANSFORMED:"
+  liftIO $ putStrLn $ Lambda.prettyPrintAnnotated lambda
   return lambda
 
 main :: IO ()
@@ -51,4 +56,6 @@ main = do
     Left err -> do
       pretty <- showError err
       putStrLn pretty
-    Right ast -> print ast
+    Right ast -> do
+      putStrLn "done"
+      -- print ast

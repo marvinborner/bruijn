@@ -18,61 +18,58 @@ import           Language.Generic.Annotation    ( AnnUnit(..)
                                                 , pattern AnnF
                                                 , showAnnotationURI
                                                 )
+import           Language.Generic.PrettyPrinter ( hover
+                                                , text
+                                                )
 import           Text.PrettyPrint.Leijen hiding ( text )
 import qualified Text.PrettyPrint.Leijen       as PP
 
 tab :: Int
 tab = 4
 
-hover :: Text -> Doc -> Doc
-hover note doc =
-  string "\ESC]8;;" <> text note <> string "\ESC\\" <> doc <> string
-    "\ESC]8;;\ESC\\"
-
-text :: Text -> Doc
-text = PP.text . T.unpack
-
 prettyMixfixIdentifier :: MixfixIdentifier -> Doc
-prettyMixfixIdentifier Wildcard       = char '…'
-prettyMixfixIdentifier (Special name) = text name
+prettyMixfixIdentifier = \case
+  Wildcard     -> char '…'
+  Special name -> text name
 
 prettyIdentifier :: Identifier -> Doc
-prettyIdentifier (Local name               ) = text name
-prettyIdentifier (Namespaced "." identifier) = prettyIdentifier identifier
-prettyIdentifier (Namespaced name identifier) =
-  text name <> dot <> prettyIdentifier identifier
-prettyIdentifier (Mixfix identifiers) =
-  foldl1 (<>) (fmap prettyMixfixIdentifier identifiers)
+prettyIdentifier = \case
+  Local name                 -> text name
+  Namespaced "."  identifier -> prettyIdentifier identifier
+  Namespaced name identifier -> text name <> dot <> prettyIdentifier identifier
+  Mixfix identifiers -> foldl1 (<>) (fmap prettyMixfixIdentifier identifiers)
 
 prettyPrintAlgebra :: TermF Doc -> Doc
-prettyPrintAlgebra (DefinitionF name term sub next) = do
-  let sub'  = if show sub == "" then indent tab sub else line <> indent tab sub
-  let next' = if show next == "" then next else line <> next
-  prettyIdentifier name <+> term <> sub' <> next'
-prettyPrintAlgebra (PreprocessorF command sub next) = do
-  let sub'  = if show sub == "" then indent tab sub else line <> indent tab sub
-  let next' = if show next == "" then next else line <> next
-  command <> sub' <> next'
-prettyPrintAlgebra (AbstractionF  term  ) = lbracket <> term <> rbracket
-prettyPrintAlgebra (ApplicationF  [term]) = term
-prettyPrintAlgebra (ApplicationF terms) = lbrace <> foldl1 (<>) terms <> rbrace
-prettyPrintAlgebra (IndexF        n     ) = int n
-prettyPrintAlgebra (SubstitutionF name  ) = prettyIdentifier name
-prettyPrintAlgebra (PrefixF name term   ) = prettyIdentifier name <> term
-prettyPrintAlgebra (EmptyF              ) = empty
-prettyPrintAlgebra (SugarF sugar        ) = text "SUGAR" -- TODO
-prettyPrintAlgebra (TestF left right) =
-  text ":test"
-    <> space
-    <> lparen
-    <> left
-    <> rparen
-    <> space
-    <> lparen
-    <> right
-    <> rparen
-prettyPrintAlgebra (ImportF path namespace) =
-  text ":import " <> text path <+> text namespace
+prettyPrintAlgebra = \case
+  DefinitionF name term sub next -> do
+    let sub' =
+          if show sub == "" then indent tab sub else line <> indent tab sub
+    let next' = if show next == "" then next else line <> next
+    prettyIdentifier name <+> term <> sub' <> next'
+  PreprocessorF command sub next -> do
+    let sub' =
+          if show sub == "" then indent tab sub else line <> indent tab sub
+    let next' = if show next == "" then next else line <> next
+    command <> sub' <> next'
+  AbstractionF  term   -> lbracket <> term <> rbracket
+  ApplicationF  [term] -> term
+  ApplicationF  terms  -> lparen <> foldl1 ((<>) . (<> space)) terms <> rparen
+  IndexF        n      -> int n
+  SubstitutionF name   -> prettyIdentifier name
+  PrefixF name term    -> prettyIdentifier name <> term
+  EmptyF               -> empty
+  SugarF sugar         -> text "SUGAR" -- TODO
+  TestF left right ->
+    text ":test"
+      <> space
+      <> lparen
+      <> left
+      <> rparen
+      <> space
+      <> lparen
+      <> right
+      <> rparen
+  ImportF path namespace -> text ":import " <> text path <+> text namespace
 
 -- | purely textual pretty printing
 prettyPrint :: TermAnn -> Text

@@ -101,8 +101,11 @@ application =
 index :: Parser TermAnn
 index = ann $ IndexF . read . return <$> digitChar
 
+substitution :: Parser TermAnn
+substitution = ann $ SubstitutionF <$> lexeme identifier
+
 singleton :: Parser TermAnn
-singleton = lexeme $ abstraction <|> application <|> index
+singleton = lexeme $ abstraction <|> application <|> index <|> substitution
 
 lambda :: Parser TermAnn
 lambda = ann $ ApplicationF <$> some (lexeme singleton)
