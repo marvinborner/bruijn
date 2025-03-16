@@ -17,7 +17,7 @@ import qualified Language.Bruijn.Parser        as Bruijn
 import qualified Language.Bruijn.Preprocessor  as Bruijn
                                                 ( preprocess )
 import qualified Language.Bruijn.PrettyPrinter as Bruijn
-                                                ( prettyPrint )
+                                                ( prettyPrintAnnotated )
 import qualified Language.Bruijn.Tracer        as Bruijn
                                                 ( traceAnn )
 import qualified Language.Bruijn.Transformer.Lambda
@@ -39,7 +39,7 @@ bruijnPipeline file input = do
 -- pipeline :: (MonadIO m, MonadError m) => Text -> Text -> m Lambda.Term
 pipeline file input = do
   bruijn <- bruijnPipeline file input
-  liftIO $ putStrLn $ Bruijn.prettyPrint bruijn
+  liftIO $ putStrLn $ Bruijn.prettyPrintAnnotated bruijn
   lambda <- Bruijn2Lambda.transform bruijn
   return lambda
 

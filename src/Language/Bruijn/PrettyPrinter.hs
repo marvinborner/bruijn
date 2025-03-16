@@ -2,6 +2,7 @@
 
 module Language.Bruijn.PrettyPrinter
   ( prettyPrint
+  , prettyPrintAnnotated
   ) where
 
 import           Data.Bruijn                    ( Identifier(..)
@@ -43,39 +44,45 @@ prettyIdentifier (Namespaced name identifier) =
 prettyIdentifier (Mixfix identifiers) =
   foldl1 (<>) (fmap prettyMixfixIdentifier identifiers)
 
+prettyPrintAlgebra :: TermF Doc -> Doc
+prettyPrintAlgebra (DefinitionF name term sub next) = do
+  let sub'  = if show sub == "" then indent tab sub else line <> indent tab sub
+  let next' = if show next == "" then next else line <> next
+  prettyIdentifier name <+> term <> sub' <> next'
+prettyPrintAlgebra (PreprocessorF command sub next) = do
+  let sub'  = if show sub == "" then indent tab sub else line <> indent tab sub
+  let next' = if show next == "" then next else line <> next
+  command <> sub' <> next'
+prettyPrintAlgebra (AbstractionF  term  ) = lbracket <> term <> rbracket
+prettyPrintAlgebra (ApplicationF  [term]) = term
+prettyPrintAlgebra (ApplicationF terms) = lbrace <> foldl1 (<>) terms <> rbrace
+prettyPrintAlgebra (IndexF        n     ) = int n
+prettyPrintAlgebra (SubstitutionF name  ) = prettyIdentifier name
+prettyPrintAlgebra (PrefixF name term   ) = prettyIdentifier name <> term
+prettyPrintAlgebra (EmptyF              ) = empty
+prettyPrintAlgebra (SugarF sugar        ) = text "SUGAR" -- TODO
+prettyPrintAlgebra (TestF left right) =
+  text ":test"
+    <> space
+    <> lparen
+    <> left
+    <> rparen
+    <> space
+    <> lparen
+    <> right
+    <> rparen
+prettyPrintAlgebra (ImportF path namespace) =
+  text ":import " <> text path <+> text namespace
+
+-- | purely textual pretty printing
 prettyPrint :: TermAnn -> Text
-prettyPrint t = T.pack $ show $ flip foldFix t $ \case
-  (AnnF a (DefinitionF name term sub next)) -> do
-    let next' = if show next == "" then next else line <> next
-    let sub' =
-          if show sub == "" then indent tab sub else line <> indent tab sub
-    hover (showAnnotationURI a) (prettyIdentifier name)
-      <+> term
-      <>  sub'
-      <>  next'
-  (AnnF a (PreprocessorF command sub next)) ->
-    command <> line <> indent tab sub <> line <> next
+prettyPrint =
+  T.pack . show . foldFix (prettyPrintAlgebra . annotated . getCompose)
 
-  (AnnF a (AbstractionF  term  )) -> lbracket <> term <> rbracket
-  (AnnF a (ApplicationF  [term])) -> term
-  (AnnF a (ApplicationF  terms )) -> lbrace <> foldl1 (<>) terms <> rbrace
-  (AnnF a (IndexF        n     )) -> int n
-
-  (AnnF a (SubstitutionF name  )) -> prettyIdentifier name
-  (AnnF a (PrefixF name term   )) -> prettyIdentifier name <> term
-
-  (AnnF a EmptyF                ) -> empty
-
-  (AnnF a (SugarF sugar)        ) -> text "SUGAR" -- TODO
-  (AnnF a (TestF left right)) ->
-    text ":test"
-      <> space
-      <> lparen
-      <> left
-      <> rparen
-      <> space
-      <> lparen
-      <> right
-      <> rparen
-  (AnnF a (ImportF path namespace)) ->
-    text ":import " <> text path <+> text namespace
+-- | pretty print with hovering (uses terminal escape sequences)
+-- TODO: also enable coloring here
+prettyPrintAnnotated :: TermAnn -> Text
+prettyPrintAnnotated = T.pack . show . foldFix go
+ where
+  go (AnnF _ EmptyF) = empty -- for linebreaks in if-check above
+  go (AnnF a t     ) = hover (showAnnotationURI a) (prettyPrintAlgebra t)
