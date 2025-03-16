@@ -75,5 +75,6 @@ preprocess process = foldFix $ \case
       Fix (AnnF a (ImportF path namespace)) -> do
         imported <- importPath a process path namespace
         next' <- next
-        pure $ linkIn imported next'
+        return $ linkIn imported next'
+      c -> return c
   t -> Fix <$> sequenceA t

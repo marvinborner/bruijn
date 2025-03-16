@@ -12,6 +12,9 @@ module Language.Generic.Annotation
   , SrcSpan(..)
   , AnnUnit(..)
   , ann
+  , showSourcePosURI
+  , showAnnotationURI
+  , showSourcePos
   , showAnnotation
   ) where
 
@@ -37,16 +40,24 @@ data SrcSpan = SrcSpan
   }
   deriving (Show, Ord, Eq)
 
+showSourcePosURI :: SourcePos -> Text
+showSourcePosURI (SourcePos { sourceName = file, sourceLine = line, sourceColumn = column })
+  = T.pack file
+    <> ":"
+    <> (T.pack . show . unPos) line
+    <> ":"
+    <> (T.pack . show . unPos) column
+
+showAnnotationURI :: SrcSpan -> Text
+showAnnotationURI (SrcSpan { spanBegin = begin }) = showSourcePosURI begin
+
 -- TODO: this will later need IO to read/highlight the annotated file
 showSourcePos :: (Monad m) => SourcePos -> m Text
-showSourcePos (SourcePos { sourceName = file, sourceLine = line, sourceColumn = column }) =
-  return $ T.pack file <> ":" <> (T.pack . show . unPos) line <> ":" <> (T.pack . show . unPos) column
+showSourcePos = return . showSourcePosURI
 
+-- TODO: this will later need IO to read/highlight the annotated file
 showAnnotation :: (Monad m) => SrcSpan -> m Text
-showAnnotation (SrcSpan { spanBegin = begin, spanEnd = end }) = do
-  begin' <- showSourcePos begin
-  end' <- showSourcePos end
-  return $ begin' <> " to " <> end'
+showAnnotation = return . showAnnotationURI
 
 data AnnUnit ann expr = AnnUnit
   { annotation :: ann

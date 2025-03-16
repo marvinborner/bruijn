@@ -84,7 +84,7 @@ namespaced :: Parser Identifier
 namespaced = Namespaced <$> namespace <*> identifier
 
 mixfix :: Parser Identifier
-mixfix = Mixfix <$> many mixfixIdentifier
+mixfix = Mixfix <$> some mixfixIdentifier
   where mixfixIdentifier = (Wildcard <$ char '…') <|> (Special <$> special)
 
 identifier :: Parser Identifier
