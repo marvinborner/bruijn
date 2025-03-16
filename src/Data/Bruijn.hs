@@ -10,8 +10,9 @@ module Data.Bruijn
   , Name
   , TermAnn(..)
   , TermAnnF(..)
-  , cata
   , mapIdentifiers
+  , mapTermAnn
+  , linkIn
   ) where
 
 import           Data.Fix                       ( Fix(..)
@@ -66,9 +67,12 @@ type Term = Fix TermF
 type TermAnnF = AnnF SrcSpan TermF
 type TermAnn = Fix TermAnnF
 
--- to cata only on term: `cata (go . annotation . getCompose)`
-cata :: Functor f => (f a -> a) -> Fix f -> a
-cata f (Fix x) = f (fmap (cata f) x)
+-- to foldFix only on term: `foldFix (go . annotation . getCompose)`
+
+-- mapTermAnn :: (TermAnnF TermAnn -> TermAnnF TermAnn) -> TermAnn -> TermAnn
+mapTermAnn f (Fix termAnnF) = Fix (f termAnnF)
+
+mapAnn f (Fix (AnnF a termF)) = Fix (AnnF (f a) termF)
 
 -- | Map all identifiers to a function
 mapIdentifiers :: (Identifier -> Identifier) -> TermAnn -> TermAnn
@@ -77,3 +81,16 @@ mapIdentifiers func = foldFix $ \case
     Fix $ AnnF a $ DefinitionF (func ident) term sub next
   (AnnF a (SubstitutionF ident)) -> Fix $ AnnF a $ SubstitutionF (func ident)
   t                              -> Fix t
+
+-- | Link term into next-chain
+linkIn :: TermAnn -> TermAnn -> TermAnn
+linkIn term subst = flip mapTermAnn term $ \case
+  AnnF a (DefinitionF name term sub (Fix (AnnF _ EmptyF))) ->
+    AnnF a $ DefinitionF name term sub subst
+  AnnF a (DefinitionF name term sub next) ->
+    AnnF a $ DefinitionF name term sub $ linkIn next subst
+  AnnF a (PreprocessorF command sub (Fix (AnnF _ EmptyF))) ->
+    AnnF a $ PreprocessorF command sub subst
+  AnnF a (PreprocessorF command sub next) ->
+    AnnF a $ PreprocessorF command sub $ linkIn next subst
+  t -> t

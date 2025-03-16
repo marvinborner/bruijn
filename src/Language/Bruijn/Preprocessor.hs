@@ -16,19 +16,18 @@ import           Data.Bruijn                    ( Identifier(..)
                                                 , SyntacticSugar(..)
                                                 , TermAnn
                                                 , TermF(..)
+                                                , linkIn
                                                 , mapIdentifiers
                                                 )
-import           Data.Fix                       ( Fix(..)
-                                                , foldFix
-                                                )
+import           Data.Fix                       ( Fix(..), foldFix )
 import           Data.List                      ( genericReplicate )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Text.IO.Utf8              ( readFile )
 import           Language.Generic.Annotation    ( pattern AnnF, SrcSpan )
-import           Language.Generic.Error         ( MonadError
+import           Language.Generic.Error         ( Error(..)
+                                                , MonadError
                                                 , throwError
-                                                , Error(..)
                                                 )
 import           Prelude                 hiding ( readFile )
 
@@ -59,8 +58,7 @@ importPath
 importPath ann process path namespace = do
   -- TODO: also search in std
   let file = path <> ".bruijn"
-  maybeContents <- liftIO
-    $ try @IOException $ readFile $ T.unpack $ file
+  maybeContents <- liftIO $ try @IOException $ readFile $ T.unpack $ file
   case maybeContents of
     Left err -> throwError $ PreprocessError ann $ T.pack $ show err
     Right contents ->
@@ -72,6 +70,10 @@ preprocess
   -> TermAnn
   -> m TermAnn
 preprocess process = foldFix $ \case
-  (AnnF ann (SugarF sugar)) -> pure $ desugar ann sugar
-  (AnnF ann (ImportF path namespace)) -> importPath ann process path namespace
+  AnnF a (SugarF sugar) -> pure $ desugar a sugar
+  AnnF _ (PreprocessorF command sub next) -> command >>= \case
+      Fix (AnnF a (ImportF path namespace)) -> do
+        imported <- importPath a process path namespace
+        next' <- next
+        pure $ linkIn imported next'
   t -> Fix <$> sequenceA t

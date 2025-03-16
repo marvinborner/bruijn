@@ -44,7 +44,7 @@ pipeline file input = do
 main :: IO ()
 main = do
   program <- getContents
-  res     <- runErrorT $ pipeline "stdin" (T.pack program)
+  res     <- runErrorT $ pipeline "stdin" $ T.pack program
   case res of
     Left err -> do
       pretty <- showError err

@@ -4,5 +4,7 @@ module Language.Bruijn.PrettyPrinter
   ( prettyPrint
   ) where
 
+import           Data.Fix                       ( foldFix )
+
 prettyPrint :: TermAnn -> Text
 prettyPrint _ = ""
