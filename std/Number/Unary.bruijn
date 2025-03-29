@@ -41,6 +41,14 @@ mod [[[[3 &k (3 [3 [[[0 (2 (5 1)) 1]]] [1] 1] [1]) ki]]]] ⧗ Unary → Unary �
 :test ((+10u) % (+3u)) ((+1u))
 :test ((+3u) % (+5u)) ((+3u))
 
+# returns the remainder of integer division of exponentiation
+pow-mod [[[0 [[1 [1 [[1 (2 1 0)]] 0]]] &ki [2 3 (1 [[[2 [2 0 1]]]] i t) (1 k i i)]]]] ⧗ Unary → Unary → Unary → Unary
+
+:test (pow-mod (+1u) (+2u) (+2u)) ((+1u))
+:test (pow-mod (+2u) (+3u) (+3u)) ((+2u))
+:test (pow-mod (+3u) (+3u) (+2u)) ((+1u))
+:test (pow-mod (+3u) (+3u) (+3u)) ((+0u))
+
 # returns true if the number is even (remainder mod 2 == 0)
 even? [0 not! true] ⧗ Unary → Boolean
 
