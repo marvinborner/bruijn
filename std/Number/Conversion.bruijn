@@ -15,15 +15,13 @@ unary→ternary [0 T.inc (+0t)] ⧗ Unary → Ternary
 :test (¹³(+0u)) ((+0t))
 :test (¹³(+2u)) ((+2t))
 
-binary→unary [[0 (+0u) [U.inc (2 0)] 1]] (U.mul (+2u)) ⧗ Binary → Unary
+# converts unary numbers to bruijn
+unary→bruijn &k ⧗ Unary → Bruijn
 
-# converts ternary numbers to unary
-ternary→unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
+¹ᵇ‣ unary→bruijn
 
-³¹‣ ternary→unary
-
-:test (³¹(+0t)) ((+0u))
-:test (³¹(+2t)) ((+2u))
+:test (¹ᵇ(+0u)) ((+0d))
+:test (¹ᵇ(+2u)) ((+2d))
 
 # converts Parigot numbers to unary
 parigot→unary [[[P.iter 0 1 2]]] ⧗ Parigot → Unary
@@ -32,6 +30,14 @@ parigot→unary [[[P.iter 0 1 2]]] ⧗ Parigot → Unary
 
 :test (ᵖ¹P.zero) ((+0u))
 :test (ᵖ¹(P.inc (P.inc P.zero))) ((+2u))
+
+# converts binary numbers to unary
+binary→unary [[0 (+0u) [U.inc (2 0)] 1]] (U.mul (+2u)) ⧗ Binary → Unary
+
+²¹‣ binary→unary
+
+:test (²¹(+0b)) ((+0u))
+:test (²¹(+2b)) ((+2u))
 
 # converts binary numbers to ternary
 # constructs reversed path of composed functions and applies to ternary
@@ -44,6 +50,14 @@ binary→ternary [y [[[rec]]] [0] 0 (+0t)] ⧗ Binary → Ternary
 
 :test (T.eq? ²³(+0b) (+0t)) ([[1]])
 :test (T.eq? ²³(+42b) (+42t)) ([[1]])
+
+# converts ternary numbers to unary
+ternary→unary [T.apply 0 U.inc (+0u)] ⧗ Ternary → Unary
+
+³¹‣ ternary→unary
+
+:test (³¹(+0t)) ((+0u))
+:test (³¹(+2t)) ((+2u))
 
 # converts numbers to binary
 # constructs reversed path of composed functions and applies to ternary
