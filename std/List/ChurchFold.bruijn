@@ -1,0 +1,68 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# from Wikipedia, right-folded Church encoding
+
+:import std/Logic .
+:import std/Number/Ternary .
+
+# empty list element
+empty [[0]]
+
+# returns true if a list is empty
+empty? [0 [[false]] true]
+
+# creates list with single element
+singleton [[[1 2 0]]]
+
+{}‣ singleton
+
+:test (empty? ({}(+2))) (false)
+
+# prepends an element to a list
+cons [[[[1 3 (2 1 0)]]]]
+
+…:… cons
+
+# returns the head of a list or empty
+head [0 [[1]] false]
+
+^‣ head
+
+:test (^((+1) : {}(+2))) ((+1))
+
+# returns the tail of a list or empty
+tail [[[2 [[[0 2 (1 4)]]] [1] [[0]]]]]
+
+~‣ tail
+
+:test (~((+1) : {}(+2))) ({}(+2))
+
+# returns the length of a list in balanced ternary
+length [0 [add (+1)] (+0)]
+
+∀‣ length
+
+:test (∀((+1) : {}(+2))) ((+2))
+:test (∀empty) ((+0))
+
+# appends two lists
+append [[[[3 1 (2 1 0)]]]]
+
+…++… append
+
+:test ({}(+1) ++ empty) ({}(+1))
+:test (empty ++ {}(+1)) ({}(+1))
+:test (empty ++ empty) (empty)
+:test (((+1) : ((+2) : {}(+3))) ++ {}(+4)) ((+1) : ((+2) : ((+3) : {}(+4))))
+
+# maps each element to a function
+map [[[[2 [[3 (5 1) 0]] 0]]]]
+
+…<$>… map
+
+:test (++‣ <$> ((+1) : ((+2) : {}(+3)))) ((+2) : ((+3) : {}(+4)))
+
+# applies a right fold on a list
+foldr [[[0 2 1]]]
+
+:test ((foldr …+… (+0) ((+1) : ((+2) : {}(+3)))) =? (+6)) (true)
+:test ((foldr …-… (+2) ((+1) : ((+2) : {}(+3)))) =? (+0)) (true)
