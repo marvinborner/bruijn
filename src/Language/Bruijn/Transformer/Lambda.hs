@@ -32,16 +32,19 @@ import           Language.Generic.Error         ( Error(..)
                                                 , throwError
                                                 )
 
+import           Debug.Trace
+
 data Context = Context
-  { stk :: [Identifier]
+  { stk   :: [Identifier]
+  , depth :: Int
   }
 
 type Transform = ErrorT (State Context)
 
-data Linear = Linear Identifier Linear TermAnn | End
+data Tree = Tree Identifier Tree TermAnn | Branch Identifier Tree Tree | Leaf TermAnn | End
 
-instance Show Linear where
-  show (Linear name next term) =
+instance Show Tree where
+  show (Tree name next term) =
     "((\\"
       <> show name
       <> " -> "
@@ -49,46 +52,55 @@ instance Show Linear where
       <> ") "
       <> T.unpack (prettyPrint term)
       <> ")"
-  show End = "END"
+  show (Branch name left right) =
+    "((\\" <> show name <> " -> " <> show left <> ") " <> show right <> ")"
+  show (Leaf term) = T.unpack $ prettyPrint term
+  show End         = "END"
 
--- | Turn definitions into a Linear (topological sort)
-linearize :: TermAnn -> Linear
-linearize = flip go End
+-- | Turn definitions into a Tree (~ topological sort)
+treeify :: TermAnn -> Tree
+treeify = flip go End
  where
-  go :: TermAnn -> Linear -> Linear
+  go :: TermAnn -> Tree -> Tree
   go = \case
-    Fix (AnnF _ (DefinitionF name term sub next)) -> do
+    FixAnnF _ (DefinitionF name term sub next) -> do
       let sub'  = go sub
       let next' = go next
-      sub' . \k -> Linear name (next' k) term
-    Fix (AnnF _ (DoF term sub next)) -> do
+      \k -> Branch name (next' k) (sub' (Leaf term))
+    FixAnnF _ (DoF term sub next) -> do
       let sub'  = go sub
       let next' = go next
-      sub' . \k -> Linear (Local "_") (next' k) term
-    Fix (AnnF _ EmptyF) -> id
-    t                   -> error $ T.unpack $ prettyPrint t -- should be impossible by now
+      \k -> Branch (Local "") (next' k) (sub' (Leaf term))
+    FixAnnF _ EmptyF -> id
+    t                -> error $ T.unpack $ prettyPrint t -- should be impossible by now
 
 transformTerm :: TermAnn -> Transform Lambda.TermAnn
-transformTerm = mapTermAnnM $ \case
-  AnnF a (AbstractionF term) ->
-    AnnF a . Lambda.AbstractionF <$> transformTerm term
+transformTerm = mapAnnM $ \case
+  AnnF a (AbstractionF term) -> do
+    ctx@Context { depth = d } <- get
+    put $ ctx { depth = d + 1 }
+    term' <- transformTerm term
+    put $ ctx { depth = d }
+    return $ AnnF a $ Lambda.AbstractionF term'
 
   AnnF a (ApplicationF terms) ->
     AnnF a . Lambda.ApplicationF <$> sequenceA (transformTerm <$> terms)
 
-  AnnF a (IndexF        i   ) -> return $ AnnF a $ Lambda.IndexF i
+  AnnF a (IndexF        i   ) -> return $ AnnF a $ Lambda.IndexF $ i
 
   AnnF a (SubstitutionF name) -> do
-    Context { stk = s } <- get
+    Context { stk = s, depth = d } <- get
     let maybeIdx = elemIndex name s
     case maybeIdx of
-      Just i -> return $ AnnF a $ Lambda.IndexF i
+      Just i -> return $ AnnF a $ Lambda.IndexF $ i + d
       Nothing ->
         throwError
           $  TransformError a
           $  "can not substitute: "
           <> T.pack (show name)
-          <> ", available: "
+          <> ", depth: "
+          <> T.pack (show d)
+          <> ", in scope: "
           <> T.pack (show s)
 
   AnnF a ForceF -> return $ AnnF a Lambda.TokenF
@@ -96,18 +108,29 @@ transformTerm = mapTermAnnM $ \case
   AnnF a termM ->
     throwError $ TransformError a $ "unexpected " <> T.pack (show termM)
 
-transformLinear :: Linear -> Transform Lambda.TermAnn
-transformLinear (Linear name lin term) = do
+-- TODO: when a term is open, it must be substituted immediately (do this in preprocessor?)
+transformTree :: Tree -> Transform Lambda.TermAnn
+transformTree (Tree name tree term) = do
   ctx@Context { stk = s } <- get
   term'                   <- transformTerm term
   put ctx { stk = name : s }
-  lin' <- transformLinear lin
+  tree' <- transformTree tree
+  put ctx { stk = s }
   return $ fakeAnn $ Lambda.ApplicationF
-    [fakeAnn $ Lambda.AbstractionF lin', term']
-transformLinear End = return $ fakeAnn $ Lambda.IndexF 0
+    [fakeAnn $ Lambda.AbstractionF tree', term']
+transformTree (Branch name a b) = do
+  ctx@Context { stk = s } <- get
+  b'                      <- transformTree b
+  put ctx { stk = name : s }
+  a' <- transformTree a
+  put ctx { stk = s }
+  return $ fakeAnn $ Lambda.ApplicationF [fakeAnn $ Lambda.AbstractionF a', b']
+transformTree (Leaf term) = transformTerm term
+transformTree End         = return $ fakeAnn $ Lambda.IndexF 0
 
 transform :: (MonadError m) => TermAnn -> m Lambda.TermAnn
 transform term = do
-  let lin    = linearize term
-  let result = evalState (runErrorT $ transformLinear lin) Context { stk = [] }
+  let tree = treeify term
+  let result = trace (show tree) $ evalState (runErrorT $ transformTree tree)
+                                             Context { stk = [], depth = 0 }
   either throwError return result
