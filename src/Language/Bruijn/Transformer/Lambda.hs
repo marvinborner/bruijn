@@ -4,96 +4,105 @@ module Language.Bruijn.Transformer.Lambda
   ( transform
   ) where
 
-import           Control.Monad                  ( (<=<) )
+import           Control.Monad.State            ( State
+                                                , evalState
+                                                , get
+                                                , put
+                                                )
 import           Data.Bruijn                    ( Identifier(..)
-                                                , SyntacticSugar(..)
-                                                , TermAnn(..)
-                                                , TermAnnF(..)
+                                                , TermAnn
                                                 , TermF(..)
-                                                , mapTermAnn
+                                                , mapTermAnnM
                                                 )
-import           Data.Fix                       ( Fix(..)
-                                                , foldFix
-                                                , unFix
-                                                )
-import           Data.Functor.Compose           ( getCompose )
+import           Data.Fix                       ( Fix(..) )
 import qualified Data.Lambda                   as Lambda
-                                                ( Term(..)
-                                                , TermAnn(..)
-                                                , TermAnnF(..)
+                                                ( TermAnn
                                                 , TermF(..)
                                                 )
-import           Data.Text                      ( Text )
+import           Data.List                      ( elemIndex )
 import qualified Data.Text                     as T
-import           Language.Generic.Annotation    ( AnnUnit(..)
+import           Language.Bruijn.PrettyPrinter  ( prettyPrint )
+import           Language.Generic.Annotation    ( fakeAnn
                                                 , pattern AnnF
                                                 )
 import           Language.Generic.Error         ( Error(..)
+                                                , ErrorT
                                                 , MonadError
+                                                , runErrorT
                                                 , throwError
                                                 )
 
--- TODO: should we move sub/next to a Substitutor module (for phases like tests etc.)?
+data Context = Context
+  { stk :: [Identifier]
+  }
 
--- TODO: this should use outermost Abstraction Application via shift (trivial!)
-transformSub :: TermAnn -> TermAnn -> TermAnn
-transformSub sub term = flip mapTermAnn sub $ \case
-  AnnF _ (DefinitionF subName subTerm subSub subNext) -> do
-    let sub'  = transformDefinition subName subTerm subSub subNext
-    let term' = transformSub subNext term
-    unFix $ flip foldFix term' $ \case
-      AnnF _ (SubstitutionF name) | name == subName -> sub'
-      t -> Fix t
-  _ -> unFix term
+type Transform = ErrorT (State Context)
 
-transformNext :: Identifier -> TermAnn -> TermAnn -> TermAnn
-transformNext name term next = flip foldFix next $ \case
-  AnnF _ (SubstitutionF nextName) | nextName == name -> term
-  t -> Fix t
+data Linear = Linear Identifier Linear TermAnn | End
 
--- via Abstraction Application: (!!)
+instance Show Linear where
+  show (Linear name next term) =
+    "((\\"
+      <> show name
+      <> " -> "
+      <> show next
+      <> ") "
+      <> T.unpack (prettyPrint term)
+      <> ")"
+  show End = "END"
 
--- subst sub (all next recursively) in term
--- subst term' in next (all next recursively)
-transformDefinition :: Identifier -> TermAnn -> TermAnn -> TermAnn -> TermAnn
-transformDefinition name term sub next = do
-  let term' = transformSub sub term
-  flip mapTermAnn next $ \case
-    AnnF a EmptyF -> unFix term'
-    _             -> unFix $ transformNext name term' next
+-- | Turn definitions into a Linear (topological sort)
+linearize :: TermAnn -> Linear
+linearize = flip go End
+ where
+  go :: TermAnn -> Linear -> Linear
+  go = \case
+    Fix (AnnF _ (DefinitionF name term sub next)) -> do
+      let sub'  = go sub
+      let next' = go next
+      sub' . \k -> Linear name (next' k) term
+    Fix (AnnF _ EmptyF) -> id
+    -- TODO: freestanding
+    t                   -> error $ T.unpack $ prettyPrint t -- should be impossible by now
 
-transformSubstitution :: TermAnn -> TermAnn
-transformSubstitution = mapTermAnn $ \case
-  AnnF a (DefinitionF name term sub next) ->
-    unFix $ transformDefinition name term sub next
-  t -> t
+transformTerm :: TermAnn -> Transform Lambda.TermAnn
+transformTerm = mapTermAnnM $ \case
+  AnnF a (AbstractionF term) ->
+    AnnF a . Lambda.AbstractionF <$> transformTerm term
 
-transformTerm :: (MonadError m) => TermAnn -> m Lambda.TermAnn
-transformTerm = foldFix $ \case
-  AnnF a (AbstractionF term) -> Fix . AnnF a . Lambda.AbstractionF <$> term
   AnnF a (ApplicationF terms) ->
-    Fix . AnnF a . Lambda.ApplicationF <$> sequenceA terms
-  AnnF a (IndexF n) -> return $ Fix $ AnnF a $ Lambda.IndexF n
+    AnnF a . Lambda.ApplicationF <$> sequenceA (transformTerm <$> terms)
 
-  -- this shall never surface (but still always gets transformed!)
-  AnnF a EmptyF     -> return $ Fix $ AnnF a $ Lambda.IndexF (-1)
+  AnnF a (IndexF        i   ) -> return $ AnnF a $ Lambda.IndexF i
 
-  -- else: throw error
+  AnnF a (SubstitutionF name) -> do
+    Context { stk = s } <- get
+    let maybeIdx = elemIndex name s
+    case maybeIdx of
+      Just i -> return $ AnnF a $ Lambda.IndexF i
+      Nothing ->
+        throwError
+          $  TransformError a
+          $  "can not substitute: "
+          <> T.pack (show name)
+          <> ", available: "
+          <> T.pack (show s)
+
   AnnF a termM ->
-    sequenceA termM
-      >>= throwError
-      .   TransformError a
-      .   ("unexpected " <>)
-      .   T.pack
-      .   show
+    throwError $ TransformError a $ "unexpected " <> T.pack (show termM)
 
--- | "main" is just a placeholder for whatever the last remaining function is
-transformMain :: (MonadError m) => TermAnn -> m Lambda.TermAnn
-transformMain (Fix (AnnF a (DefinitionF _ main _ _))) = transformTerm main
-transformMain (Fix (AnnF a _)) =
-  throwError $ TransformError a "expected main function"
+transformLinear :: Linear -> Transform Lambda.TermAnn
+transformLinear (Linear name lin term) = do
+  ctx@Context { stk = s } <- get
+  term'                   <- transformTerm term
+  put ctx { stk = name : s }
+  lin' <- transformLinear lin
+  return $ fakeAnn $ Lambda.ApplicationF
+    [fakeAnn $ Lambda.AbstractionF lin', term']
+transformLinear End = return $ fakeAnn $ Lambda.IndexF 0
 
--- TODO: the definitions tree has to be inversed first to preserve substitution order!
---       optimally, also make "main" head for easier filtering
 transform :: (MonadError m) => TermAnn -> m Lambda.TermAnn
-transform = transformMain . transformSubstitution
+transform term = do
+  let lin    = linearize term
+  let result = evalState (runErrorT $ transformLinear lin) Context { stk = [] }
+  either throwError return result
