@@ -101,17 +101,24 @@ application =
 index :: Parser TermAnn
 index = ann $ IndexF . read . return <$> digitChar
 
+force :: Parser TermAnn
+force = ann $ ForceF <$ char '!'
+
 substitution :: Parser TermAnn
 substitution = ann $ SubstitutionF <$> lexeme identifier
 
 singleton :: Parser TermAnn
-singleton = lexeme $ abstraction <|> application <|> index <|> substitution
+singleton =
+  lexeme $ abstraction <|> application <|> index <|> force <|> substitution
 
 lambda :: Parser TermAnn
 lambda = ann $ ApplicationF <$> some (lexeme singleton)
 
 definition :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
 definition = DefinitionF <$> lexeme identifier <*> lexeme lambda
+
+freestanding :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+freestanding = DoF <$> (symbol "do " *> lexeme lambda)
 
 command :: Parser TermAnn
 command = ann $ char ':' *> (try test <|> imp)
@@ -131,7 +138,7 @@ preprocessor = PreprocessorF <$> lexeme command
 program :: Parser TermAnn
 program = ann $ do
   indent <- scn *> L.indentLevel
-  instr  <- try definition <|> preprocessor
+  instr  <- freestanding <|> try definition <|> preprocessor
   sub    <- try (L.indentGuard scn GT indent *> program) <|> ann (EmptyF <$ scn)
   next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next

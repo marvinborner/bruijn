@@ -11,12 +11,15 @@ module Data.Lambda
 import           Data.Fix                       ( Fix(..) )
 import           Language.Generic.Annotation    ( AnnF
                                                 , SrcSpan
+                                                , fakeAnn
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
 
 data TermF f = AbstractionF f  -- | Abstraction of a term
             | ApplicationF [f] -- | Left application of terms
             | IndexF Int       -- | de Bruijn index
+            | TokenF           -- | Execution token
+            | CotokenF         -- | Execution token (returning)
             deriving (Show, Eq, Functor)
 
 deriveShow1 ''TermF

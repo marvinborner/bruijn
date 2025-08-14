@@ -22,7 +22,6 @@ import           Language.Generic.PrettyPrinter ( hover
                                                 , text
                                                 )
 import           Text.PrettyPrint.Leijen hiding ( text )
-import qualified Text.PrettyPrint.Leijen       as PP
 
 tab :: Int
 tab = 4
@@ -41,7 +40,7 @@ prettyIdentifier = \case
 
 prettyPrintAlgebra :: TermF Doc -> Doc
 prettyPrintAlgebra = \case
-  DefinitionF name term sub next -> do
+  DefinitionF name term sub next -> do -- TODO: deduplicate
     let sub' =
           if show sub == "" then indent tab sub else line <> indent tab sub
     let next' = if show next == "" then next else line <> next
@@ -51,6 +50,11 @@ prettyPrintAlgebra = \case
           if show sub == "" then indent tab sub else line <> indent tab sub
     let next' = if show next == "" then next else line <> next
     command <> sub' <> next'
+  DoF term sub next -> do
+    let sub' =
+          if show sub == "" then indent tab sub else line <> indent tab sub
+    let next' = if show next == "" then next else line <> next
+    text "do " <> term <> sub' <> next'
   AbstractionF  term   -> lbracket <> term <> rbracket
   ApplicationF  [term] -> term
   ApplicationF  terms  -> lparen <> foldl1 ((<>) . (<> space)) terms <> rparen
@@ -59,6 +63,7 @@ prettyPrintAlgebra = \case
   PrefixF name term    -> prettyIdentifier name <> term
   EmptyF               -> empty
   SugarF sugar         -> text "SUGAR" -- TODO
+  ForceF               -> text "!"
   TestF left right ->
     text ":test"
       <> space

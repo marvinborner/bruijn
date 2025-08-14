@@ -17,8 +17,7 @@ import           Language.Generic.Annotation    ( AnnUnit(..)
                                                 , showAnnotationURI
                                                 )
 import           Language.Generic.PrettyPrinter ( hover )
-import           Text.PrettyPrint.Leijen hiding ( text )
-import qualified Text.PrettyPrint.Leijen       as PP
+import           Text.PrettyPrint.Leijen
 
 prettyPrintAlgebra :: TermF Doc -> Doc
 prettyPrintAlgebra = \case
@@ -26,6 +25,8 @@ prettyPrintAlgebra = \case
   ApplicationF [term] -> term
   ApplicationF terms  -> lparen <> foldl1 ((<>) . (<> space)) terms <> rparen
   IndexF       n      -> int n
+  TokenF              -> text "<"
+  CotokenF            -> text ">"
 
 -- | purely textual pretty printing
 prettyPrint :: TermAnn -> Text

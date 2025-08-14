@@ -7,6 +7,8 @@ module Language.Generic.Error
   , runErrorT
   , showError
   , Error(..)
+  , ErrorM
+  , ErrorT
   , MonadError
   ) where
 
@@ -33,7 +35,7 @@ showError (PreprocessError ann msg) = do
   ann' <- showAnnotation ann
   return $ errorPrefix <> "while preprocessing: " <> ann' <> ": " <> msg
 
-type ErrorT m a = Except.ExceptT Error m a
+type ErrorT m = Except.ExceptT Error m
 type ErrorM a = Except.Except Error a
 
 runErrorT :: ErrorT m a -> m (Either Error a)

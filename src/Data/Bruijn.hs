@@ -12,7 +12,10 @@ module Data.Bruijn
   , TermAnnF(..)
   , mapIdentifiers
   , mapTermAnn
+  , mapTermAnnM
   , mapTermAlgebra
+  , mapTermAlgebraM
+  , foldTermAnn
   , linkIn
   ) where
 
@@ -47,6 +50,7 @@ data Identifier = Local Name | Namespaced Name Identifier | Mixfix [MixfixIdenti
 
 data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
             | PreprocessorF f f f           -- | <command> [<sub> <next>]
+            | DoF f f f                     -- | do <term> [<sub> <next>]
             | EmptyF
 
             | AbstractionF f                -- | Abstraction of a term
@@ -55,6 +59,8 @@ data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
             | SubstitutionF Identifier      -- | Usage of a definition
             | PrefixF Identifier f          -- | Prefixed term
             | SugarF SyntacticSugar         -- | Syntactic sugar eventually desugared to Lambdas
+
+            | ForceF                        -- | Force execution by token
 
             | TestF f f                     -- | :test (<lambda>) (<lambda>)
             | ImportF Text Text             -- | :import <path> <namespace>
@@ -70,11 +76,21 @@ type TermAnn = Fix TermAnnF
 
 -- to foldFix only on term: `foldFix (go . annotation . getCompose)`
 
+-- TODO: instance Functor?
+
+foldTermAnn f = foldFix $ \case
+  AnnF a t -> Fix $ AnnF a $ f t
+
 -- mapTermAnn :: (TermAnnF TermAnn -> TermAnnF TermAnn) -> TermAnn -> TermAnn
-mapTermAnn f (Fix termAnnF) = Fix (f termAnnF)
+mapTermAnn f (Fix termAnnF) = Fix $ f termAnnF
+
+mapTermAnnM f (Fix termAnnF) = Fix <$> f termAnnF
 
 mapTermAlgebra f = mapTermAnn $ \case
   AnnF a inn -> AnnF a (f inn)
+
+mapTermAlgebraM f = \case
+  Fix (AnnF a inn) -> Fix . AnnF a <$> f inn
 
 mapAnn f (Fix (AnnF a termF)) = Fix (AnnF (f a) termF)
 
@@ -97,4 +113,8 @@ linkIn term subst = flip mapTermAlgebra term $ \case
     PreprocessorF command sub subst
   PreprocessorF command sub next ->
     PreprocessorF command sub $ linkIn next subst
+  DoF term sub (Fix (AnnF _ EmptyF)) ->
+    DoF term sub subst
+  DoF term sub next ->
+    DoF term sub $ linkIn next subst
   t -> t

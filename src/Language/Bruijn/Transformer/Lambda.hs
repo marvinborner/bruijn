@@ -61,8 +61,11 @@ linearize = flip go End
       let sub'  = go sub
       let next' = go next
       sub' . \k -> Linear name (next' k) term
+    Fix (AnnF _ (DoF term sub next)) -> do
+      let sub'  = go sub
+      let next' = go next
+      sub' . \k -> Linear (Local "_") (next' k) term
     Fix (AnnF _ EmptyF) -> id
-    -- TODO: freestanding
     t                   -> error $ T.unpack $ prettyPrint t -- should be impossible by now
 
 transformTerm :: TermAnn -> Transform Lambda.TermAnn
@@ -87,6 +90,8 @@ transformTerm = mapTermAnnM $ \case
           <> T.pack (show name)
           <> ", available: "
           <> T.pack (show s)
+
+  AnnF a ForceF -> return $ AnnF a Lambda.TokenF
 
   AnnF a termM ->
     throwError $ TransformError a $ "unexpected " <> T.pack (show termM)

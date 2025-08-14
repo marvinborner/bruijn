@@ -11,6 +11,7 @@ module Language.Generic.Annotation
   , pattern AnnF
   , SrcSpan(..)
   , AnnUnit(..)
+  , fakeAnn
   , ann
   , showSourcePosURI
   , showAnnotationURI
@@ -31,6 +32,7 @@ import           Text.Megaparsec                ( ParsecT
                                                 , unPos
                                                 , TraversableStream
                                                 , getSourcePos
+                                                , mkPos
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
 
@@ -100,3 +102,11 @@ ann
   => ParsecT e s m (f (Ann SrcSpan f))
   -> ParsecT e s m (Ann SrcSpan f)
 ann = (annUnitToAnn <$>) . ann1
+
+fakeSrcSpan :: SrcSpan
+fakeSrcSpan = fakeSrcSpan
+  where
+    fakeSourcePos = SourcePos { sourceName = "<fake>", sourceLine = mkPos 1, sourceColumn = mkPos 1 }
+    fakeSrcSpan = SrcSpan { spanBegin = fakeSourcePos, spanEnd = fakeSourcePos }
+
+fakeAnn = Fix . AnnF fakeSrcSpan
