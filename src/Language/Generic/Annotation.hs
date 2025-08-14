@@ -9,20 +9,27 @@
 module Language.Generic.Annotation
   ( AnnF
   , pattern AnnF
+  , pattern FixAnnF
   , SrcSpan(..)
   , AnnUnit(..)
   , fakeAnn
   , ann
+  , fixAnnF
   , showSourcePosURI
   , showAnnotationURI
   , showSourcePos
   , showAnnotation
+  , foldAnn
+  , mapAnn
+  , mapAnnM
+  , mapAlgebra
+  , mapAlgebraM
   ) where
 
 import           Control.Monad.State            ( MonadState
                                                 , get
                                                 )
-import           Data.Fix                       ( Fix(..) )
+import           Data.Fix                       ( Fix(..), foldFix )
 import           Data.Functor.Compose           ( Compose(..) )
 import           Data.Kind                      ( Type )
 import           Data.Text                      ( Text )
@@ -84,6 +91,9 @@ pattern Ann
 pattern Ann ann a = Fix (AnnF ann a)
 {-# complete Ann #-}
 
+pattern FixAnnF ann term = Fix (AnnF ann term)
+fixAnnF ann term = Fix $ AnnF ann term
+
 annUnitToAnn :: AnnUnit ann (f (Ann ann f)) -> Ann ann f
 annUnitToAnn (AnnUnit ann a) = Fix (Compose (AnnUnit ann a))
 
@@ -110,3 +120,19 @@ fakeSrcSpan = fakeSrcSpan
     fakeSrcSpan = SrcSpan { spanBegin = fakeSourcePos, spanEnd = fakeSourcePos }
 
 fakeAnn = Fix . AnnF fakeSrcSpan
+
+-- utility functions --
+
+foldAnn f = foldFix $ \case
+  AnnF a t -> Fix $ AnnF a $ f t
+
+mapAnn f (Fix inn) = Fix $ f inn
+
+mapAnnM f (Fix inn) = Fix <$> f inn
+
+mapAlgebra f = mapAnn $ \case
+  AnnF a inn -> AnnF a (f inn)
+
+mapAlgebraM f (Fix (AnnF a inn)) = Fix . AnnF a <$> f inn
+
+-- mapAnn f (Fix (AnnF a inn)) = Fix (AnnF (f a) inn)

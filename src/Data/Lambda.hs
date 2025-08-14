@@ -2,16 +2,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Data.Lambda
-  ( Term(..)
+  ( Term
   , TermF(..)
-  , TermAnnF(..)
-  , TermAnn(..)
+  , TermAnnF
+  , TermAnn
   ) where
 
 import           Data.Fix                       ( Fix(..) )
 import           Language.Generic.Annotation    ( AnnF
                                                 , SrcSpan
-                                                , fakeAnn
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
 

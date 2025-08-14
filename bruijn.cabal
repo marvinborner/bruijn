@@ -33,6 +33,7 @@ library
       Language.Bruijn.PrettyPrinter
       Language.Bruijn.Transformer.Lambda
       Language.Lambda.PrettyPrinter
+      Language.Lambda.Reducer.HigherOrder
       Data.Lambda
   other-modules:
       Paths_bruijn
@@ -54,6 +55,7 @@ library
     , data-fix
     , deriving-compat
     , wl-pprint
+    , containers
   default-language: Haskell2010
 
 executable bruijn

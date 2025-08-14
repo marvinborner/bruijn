@@ -29,6 +29,9 @@ import           Language.Generic.Error         ( MonadError
                                                 )
 import qualified Language.Lambda.PrettyPrinter as Lambda
                                                 ( prettyPrintAnnotated )
+import qualified Language.Lambda.Reducer.HigherOrder
+                                               as Lambda
+                                                ( reduce )
 import           Prelude                 hiding ( putStrLn )
 
 bruijnPipeline :: (MonadIO m, MonadError m) => Text -> Text -> m Bruijn.TermAnn
@@ -46,6 +49,9 @@ pipeline file input = do
   lambda <- Bruijn2Lambda.transform bruijn
   liftIO $ putStrLn "\nTRANSFORMED:"
   liftIO $ putStrLn $ Lambda.prettyPrintAnnotated lambda
+  liftIO $ putStrLn "\nREDUCED:"
+  let reduced = Lambda.reduce lambda
+  liftIO $ putStrLn $ Lambda.prettyPrintAnnotated reduced
   return lambda
 
 main :: IO ()

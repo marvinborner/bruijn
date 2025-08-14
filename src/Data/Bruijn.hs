@@ -11,11 +11,6 @@ module Data.Bruijn
   , TermAnn(..)
   , TermAnnF(..)
   , mapIdentifiers
-  , mapTermAnn
-  , mapTermAnnM
-  , mapTermAlgebra
-  , mapTermAlgebraM
-  , foldTermAnn
   , linkIn
   ) where
 
@@ -28,6 +23,7 @@ import           Language.Generic.Annotation    ( AnnF
                                                 , pattern AnnF
                                                 , AnnUnit(..)
                                                 , SrcSpan
+                                                , mapAlgebra
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
 
@@ -78,22 +74,6 @@ type TermAnn = Fix TermAnnF
 
 -- TODO: instance Functor?
 
-foldTermAnn f = foldFix $ \case
-  AnnF a t -> Fix $ AnnF a $ f t
-
--- mapTermAnn :: (TermAnnF TermAnn -> TermAnnF TermAnn) -> TermAnn -> TermAnn
-mapTermAnn f (Fix termAnnF) = Fix $ f termAnnF
-
-mapTermAnnM f (Fix termAnnF) = Fix <$> f termAnnF
-
-mapTermAlgebra f = mapTermAnn $ \case
-  AnnF a inn -> AnnF a (f inn)
-
-mapTermAlgebraM f = \case
-  Fix (AnnF a inn) -> Fix . AnnF a <$> f inn
-
-mapAnn f (Fix (AnnF a termF)) = Fix (AnnF (f a) termF)
-
 -- | Map all identifiers to a function
 mapIdentifiers :: (Identifier -> Identifier) -> TermAnn -> TermAnn
 mapIdentifiers func = foldFix $ \case
@@ -104,7 +84,7 @@ mapIdentifiers func = foldFix $ \case
 
 -- | Link term into next-chain
 linkIn :: TermAnn -> TermAnn -> TermAnn
-linkIn term subst = flip mapTermAlgebra term $ \case
+linkIn term subst = flip mapAlgebra term $ \case
   DefinitionF name term sub (Fix (AnnF _ EmptyF)) ->
     DefinitionF name term sub subst
   DefinitionF name term sub next ->

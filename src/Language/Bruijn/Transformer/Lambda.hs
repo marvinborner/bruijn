@@ -12,9 +12,7 @@ import           Control.Monad.State            ( State
 import           Data.Bruijn                    ( Identifier(..)
                                                 , TermAnn
                                                 , TermF(..)
-                                                , mapTermAnnM
                                                 )
-import           Data.Fix                       ( Fix(..) )
 import qualified Data.Lambda                   as Lambda
                                                 ( TermAnn
                                                 , TermF(..)
@@ -24,6 +22,8 @@ import qualified Data.Text                     as T
 import           Language.Bruijn.PrettyPrinter  ( prettyPrint )
 import           Language.Generic.Annotation    ( fakeAnn
                                                 , pattern AnnF
+                                                , pattern FixAnnF
+                                                , mapAnnM
                                                 )
 import           Language.Generic.Error         ( Error(..)
                                                 , ErrorT
