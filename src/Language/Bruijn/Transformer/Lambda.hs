@@ -21,9 +21,8 @@ import           Data.List                      ( elemIndex )
 import qualified Data.Text                     as T
 import           Language.Bruijn.PrettyPrinter  ( prettyPrint )
 import           Language.Generic.Annotation    ( fakeAnn
-                                                , pattern AnnF
                                                 , pattern FixAnnF
-                                                , mapAnnM
+                                                , mapWithAnnM
                                                 )
 import           Language.Generic.Error         ( Error(..)
                                                 , ErrorT
@@ -75,27 +74,27 @@ treeify = flip go End
     t                -> error $ T.unpack $ prettyPrint t -- should be impossible by now
 
 transformTerm :: TermAnn -> Transform Lambda.TermAnn
-transformTerm = mapAnnM $ \case
-  AnnF a (AbstractionF term) -> do
+transformTerm = mapWithAnnM $ \ann -> \case
+  AbstractionF term -> do
     ctx@Context { depth = d } <- get
     put $ ctx { depth = d + 1 }
     term' <- transformTerm term
     put $ ctx { depth = d }
-    return $ AnnF a $ Lambda.AbstractionF term'
+    return $ Lambda.AbstractionF term'
 
-  AnnF a (ApplicationF terms) ->
-    AnnF a . Lambda.ApplicationF <$> sequenceA (transformTerm <$> terms)
+  ApplicationF terms ->
+    Lambda.ApplicationF <$> sequenceA (transformTerm <$> terms)
 
-  AnnF a (IndexF        i   ) -> return $ AnnF a $ Lambda.IndexF $ i
+  IndexF        i    -> return $ Lambda.IndexF $ i
 
-  AnnF a (SubstitutionF name) -> do
+  SubstitutionF name -> do
     Context { stk = s, depth = d } <- get
     let maybeIdx = elemIndex name s
     case maybeIdx of
-      Just i -> return $ AnnF a $ Lambda.IndexF $ i + d
+      Just i -> return $ Lambda.IndexF $ i + d
       Nothing ->
         throwError
-          $  TransformError a
+          $  TransformError ann
           $  "can not substitute: "
           <> T.pack (show name)
           <> ", depth: "
@@ -103,10 +102,9 @@ transformTerm = mapAnnM $ \case
           <> ", in scope: "
           <> T.pack (show s)
 
-  AnnF a ForceF -> return $ AnnF a Lambda.TokenF
+  ForceF -> return $ Lambda.TokenF
 
-  AnnF a termM ->
-    throwError $ TransformError a $ "unexpected " <> T.pack (show termM)
+  term -> throwError $ TransformError ann $ "unexpected " <> T.pack (show term)
 
 -- TODO: when a term is open, it must be substituted immediately (do this in preprocessor?)
 transformTree :: Tree -> Transform Lambda.TermAnn

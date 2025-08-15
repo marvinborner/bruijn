@@ -12,6 +12,7 @@ module Language.Generic.Annotation
   , pattern FixAnnF
   , SrcSpan(..)
   , AnnUnit(..)
+  , fakeSrcSpan
   , fakeAnn
   , ann
   , fixAnnF
@@ -24,6 +25,8 @@ module Language.Generic.Annotation
   , mapAnnM
   , mapAlgebra
   , mapAlgebraM
+  , mapWithAnn
+  , mapWithAnnM
   ) where
 
 import           Control.Monad.State            ( MonadState
@@ -134,5 +137,9 @@ mapAlgebra f = mapAnn $ \case
   AnnF a inn -> AnnF a (f inn)
 
 mapAlgebraM f (Fix (AnnF a inn)) = Fix . AnnF a <$> f inn
+
+mapWithAnn f (Fix (AnnF a inn)) = Fix . AnnF a . f a inn
+
+mapWithAnnM f (Fix (AnnF a inn)) = Fix . AnnF a <$> f a inn
 
 -- mapAnn f (Fix (AnnF a inn)) = Fix (AnnF (f a) inn)

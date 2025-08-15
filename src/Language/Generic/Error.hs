@@ -23,17 +23,21 @@ import           Language.Generic.Annotation    ( SrcSpan
 errorPrefix :: Text
 errorPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
 
-data Error = ParseError Text | TransformError SrcSpan Text | PreprocessError SrcSpan Text
+data Error = ParseError Text | FatalError Text | TransformError SrcSpan Text | PreprocessError SrcSpan Text | ReduceError SrcSpan Text
 
 -- TODO: this will later need IO to read/highlight the annotated file
 showError :: (Monad m) => Error -> m Text
 showError (ParseError msg) = return $ errorPrefix <> "while parsing: " <> msg
+showError (FatalError msg) = return $ errorPrefix <> "FATAL: " <> msg
 showError (TransformError ann msg) = do
   ann' <- showAnnotation ann
   return $ errorPrefix <> "while transforming: " <> ann' <> ": " <> msg
 showError (PreprocessError ann msg) = do
   ann' <- showAnnotation ann
   return $ errorPrefix <> "while preprocessing: " <> ann' <> ": " <> msg
+showError (ReduceError ann msg) = do
+  ann' <- showAnnotation ann
+  return $ errorPrefix <> "while reducing: " <> ann' <> ": " <> msg
 
 type ErrorT m = Except.ExceptT Error m
 type ErrorM a = Except.Except Error a
