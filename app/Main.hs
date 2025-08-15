@@ -29,8 +29,10 @@ import           Language.Generic.Error         ( MonadError
                                                 )
 import qualified Language.Lambda.PrettyPrinter as Lambda
                                                 ( prettyPrintAnnotated )
-import qualified Language.Lambda.Reducer.HigherOrder
-                                               as Lambda
+-- import qualified Language.Lambda.Reducer.HigherOrder
+--                                                as Lambda
+--                                                 ( reduce )
+import qualified Language.Lambda.Reducer.RKNL  as Lambda
                                                 ( reduce )
 import           Prelude                 hiding ( putStrLn )
 
@@ -50,7 +52,7 @@ pipeline file input = do
   liftIO $ putStrLn "\nTRANSFORMED:"
   liftIO $ putStrLn $ Lambda.prettyPrintAnnotated lambda
   liftIO $ putStrLn "\nREDUCED:"
-  let reduced = Lambda.reduce lambda
+  reduced <- Lambda.reduce lambda
   liftIO $ putStrLn $ Lambda.prettyPrintAnnotated reduced
   return lambda
 
