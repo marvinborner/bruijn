@@ -7,6 +7,7 @@
 :import std/Number/Unary .
 :import std/Number/Pairing .
 :import std/Number/Conversion .
+:import std/Tuples .
 
 # constructor of meta abstraction
 abs [[[[0 3]]]] ⧗ Meta → Meta
@@ -14,14 +15,14 @@ abs [[[[0 3]]]] ⧗ Meta → Meta
 :test (abs `0) (`[0])
 
 # true if abstraction
-abs? [0 [false] [[false]] [true]] ⧗ Meta → Bool
+abs? [false] : [[false]] : [true] ⧗ Meta → Bool
 
 :test (abs? `[0]) (true)
 :test (abs? `([0] [0])) (false)
 :test (abs? `0) (false)
 
 # extracts meta term from meta abstraction
-abs! [0 0 0 [0]] ⧗ Meta → Meta
+abs! i : i : i ⧗ Meta → Meta
 
 :test (abs! `[[0]]) (`[0])
 
@@ -31,14 +32,14 @@ app [[[[[1 4 3]]]]] ⧗ Meta → Meta → Meta
 :test (app `[[1]] `[0]) (`([[1]] [0]))
 
 # true if application
-app? [0 [false] [[true]] [false]] ⧗ Meta → Bool
+app? [false] : [[true]] : [false] ⧗ Meta → Bool
 
 :test (app? `[0]) (false)
 :test (app? `([0] [0])) (true)
 :test (app? `0) (false)
 
 # extracts both meta terms from meta application
-app! [0 0 cons 0] ⧗ Meta → (Pair Meta Meta)
+app! i : cons : i ⧗ Meta → (Pair Meta Meta)
 
 :test (app! `([[1]] [[0]])) (`[[1]] : `[[0]])
 
@@ -58,24 +59,24 @@ idx [[[[2 3]]]] ⧗ Unary → Meta
 :test (idx (+0u)) (`0)
 
 # true if variable/index
-idx? [0 [true] [[false]] [false]] ⧗ Meta → Bool
+idx? [true] : [[false]] : [false] ⧗ Meta → Bool
 
 :test (idx? `[0]) (false)
 :test (idx? `([0] [0])) (false)
 :test (idx? `0) (true)
 
 # extracts index from meta index
-idx! [0 [0] 0 0] ⧗ Meta → Unary
+idx! i : i : i ⧗ Meta → Unary
 
 :test (idx! `0) ((+0u))
 :test (idx! `3) ((+3u))
 
 # traverses meta term
-fold y [[[[[rec]]]]] ⧗ (Unary → a) → (a → a → a) → (a → a) → Meta → a
-	rec 0 case-idx case-app case-abs
-		case-idx 3
-		case-app 2 ⋔ (4 3 2 1)
-		case-abs 1 ∘ (4 3 2 1)
+fold y [[[[rec]]]] ⧗ (Unary → a) → (a → a → a) → (a → a) → Meta → a
+	rec case-idx : case-app : case-abs
+		case-idx 2
+		case-app 1 ⋔ (3 2 1 0)
+		case-abs 0 ∘ (3 2 1 0)
 
 # calculates blc length of meta term
 length fold idx-cb app-cb abs-cb ⧗ Meta → Unary
@@ -156,11 +157,11 @@ eval-blc y [[[rec]]] &Ω ⧗ (List LcBit) → a
 eval* eval-blc ∘ meta→blc ⧗ Meta → a
 
 # self interpreter for meta encoding
-eval y [[[rec]]] &Ω ⧗ Meta → a
-	rec 0 case-idx case-app case-abs
-		case-idx [2 [1 &[[0]] 0 [[1]]]]
-		case-app 2 [3 [3 [2 0 (1 0)]]]
-		case-abs 2 [2 [[2 [0 1 2]]]]
+eval y [[rec]] &Ω ⧗ Meta → a
+	rec case-idx : case-app : case-abs
+		case-idx [1 [1 &[[0]] 0 [[1]]]]
+		case-app 1 [2 [2 [2 0 (1 0)]]]
+		case-abs 1 [1 [[2 [0 1 2]]]]
 
 !‣ eval
 
@@ -198,14 +199,14 @@ eval y [[[rec]]] &Ω ⧗ Meta → a
 :test (σ `[[3] [3]] `0 (+0u)) (`[[2] [2]])
 
 # reduces given term to its normal form
-β* y [[rec]] ⧗ Meta → Meta
-	rec 0 case-idx case-app case-abs
+β* y [rec] ⧗ Meta → Meta
+	rec case-idx : case-app : case-abs
 		case-idx idx
-		case-app [[(3 1) case-idx case-app case-abs]]
-			case-idx [app (idx 0) (4 1)]
-			case-app [[app (app 1 0) (5 2)]]
-			case-abs [4 (σ 0 1 (+0u))]
-		case-abs [abs (2 0)]
+		case-app [[(2 1) case-idx case-app case-abs]]
+			case-idx [app (idx 0) (3 1)]
+			case-app [[app (app 1 0) (4 2)]]
+			case-abs [3 (σ 0 1 (+0u))]
+		case-abs [abs (1 0)]
 
 :test (β* `0) (`0)
 :test (β* `[0]) (`[0])
@@ -213,14 +214,13 @@ eval y [[[rec]]] &Ω ⧗ Meta → a
 :test (β* `(++(+2u))) (`(+3u))
 
 # single-pass beta reduction
-β y [[rec]] ⧗ Meta → Meta
-	rec 0 case-idx case-app case-abs
+β y [rec] ⧗ Meta → Meta
+	rec case-idx : case-app : case-abs
 		case-idx idx
 		case-app [[abs? 1 redex normal]]
 			redex σ (abs! 1) 0 (+0u)
-			normal app 1 (3 0)
-		case-abs [abs (2 0)]
-		case-ass abs ∘ 2
+			normal app 1 (2 0)
+		case-abs abs ∘ 0
 
 :test (β `0) (`0)
 :test (β `[0]) (`[0])
@@ -242,14 +242,15 @@ swap [0 i [[[[1 2 3]]]]] ⧗ Meta → Meta
 :test (swap `(1 0)) (`(0 1))
 
 # applies a function to the body of a meta term
-map [[0 case-idx case-app case-abs]] ⧗ (Meta → Meta) → Meta → Meta
-	case-idx [idx (2 0)]
-	case-app [[app (3 1 0)]]
-	case-abs [abs (2 0)]
+map [case-idx : case-app : case-abs] ⧗ (a → a) → Meta → Meta
+	case-idx idx ∘ 0
+	case-app app ⋔ 0
+	case-abs abs ∘ 0
 
 :test (map swap `[0 1]) (`[1 0])
 :test (map inc `0) (`1)
 :test (map (map inc) `[0]) (`[1])
+:test (map (map (map inc)) `[0 1]) (`[1 2])
 
 # encodes meta terms as ternary number
 # inspired by Helmut Brandl's and Steve Goguen's work

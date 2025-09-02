@@ -1,66 +1,71 @@
 # MIT License, Copyright (c) 2022 Marvin Borner
-# TODO: the type signatures are wrong :)
 
 :import std/Combinator .
 :import std/Logic .
 :import std/Option .
 
 # encapsulates a value in ok
-ok [[[1 2]]] ⧗ (Result a)
+ok [[[1 2]]] ⧗ (Result a b)
 
 :test (ok [[0]]) ([[1 [[0]]]])
 
 # encapsulates a value in err
-err [[[0 2]]] ⧗ (Result a)
+err [[[0 2]]] ⧗ (Result a b)
 
 :test (err [[0]]) ([[0 [[0]]]])
 
 # checks whether result is ok
-ok? [0 [true] [false]] ⧗ (Result a) → Boolean
+ok? [0 [true] [false]] ⧗ (Result a b) → Boolean
 
 :test (ok? (ok [[0]])) (true)
 :test (ok? (err [[0]])) (false)
 
 # checks whether result is not ok
-err? [0 [false] [true]] ⧗ (Result a) → Boolean
+err? [0 [false] [true]] ⧗ (Result a b) → Boolean
 
 :test (err? (ok [[0]])) (false)
 :test (err? (err [[0]])) (true)
 
 # encapsulates result ok value in a option
-option-ok [0 some [none]] ⧗ (Result a) → (Option a)
+option-ok [0 some [none]] ⧗ (Result a b) → (Option a)
 
 :test (option-ok (ok [[0]])) (some [[0]])
 :test (option-ok (err [[0]])) (none)
 
 # encapsulate result err value in a option
-option-err [0 [none] some] ⧗ (Result a) → (Option a)
+option-err [0 [none] some] ⧗ (Result a b) → (Option b)
 
 :test (option-err (ok [[0]])) (none)
 :test (option-err (err [[0]])) (some [[0]])
 
 # extracts value from result or returns first arg
-unwrap-or [[0 i [2]]] ⧗ a → (Result b) → c
+unwrap-or [[0 i [2]]] ⧗ a → (Result a b) → a
 
 :test (unwrap-or [[1]] (ok [[0]])) ([[0]])
 :test (unwrap-or [[1]] (err [[0]])) ([[1]])
 
 # applies a function to the value in ok result
-map [[0 [ok (2 0)] err]] ⧗ (a → b) → (Result a) → (Result b)
+map [[0 [ok (2 0)] err]] ⧗ (a → c) → (Result a b) → (Result c b)
 
 :test (map [[1]] (ok [[0]])) (ok [[[0]]])
 :test (map [[1]] (err [[0]])) (err [[0]])
 
 # applies a function to the value in err result
-map-err [[0 ok [err (2 0)]]] ⧗ (a → b) → (Result a) → (Result b)
+map-err [[0 ok [err (2 0)]]] ⧗ (b → c) → (Result a b) → (Result a c)
 
 :test (map-err [[1]] (ok [[0]])) ((ok [[0]]))
 :test (map-err [[1]] (err [[0]])) ((err [[[0]]]))
 
-pure ok ⧗ a → (Result a)
+# applies functions to either sides of the result, yielding the mapped result
+bimap [[[0 [ok (3 0)] [err (2 0)]]]] ⧗ (a → b) → (c → d) → (Result a c) → (Result b d)
+
+# applies functions to either sides of the result, yielding only the value
+either [[[0 2 1]]] ⧗ (a → c) → (b → c) → (Result a b) → c
+
+pure ok ⧗ a → (Result a b)
 
 # applies encapsulated value to given function (if ok)
-bind [[1 0 err]] ⧗ (Result a) → (a → (Result b)) → (Result b)
+bind [[1 0 err]] ⧗ (Result a b) → (a → (Result c b)) → (Result c b)
 
 …>>=… bind
 

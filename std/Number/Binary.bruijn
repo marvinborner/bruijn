@@ -5,6 +5,7 @@
 :import std/Combinator .
 :import std/List .
 :import std/Logic .
+:import std/Tuples .
 
 # TODO: remove ternary conversion shortcuts
 # TODO: then move functions to reflect order of std/Ternary
@@ -45,17 +46,19 @@ up [[[[[4 1 0 (3 2 1 0)]]]]] ⧗ Bit → Binary → Binary
 :test (up b¹ [[[0 2]]]) ([[[1 (0 2)]]])
 :test (up b⁰ (+1b)) ((+2b))
 
+zero (+0b)
+
 # returns true if a binary number is zero
-zero? [0 true [false] i] ⧗ Binary → Boolean
+zero? true : [false] : i ⧗ Binary → Boolean
 
 =?‣ zero?
 
-:test (=?(+0b)) (true)
+:test (=?zero) (true)
 :test (=?[[[0 (0 2)]]]) (true)
 :test (=?(+1b)) (false)
 
 # extracts least significant bit from a binary number
-lsb [0 b⁰ [b¹] [b⁰]] ⧗ Binary → Bit
+lsb b⁰ : [b¹] : [b⁰] ⧗ Binary → Bit
 
 :test (lsb (+0b)) (b⁰)
 :test (lsb (+1b)) (b¹)
@@ -72,7 +75,7 @@ even? ¬‣ ∘ lsb ⧗ Binary → Boolean
 :test (even? (+42b)) (true)
 
 # converts the normal binary representation into abstract
-abstract! [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
+abstract! z : a¹ : a⁰ ⧗ Binary → AbstractBinary
 	z (+0b)
 	a¹ [[[[1 3]]]]
 	a⁰ [[[[0 3]]]]
@@ -82,10 +85,10 @@ abstract! [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
 :test (→^(+2b)) ([[[0 [[[1 [[[2]]]]]]]]])
 
 # converts the abstracted binary representation back to normal
-normal! ω [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
+normal! ω [z : a¹ : a⁰] ⧗ AbstractBinary → Binary
 	z (+0b)
-	a¹ [↑¹([3 3 0] 0)]
-	a⁰ [↑⁰([3 3 0] 0)]
+	a¹ [↑¹([2 2 0] 0)]
+	a⁰ [↑⁰([2 2 0] 0)]
 
 →_‣ normal!
 
@@ -95,9 +98,9 @@ normal! ω [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
 # → ignores leading 0s!
 # also: ⋀?‣ ∘∘ (ψ* zip-with xnor? list!)
 eq? [[abs 1 →^0]] ⧗ Binary → Binary → Boolean
-	abs [0 z a¹ a⁰]
+	abs z : a¹ : a⁰
 		z [=?(→_0)]
-		a¹ [[0 false [2 0] [false]]]
+		a¹ [false : [1 0] : [false]]
 		a⁰ [[0 (1 0) [false] [2 0]]]
 
 …=?… eq?
@@ -116,6 +119,17 @@ div² [~(0 z a¹ a⁰)] ⧗ Binary → Binary
 
 :test (/²(+6b) =? (+3b)) (true)
 :test (/²(+5b) =? (+2b)) (true)
+
+# adds 1 to a binary number (can introduce leading 0s)
+inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
+	z (+0b) : (+1b)
+	a¹ &[[↑¹1 : ↑⁰0]]
+	a⁰ &[[↑⁰1 : ↑¹1]]
+
+++‣ inc
+
+:test (++(+0b)) ((+1b))
+:test (++(+2b)) ((+3b))
 
 # subs 1 from a binary number (can introduce leading 0s)
 dec [~(0 z a¹ a⁰)] ⧗ Binary → Binary
@@ -158,7 +172,7 @@ gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
 :input std/Generic/Number
 
 # converts a binary number to a list of bits
-list! [0 z a¹ a⁰] ⧗ Binary → (List Bit)
+list! z : a¹ : a⁰ ⧗ Binary → (List Bit)
 	z empty
 	a¹ [b¹ : 0]
 	a⁰ [b⁰ : 0]
@@ -223,17 +237,6 @@ xor! binary! ∘∘ (ψ* zip-with …^?… list!) ⧗ Binary → Binary → Bina
 
 :test (((+10b) ^! (+12b)) =? (+6b)) (true)
 
-# adds 1 to a binary number (can introduce leading 0s)
-inc [~(0 z a¹ a⁰)] ⧗ Binary → Binary
-	z (+0b) : (+1b)
-	a¹ &[[↑¹1 : ↑⁰0]]
-	a⁰ &[[↑⁰1 : ↑¹1]]
-
-++‣ inc
-
-:test (++(+0b)) ((+1b))
-:test (++(+2b)) ((+3b))
-
 # flips the bits of a binary number (1's complement)
 complement [[[[3 2 0 1]]]] ⧗ Binary → Binary
 
@@ -267,7 +270,7 @@ add [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 			c¹' [up 1 (3 0 b¹)]
 		a⁰ [[[1 (c⁰ 1) c¹ c⁰]]]
 			c⁰ [up 1 (3 0 b⁰)]
-		z [[0 ++(→_1) →_1]]
+		z [++(→_0) : →_0]
 		c [[1 0 b⁰]]
 
 …+… add
@@ -290,7 +293,7 @@ sub* [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 		a⁰ [[[1 (c⁰ 1) c⁰' c⁰]]]
 			c⁰ [1 ↑¹(3 0 b⁰) ↑⁰(3 0 b⁰)]
 			c⁰' [1 (3 0 b⁰) ↑¹(3 0 b¹)]
-		z [[0 --(→_1) →_1]]
+		z [--(→_0) : →_0]
 		c [[1 0 b⁰]]
 
 # subs two binary numbers
@@ -318,7 +321,7 @@ mul [[1 z a¹ a⁰]] ⧗ Number → Number → Number
 
 # ceiled integer log2 by counting bits
 # also counts leading 0s
-log2* [0 (+0b) inc inc] ⧗ Binary → Binary
+log2* (+0b) : inc : inc ⧗ Binary → Binary
 
 # ceiled integer log2 by counting bits
 log2 log2* ∘ strip ⧗ Binary → Binary

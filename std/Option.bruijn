@@ -29,7 +29,7 @@ map [[0 none [some (2 0)]]] ⧗ (a → b) → (Option a) → (Option b)
 :test (map [[1]] none) (none)
 
 # applies a function to the value in option or returns first arg if none
-map-or v ⧗ a → (b → c) → (Option b) → c
+map-or v ⧗ b → (a → b) → (Option a) → b
 
 :test (map-or [[[2]]] [[1]] (some [[0]])) ([[[0]]])
 :test (map-or [[[2]]] [[1]] none) ([[[2]]])
@@ -40,8 +40,8 @@ unwrap-or [[0 1 i]] ⧗ a → (Option b) → c
 :test (unwrap-or false (some true)) (true)
 :test (unwrap-or false none) (false)
 
-# applies encapsulated value to given function
-apply [[1 none 0]] ⧗ (Option a) → (a → b) → c
+# applies encapsulated value to given function (or return none)
+apply [[1 none 0]] ⧗ (Option a) → (a → b) → b
 
 :test (apply none [some ([[1]] 0)]) (none)
 :test (apply (some [[0]]) [some ([[1]] 0)]) (some [[[0]]])

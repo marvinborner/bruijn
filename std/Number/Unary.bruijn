@@ -25,6 +25,8 @@ foldl [[1 [0 1]]] ⧗ Unary → a
 # unary infinity
 ∞ [[[0 0] [2 (0 0)]]]
 
+zero (+0u)
+
 # returns true if a unary number is zero
 zero? [0 [false] true] ⧗ Unary → Boolean
 
@@ -89,9 +91,14 @@ add [[[[3 1 (2 1 0)]]]] ⧗ Unary → Unary → Unary
 :test ((+5u) + (+3u)) ((+8u))
 
 # subtracts two unary numbers
-sub [[0 dec 1]] ⧗ Unary → Unary → Unary
+# from https://cs.stackexchange.com/a/173388
+sub [[[[left right]]]] ⧗ Unary → Unary → Unary
+	left 3 [[0 1]] [1]
+	right 2 [[0 1]] (y [[3 (0 1)]])
 
-…-… sub
+sub* [[0 dec 1]] ⧗ Unary → Unary → Unary
+
+…-… sub*
 
 :test ((+2u) - (+2u)) ((+0u))
 :test ((+5u) - (+3u)) ((+2u))

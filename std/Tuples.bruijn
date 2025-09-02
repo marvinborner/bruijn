@@ -1,0 +1,33 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+
+tuple [[[0 2 1]]] ⧗ a → b → (Tuple a b)
+
+…:… tuple
+
+triple [[[[0 3 2 1]]]] ⧗ a → b → c → (Triple a b c)
+
+…:…:… triple
+
+quadruple [[[[[0 4 3 2 1]]]]] ⧗ a → b → c → d → (Quadruple a b c d)
+
+…:…:…:… quadruple
+
+quintuple [[[[[[0 5 4 3 2 1]]]]]] ⧗ a → b → c → d → e → (Quintuple a b c d e)
+
+…:…:…:…:… quintuple
+
+sextuple [[[[[[[0 6 5 4 3 2 1]]]]]]] ⧗ a → b → c → d → e → f → (Sextuple a b c d e f)
+
+…:…:…:…:…:… sextuple
+
+septuple [[[[[[[[0 7 6 5 4 3 2 1]]]]]]]] ⧗ a → b → c → d → e → f → g → (Septuple a b c d e f g)
+
+…:…:…:…:…:…:… septuple
+
+octuple [[[[[[[[[0 8 7 6 5 4 3 2 1]]]]]]]]] ⧗ a → b → c → d → e → f → g → h → (Octuple a b c d e f g h)
+
+…:…:…:…:…:…:…:… octuple
+
+nonuple [[[[[[[[[[0 9 8 7 6 5 4 3 2 1]]]]]]]]]] ⧗ a → b → c → d → e → f → g → h → i → (Nonuple a b c d e f g h i)
+
+…:…:…:…:…:…:…:…:… nonuple

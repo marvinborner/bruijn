@@ -196,7 +196,11 @@ w** [[[[3 2 1 0 0]]]] ⧗ (a → b → c → c → d) → a → b → c → d
 w' [[0 1 1]] ⧗ a → (a → a → b) → b
 
 # sage bird combinator
-y [[1 (0 0)] [1 (0 0)]] ⧗ (a → a) → a
+y [[0 0] [1 (0 0)]] ⧗ (a → a) → a
+
+# ⟲‣ y
+
+why [[0 [[0 1 1]] 0] [[2 [0 2 1 [0 3]]]]]
 
 # z fixed point combinator
 # y and z are almost always interchangeable

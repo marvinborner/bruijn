@@ -2,10 +2,9 @@
 
 :import std/Combinator .
 
-# pairs two expressions into one
-pair [[[0 2 1]]] ⧗ a → b → (Pair a b)
+:input std/Tuples
 
-…:… pair
+pair tuple ⧗ a → b → (Pair a b)
 
 # extracts first expression from pair
 fst &k ⧗ (Pair a b) → a
@@ -27,6 +26,11 @@ map [[(1 ^0) : (1 ~0)]] ⧗ (a → b) → (Pair a a) → (Pair b b)
 …<$>… map
 
 :test ([[1]] <$> ([[0]] : [[1]])) ([[[0]]] : [[[1]]])
+
+# maps the first and second element to different functions
+bimap [[[(2 ^0) : (1 ~0)]]] ⧗ (a → b) → (c → d) → (Pair a c) → (Pair b d)
+
+:test (bimap [[1]] [[0]] ([[0]] : [[1]])) ([[[0]]] : [0])
 
 # applies both elements of a pair to a function
 uncurry [[1 ^0 ~0]] ⧗ (a → b → c) → (Pair a b) → c

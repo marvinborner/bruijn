@@ -1,9 +1,10 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
 # generic number template, meant to be :input-ted
-# assumes: zero?, even?, gt?, zero?, eq?, add, compare-case
+# assumes: zero, zero?, even?, gt?, zero?, eq?, add, inc, dec, compare-case
 
 # TODO: also include std/Number more std/Math etc.? Requires solution for recursive imports
 # then: give numeral systems unary id, match with index-unary
+# or: have unified way of translating to ternary (then add hash function)
 
 :import std/Combinator .
 :import std/Logic .

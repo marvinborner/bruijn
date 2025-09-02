@@ -85,3 +85,5 @@ mod3 ^(implicit-y* (zero : (one : {}two)))
 	two [[=?0 (+2) (^1 --0)]]
 
 :test ((mod3 (+5)) =? (+2)) ([[1]])
+
+main [[0]]

@@ -17,21 +17,21 @@ t⁺ [[[1]]] ⧗ Trit
 t⁰ [[[0]]] ⧗ Trit
 
 # returns true if a trit is negative
-t⁻? [0 true false false] ⧗ Trit → Boolean
+t⁻? true : false : false ⧗ Trit → Boolean
 
 :test (t⁻? t⁻) (true)
 :test (t⁻? t⁺) (false)
 :test (t⁻? t⁰) (false)
 
 # returns true if a trit is positive
-t⁺? [0 false true false] ⧗ Trit → Boolean
+t⁺? false : true : false ⧗ Trit → Boolean
 
 :test (t⁺? t⁻) (false)
 :test (t⁺? t⁺) (true)
 :test (t⁺? t⁰) (false)
 
 # returns true if a trit is zero
-t⁰? [0 false false true] ⧗ Trit → Boolean
+t⁰? false : false : true ⧗ Trit → Boolean
 
 :test (t⁰? t⁻) (false)
 :test (t⁰? t⁺) (false)
@@ -94,7 +94,7 @@ div³ [~(0 z a⁻ a⁺ a⁰)] ⧗ Number → Number
 :test (/³(+5)) ((+2))
 
 # extracts least significant trit from a balanced ternary number
-lst [0 t⁰ [t⁻] [t⁺] [t⁰]] ⧗ Number → Trit
+lst t⁰ : [t⁻] : [t⁺] : [t⁰] ⧗ Number → Trit
 
 :test (lst (-1)) (t⁻)
 :test (lst (+0)) (t⁰)
@@ -128,12 +128,14 @@ mst [B.get t⁰ (0 z a⁻ a⁺ a⁰)] ⧗ Number → Trit
 :test (mst (+1)) (t⁺)
 :test (mst (+42)) (t⁺)
 
+zero (+0)
+
 # returns true if balanced ternary number is zero
-zero? [0 true [false] [false] i] ⧗ Number → Boolean
+zero? true : [false] : [false] : i ⧗ Number → Boolean
 
 =?‣ zero?
 
-:test (=?(+0)) (true)
+:test (=?zero) (true)
 :test (=?(-1)) (false)
 :test (=?(+1)) (false)
 :test (=?(+42)) (false)
@@ -155,7 +157,7 @@ even? z [[rec]] ⧗ Number → Boolean
 # converts the normal balanced ternary representation into abstract
 # infinity can't be abstracted in finite time
 # → the abstract representation is used in eq?/add/sub/mul
-abstract! [0 z a⁻ a⁺ a⁰] ⧗ Number → AbstractNumber
+abstract! z : a⁻ : a⁺ : a⁰ ⧗ Number → AbstractNumber
 	z (+0)
 	a⁻ [[[[[2 4]]]]]
 	a⁺ [[[[[1 4]]]]]
@@ -168,11 +170,11 @@ abstract! [0 z a⁻ a⁺ a⁰] ⧗ Number → AbstractNumber
 :test (→^(+3)) ([[[[0 [[[[1 [[[[3]]]]]]]]]]]])
 
 # converts the abstracted balanced ternary representation back to normal
-normal! y [[0 z a⁻ a⁺ a⁰]] ⧗ AbstractNumber → Number
+normal! y [z : a⁻ : a⁺ : a⁰] ⧗ AbstractNumber → Number
 	z (+0)
-	a⁻ [↑⁻(2 0)]
-	a⁺ [↑⁺(2 0)]
-	a⁰ [↑⁰(2 0)]
+	a⁻ [↑⁻(1 0)]
+	a⁺ [↑⁺(1 0)]
+	a⁰ [↑⁰(1 0)]
 
 →_‣ normal!
 
@@ -183,10 +185,10 @@ normal! y [[0 z a⁻ a⁺ a⁰]] ⧗ AbstractNumber → Number
 # returns true if two balanced ternary numbers are equal
 # → ignores leading 0s!
 eq? [[abs 1 →^0]] ⧗ Number → Number → Boolean
-	abs [0 z a⁻ a⁺ a⁰]
+	abs z : a⁻ : a⁺ : a⁰
 		z [=?(→_0)]
-		a⁻ [[0 false [2 0] [false] [false]]]
-		a⁺ [[0 false [false] [2 0] [false]]]
+		a⁻ [false : [1 0] : [false] : [false]]
+		a⁺ [false : [false] : [1 0] : [false]]
 		a⁰ [[0 (1 0) [false] [false] [2 0]]]
 
 …=?… eq?
@@ -232,7 +234,7 @@ add [[abs 1 →^0]] ⧗ Number → Number → Number
 		a⁺ [[[1 (b⁺ 1) b⁰ b⁺' b⁺]]]
 			b⁺' [1 ↑⁺(3 0 t⁰) ↑⁰(3 0 t⁺) ↑⁻(3 0 t⁺)]
 		a⁰ [[[1 (b⁰ 1) b⁻ b⁺ b⁰]]]
-		z [[0 --(→_1) ++(→_1) →_1]]
+		z [--(→_0) : ++(→_0) : →_0]
 		c [[1 0 t⁰]]
 
 …+… add
@@ -300,7 +302,7 @@ compare-case [[[[[go (1 - 0)]]]]] ⧗ a → b → c → Number → Number → d
 :input std/Generic/Number
 
 # converts a balanced ternary number to a list of trits
-number→trits [0 z a⁻ a⁺ a⁰] ⧗ Number → (List Trit)
+number→trits z : a⁻ : a⁺ : a⁰ ⧗ Number → (List Trit)
 	z [[0]]
 	a⁻ pair t⁻
 	a⁺ pair t⁺
@@ -384,7 +386,7 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 
 # ceiled integer log₃ by counting number of trits
 # also counts leading 0s
-log₃* [0 (+0) inc inc inc] ⧗ Number → Number
+log₃* (+0) : inc : inc : inc ⧗ Number → Number
 
 :test (log₃* (+42)) ((+5))
 :test (log₃* [[[[1 (0 (0 (0 (0 3))))]]]]) ((+5))
@@ -398,7 +400,7 @@ log₃ log₃* ∘ strip ⧗ Number → Number
 :test (log₃ [[[[1 (0 (0 (0 (0 3))))]]]]) ((+1))
 
 # amount of non-zero trits
-hamming-weight [0 (+0) inc inc [0]] ⧗ Number → Number
+hamming-weight (+0) : inc : inc : [0] ⧗ Number → Number
 
 :test ((hamming-weight (+5)) =? (+3)) (true)
 :test ((hamming-weight (+6)) =? (+2)) (true)

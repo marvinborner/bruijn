@@ -36,10 +36,13 @@ data-files:
     std/Set.bruijn
     std/String.bruijn
     std/test_all.sh
+    std/Tuples.bruijn
     std/AIT/Beavers.bruijn
     std/Generic/Monad.bruijn
     std/Generic/Number.bruijn
+    std/Generic/Schemes.bruijn
     std/List/Church.bruijn
+    std/List/ChurchFold.bruijn
     std/List/Parigot.bruijn
     std/Logic/Binary.bruijn
     std/Logic/Linear.bruijn

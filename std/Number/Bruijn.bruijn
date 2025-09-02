@@ -4,6 +4,8 @@
 #   Wadsworth, Christopher. "Some unusual λ-calculus numeral systems."
 # very sad indeed
 
+zero (+0d)
+
 # increments de Bruijn numeral
 inc [[[2 1]]] ⧗ Bruijn → Bruijn
 

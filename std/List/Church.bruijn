@@ -24,13 +24,14 @@ singleton [P.pair 0 empty] ⧗ a → (List a)
 
 {}‣ singleton
 
+:test (∅?({}(+2))) (false)
+
 # prepends an element to a list
 cons P.pair ⧗ a → (List a) → (List a)
 
 …:… cons
 
 :test ((+1) : {}(+2)) (P.pair (+1) (P.pair (+2) empty))
-:test (∅?({}(+2))) (false)
 
 # returns the head of a list or empty
 head P.fst ⧗ (List a) → a
