@@ -279,3 +279,19 @@ decode y [[unpair-ternary 0 go]] ⧗ Number → Meta
 :test (decode (+3)) (`(0 0))
 :test (decode (+7)) (`[1])
 :test (decode (+8)) (`[0])
+
+# ================= #
+# recursion schemes #
+# ================= #
+
+# differs from `map` only in case-idx (only terms are mappable in MetaF)
+fmap [case-idx : case-app : case-abs] ⧗ (a → b) → (MetaF a) → (MetaF b)
+	case-idx idx
+	case-app app ⋔ 0
+	case-abs abs ∘ 0
+
+fix [0] ⧗ (MetaF a) → (Fix (MetaF a))
+
+unFix [0] ⧗ (Fix (MetaF a)) → (MetaF a)
+
+:input std/Generic/Schemes

@@ -1,0 +1,51 @@
+# uses Generic/Schemes.bruijn for ana/cata/para/etc.
+
+:import std/Number .
+:import std/Combinator .
+:import std/Tuples .
+
+# ===== #
+# lists #
+# ===== #
+
+:import std/List/Church .
+
+# example list
+list (+1) : ((+2) : {}(+3))
+
+sum cata ([[[2 + 1]]] : (+0))
+
+:test (list.sum =? (+6)) ([[1]])
+
+length cata ([[[++1]]] : (+0))
+
+:test (list.length =? (+3)) ([[1]])
+
+tails para ([[[1 [[(4 : 1) : 0]]]]] : {}empty)
+
+:test (list.tails) (list : (~list : (~(~list) : {}empty)))
+
+# ======= #
+# numbers #
+# ======= #
+
+:import std/Number/Ternary .
+
+fac para ([(+1)] : &[[0 ⋅ ++1]]) ⧗ Number → Number
+
+# ==== #
+# meta #
+# ==== #
+
+:import std/Meta .
+:import std/Number/Conversion .
+
+length cata (case-idx : case-app : case-abs)
+	case-idx (add (+2)) ∘ unary→ternary
+	case-app (add (+2)) ∘∘ add
+	case-abs add (+2)
+
+:test (length `[0]) ((+4))
+:test (length `[[1 1]]) ((+12))
+
+main [[0]]

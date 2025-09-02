@@ -65,3 +65,18 @@ clamp [[[min 1 (max 0 2)]]] ⧗ Generic → Generic → Generic
 
 # returns true if the number is odd (remainder mod 2 == 1)
 odd? ¬‣ ∘ even? ⧗ Generic → Boolean
+
+# ================= #
+# recursion schemes #
+# ================= #
+
+:import std/Option O
+
+# TODO
+fmap [[0 (O.some zero) (O.some ∘ 1)]] ⧗ (a → b) → (GenericF a) → (GenericF b)
+
+fix O.map-or zero inc ⧗ (GenericF a) → (Fix (GenericF a))
+
+unFix [=?0 O.none (O.some --0)] ⧗ (Fix (GenericF a)) → (GenericF a)
+
+:input std/Generic/Schemes

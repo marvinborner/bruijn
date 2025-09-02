@@ -1,0 +1,56 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# recursion schemes
+# depends on fmap, fix, unFix
+#  WARNING: in general, fmap != map; most probably, fmap = bimap [0]
+#  fix/unFix must match fmap (so, fix=unFix=[0] sometimes is ok)
+
+:import std/Combinator .
+:import std/Pair P
+:import std/Result R
+
+# ======= #
+# Folding #
+# ======= #
+
+# f (Fix f) --- fmap (cata alg) ----> f a
+#     |                                |
+#     |                                |
+#     |                                |
+#     |                                |
+#    Fix                              alg
+#     |                                |
+#     |                                |
+#     |                                |
+#     v                                v
+#   Fix f   ------- cata alg ------->  a
+
+cata y [[unFix → (fmap (1 0)) → 0]] ⧗ ((f a) → a) → (Fix f) → a
+
+para y [[unFix → (fmap [P.pair 0 (2 1 0)]) → 0]] ⧗ ((f (Pair (Fix f) a)) → a) → (Fix f) → a
+
+# ========= #
+# Unfolding #
+# ========= #
+
+# f (Cofix f) <-- fmap (ana coalg) ---- f a
+#       ^                                ^
+#       |                                |
+#       |                                |
+#       |                                |
+#     unFix                            coalg
+#       |                                |
+#       |                                |
+#       |                                |
+#       |                                |
+#    Cofix f  <------ ana coalg -------  a
+
+ana y [[0 → (fmap (1 0)) → fix]] ⧗ (a → (f a)) → a → (Fix f)
+
+apo y [[0 → (fmap (R.either (1 0) [0])) → fix]] ⧗ (a → (Result a (Fix f))) → a → (Fix f)
+
+# ========= #
+# Refolding #
+# ========= #
+
+# [[(ana 1) → (cata 0)]]
+hylo y [[[0 → (fmap (2 1 0)) → 1]]]

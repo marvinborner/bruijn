@@ -544,3 +544,21 @@ y* [[[0 1] <$> 0] xs] ⧗ (List a) → (List b)
 list-y* y [[&(1 0) <$> 0]] ⧗ (List a) → (List b)
 
 :test (&(+5) <$> (list-y* ([[=?0 true (_1 --0)]] : {}[[=?0 false (^1 --0)]]))) (false : {}true)
+
+# ================= #
+# recursion schemes #
+# ================= #
+
+# maps head and poly tail to different functions
+bimap [[[0 [[[case-map]]] case-end]]] ⧗ (a → b) → (c → d) → (ListF a c) → (ListF b d)
+	case-map (5 2) : (4 1)
+	case-end empty
+
+# maps only the tail to a function
+fmap bimap [0] ⧗ (a → b) → (ListF c a) → (ListF c b)
+
+fix [0] ⧗ (ListF a b) → (Fix (ListF a b))
+
+unFix [0] ⧗ (Fix (ListF a b)) → (ListF a b)
+
+:input std/Generic/Schemes
