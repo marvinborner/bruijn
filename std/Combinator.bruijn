@@ -186,6 +186,8 @@ v** [[[[[4 3 0 2 1]]]]] ⧗ (a → c → b → c → e) → a → b → c → c 
 # warbler combinator
 w [[1 0 0]] ⧗ (a → a → b) → a → b
 
+∂‣ w
+
 # warbler once removed combinator
 w* [[[2 1 0 0]]] ⧗ (a → b → b → c) → a → b → c
 

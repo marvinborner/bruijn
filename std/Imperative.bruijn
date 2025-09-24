@@ -1,0 +1,9 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# helpful functions for programming in a more imperative style
+
+:input std/Monad/State
+
+when [[1 0 (pure empty)]]
+	empty [[0]]
+
+while y [[[1 >>= [when 0 (1 >> (3 2 1))]]]]

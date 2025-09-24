@@ -22,6 +22,7 @@ data-files:
     std/Char.bruijn
     std/Combinator.bruijn
     std/generate_map.py
+    std/Imperative.bruijn
     std/IO.bruijn
     std/List.bruijn
     std/Logic.bruijn

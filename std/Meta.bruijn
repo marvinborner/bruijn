@@ -292,6 +292,6 @@ fmap [case-idx : case-app : case-abs] ⧗ (a → b) → (MetaF a) → (MetaF b)
 
 fix [0] ⧗ (MetaF a) → (Fix (MetaF a))
 
-unFix [0] ⧗ (Fix (MetaF a)) → (MetaF a)
+unfix [0] ⧗ (Fix (MetaF a)) → (MetaF a)
 
 :input std/Generic/Schemes

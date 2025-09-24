@@ -517,10 +517,12 @@ cycle z [[rec]] ⧗ (List a) → (List a)
 iterate [z [[rec]]] ⧗ (a → a) → a → (List a)
 	rec 0 : (1 (2 0))
 
-:test (take (+5) (iterate ++‣ (+0))) (((+0) : ((+1) : ((+2) : ((+3) : {}(+4))))))
+→‣ iterate ++‣ ⧗ Number → (List Number)
+
+:test (take (+5) (→(+0))) (((+0) : ((+1) : ((+2) : ((+3) : {}(+4))))))
 :test (take (+2) (iterate (%‣ ∘ dec) (+5))) (((+5) : {}(+4)))
 :test (take (+5) (iterate i (+4))) (take (+5) (repeat (+4)))
-:test (take (+0) (iterate ++‣ (+0))) (empty)
+:test (take (+0) (→(+0))) (empty)
 
 # returns the nth element of infinite list iteration
 # equivalent of index ∘∘ iterate
@@ -545,6 +547,14 @@ list-y* y [[&(1 0) <$> 0]] ⧗ (List a) → (List b)
 
 :test (&(+5) <$> (list-y* ([[=?0 true (_1 --0)]] : {}[[=?0 false (^1 --0)]]))) (false : {}true)
 
+# ===== #
+# monad #
+# ===== #
+
+…>>=… y [[[1 [[[(3 2) ++ (5 1 3)]]] empty]]]
+
+# TODO: implement monad generics
+
 # ================= #
 # recursion schemes #
 # ================= #
@@ -559,6 +569,6 @@ fmap bimap [0] ⧗ (a → b) → (ListF c a) → (ListF c b)
 
 fix [0] ⧗ (ListF a b) → (Fix (ListF a b))
 
-unFix [0] ⧗ (Fix (ListF a b)) → (ListF a b)
+unfix [0] ⧗ (Fix (ListF a b)) → (ListF a b)
 
 :input std/Generic/Schemes

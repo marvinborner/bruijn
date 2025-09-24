@@ -23,11 +23,11 @@ dec [[1 0 0]] ⧗ Bruijn → Bruijn
 :test (--(+5d)) ((+4d))
 
 # adds de Bruijn numerals
-add [[[2 (1 0)]]] ⧗ Bruijn → Bruijn
+add [[[2 (1 0)]]] ⧗ Bruijn → Bruijn → Bruijn
 
 …+… add
 
-:test ((+5d) + (+0d)) ((+0d))
+:test ((+5d) + (+0d)) ((+5d))
 :test ((+0d) + (+5d)) ((+5d))
 :test ((+5d) + (+2d)) ((+7d))
 

@@ -1,8 +1,8 @@
 # MIT License, Copyright (c) 2025 Marvin Borner
 # recursion schemes
-# depends on fmap, fix, unFix
+# depends on fmap, fix, unfix
 #  WARNING: in general, fmap != map; most probably, fmap = bimap [0]
-#  fix/unFix must match fmap (so, fix=unFix=[0] sometimes is ok)
+#  fix/unfix must match fmap (so, fix=unfix=[0] sometimes is ok)
 
 :import std/Combinator .
 :import std/Pair P

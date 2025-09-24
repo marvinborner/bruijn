@@ -15,7 +15,25 @@ bind [[[2 0 [[3 0 1]]]]] ⧗ (State s a) → (a → (State s b)) → (State s b)
 
 …>>=… bind
 
-pure [[[0 2 1]]] ⧗ a → (State s a)
+pure tuple ⧗ a → (State s a)
 
 :test ((w' ∘ c) >>= [(w' ∘ c) >>= [pure 0]] [[0]]) (w' [[0]])
 :test ((w' ∘ c) >>= [(w' ∘ c) >>= [pure 0]] [[1]]) (w' [[1]])
+
+get [0 : 0]
+
+gets [[0 : (1 0)]]
+
+put [[1 : Ω]]
+
+puts [[(1 0) : Ω]]
+
+:test (bind get [bind (put ((+2u) 0)) [gets [(+2u) 0]]] (+2u)) ((+4u) : (+16u))
+
+# TODO
+ap [0]
+
+# TODO
+…<|>… [0]
+
+:input std/Generic/Monad
