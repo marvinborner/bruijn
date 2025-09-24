@@ -70,3 +70,8 @@ ternary→binary [y [[[rec]]] [0] 0 (+0b)] ⧗ Ternary → Binary
 
 :test (B.eq? ³²(+0t) (+0b)) ([[1]])
 :test (B.eq? ³²(+42t) (+42b)) ([[1]])
+
+# converts ternary numbers to bruijn
+ternary→bruijn ternary→unary → unary→bruijn ⧗ Ternay → Bruijn
+
+:test (ternary→bruijn (+5t)) ((+5d))

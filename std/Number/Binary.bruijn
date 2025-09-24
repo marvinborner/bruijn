@@ -85,10 +85,10 @@ abstract! z : a¹ : a⁰ ⧗ Binary → AbstractBinary
 :test (→^(+2b)) ([[[0 [[[1 [[[2]]]]]]]]])
 
 # converts the abstracted binary representation back to normal
-normal! ω [z : a¹ : a⁰] ⧗ AbstractBinary → Binary
+normal! y [z : a¹ : a⁰] ⧗ AbstractBinary → Binary
 	z (+0b)
-	a¹ [↑¹([2 2 0] 0)]
-	a⁰ [↑⁰([2 2 0] 0)]
+	a¹ [↑¹([2 0] 0)]
+	a⁰ [↑⁰([2 0] 0)]
 
 →_‣ normal!
 
@@ -197,6 +197,21 @@ strip [^(0 z a¹ a⁰)] ⧗ Binary → Binary
 :test (%[[[0 2]]]) ((+0b))
 :test (%[[[1 (0 (0 (0 (0 2))))]]]) ((+1b))
 :test (%(+2b)) ((+2b))
+
+# strips trailing 0s from a binary number
+strip-trailing [[[[3 z a¹ a⁰ k]]]] ⧗ Binary → Binary
+	z 2 : 2
+	a¹ &[[(3 0) : (3 0)]]
+	a⁰ &[[1 : (2 0)]]
+
+:test (strip-trailing (+0b)) ((+0b))
+:test (strip-trailing (+1b)) ((+1b))
+:test (strip-trailing (+2b)) ((+1b))
+:test (strip-trailing (+4b)) ((+1b))
+:test (strip-trailing (+100b)) ((+25b))
+
+# counts trailing zeroes of a binary number
+ctz [(+0b)] : [(+0b)] : inc ⧗ Binary → Binary
 
 # extracts most significant bit from a binary number
 # not really useful for binary numbers, but part of interface
@@ -319,16 +334,19 @@ mul [[1 z a¹ a⁰]] ⧗ Number → Number → Number
 :test ((+42b) ⋅ (+0b) =? (+0b)) (true)
 :test ((+3b) ⋅ (+11b) =? (+33b)) (true)
 
+# takes a binary 2 to the power of a unary number (FAST)
+pow² ↑⁰‣ : (+1b) ⧗ Unary → Binary
+
 # ceiled integer log2 by counting bits
 # also counts leading 0s
-log2* (+0b) : inc : inc ⧗ Binary → Binary
+log₂* (+0b) : inc : inc ⧗ Binary → Binary
 
 # ceiled integer log2 by counting bits
-log2 log2* ∘ strip ⧗ Binary → Binary
+log₂ log₂* ∘ strip ⧗ Binary → Binary
 
-:test ((log2 (+1b)) =? (+1b)) (true)
-:test ((log2 (+2b)) =? (+2b)) (true)
-:test ((log2 (+3b)) =? (+2b)) (true)
-:test ((log2 (+4b)) =? (+3b)) (true)
-:test ((log2 (+32b)) =? (+6b)) (true)
-:test ((log2 (+48b)) =? (+6b)) (true)
+:test ((log₂ (+1b)) =? (+1b)) (true)
+:test ((log₂ (+2b)) =? (+2b)) (true)
+:test ((log₂ (+3b)) =? (+2b)) (true)
+:test ((log₂ (+4b)) =? (+3b)) (true)
+:test ((log₂ (+32b)) =? (+6b)) (true)
+:test ((log₂ (+48b)) =? (+6b)) (true)

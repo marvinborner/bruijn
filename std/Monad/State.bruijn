@@ -1,10 +1,13 @@
 # MIT License, Copyright (c) 2024 Marvin Borner
 # see samples/fun/rng-state for example usage
 
+:import std/Tuples .
 :import std/Combinator .
 
 # scala: s0 ⇒ { (s1, a) = run(s0); (s1, f(a)) }
-map [[[1 0 [[[0 2 (5 1)]]]]]] ⧗ (a → b) → (State s a) → (State s b)
+map [[[1 0 [[1 : (4 0)]]]]] ⧗ (a → b) → (State s a) → (State s b)
+
+…<$>… map
 
 # monadic bind/flat-map operator
 # scala: s0 ⇒ { (s1, a) = run(s0); f(a).run(s1) }

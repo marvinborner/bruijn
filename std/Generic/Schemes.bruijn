@@ -24,9 +24,9 @@
 #     v                                v
 #   Fix f   ------- cata alg ------->  a
 
-cata y [[unFix → (fmap (1 0)) → 0]] ⧗ ((f a) → a) → (Fix f) → a
+cata y [[unfix → (fmap (1 0)) → 0]] ⧗ ((f a) → a) → (Fix f) → a
 
-para y [[unFix → (fmap [P.pair 0 (2 1 0)]) → 0]] ⧗ ((f (Pair (Fix f) a)) → a) → (Fix f) → a
+para y [[unfix → (fmap [P.pair 0 (2 1 0)]) → 0]] ⧗ ((f (Pair (Fix f) a)) → a) → (Fix f) → a
 
 # ========= #
 # Unfolding #
@@ -37,7 +37,7 @@ para y [[unFix → (fmap [P.pair 0 (2 1 0)]) → 0]] ⧗ ((f (Pair (Fix f) a)) �
 #       |                                |
 #       |                                |
 #       |                                |
-#     unFix                            coalg
+#     unfix                            coalg
 #       |                                |
 #       |                                |
 #       |                                |

@@ -72,7 +72,6 @@ odd? ¬‣ ∘ even? ⧗ Generic → Boolean
 
 :import std/Option O
 
-# TODO
 fmap [[0 (O.some zero) (O.some ∘ 1)]] ⧗ (a → b) → (GenericF a) → (GenericF b)
 
 fix O.map-or zero inc ⧗ (GenericF a) → (Fix (GenericF a))

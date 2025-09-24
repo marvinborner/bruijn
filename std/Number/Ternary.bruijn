@@ -364,11 +364,22 @@ mul [[1 z a⁻ a⁺ a⁰]] ⧗ Number → Number → Number
 :test ((+3) ⋅ (+11) =? (+33)) (true)
 :test ((+42) ⋅ (-4) =? (-168)) (true)
 
+# multiplies number by 2 efficiently
+# TODO: make more efficient (should work by only shifting)
+dup mul (+2) ⧗ Number → Number
+
+# multiplies balanced ternary number with binary number (can introduce leading 0s)
+# WARNING: only works for stripped numbers (otherwise: dup for zeroes!)
+mul₂ [z : a¹ : a⁰] ⧗ Ternary → Binary → Ternary
+	z (+0t)
+	a¹ (add 0) ∘ dup
+	a⁰ dup
+
 # divs a balanced ternary number by two (binary >>1)
-div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
-	rec =?1 case-end case-div
-		case-div 3 /³(2 + 0) /³1 0
-		case-end 2
+div² [z [[[rec]]] (+0) 0] ⧗ Number → Number
+	rec =?0 case-end case-div
+		case-div 2 /³(1 + 3) /³0
+		case-end 1
 
 /²‣ div²
 
@@ -383,6 +394,9 @@ div² [z [[[[rec]]]] (+0) 0 0] ⧗ Number → Number
 :test (/³*(+6) =? (+2)) (true)
 :test (/³*(-6) =? (-2)) (true)
 :test (/³*(+5) =? (+1)) (true)
+
+# takes a ternary 3 to the power of a unary number (FAST)
+pow³ ↑⁰‣ : (+1t) ⧗ Unary → Ternary
 
 # ceiled integer log₃ by counting number of trits
 # also counts leading 0s

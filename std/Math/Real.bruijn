@@ -120,7 +120,7 @@ unary-exp [[0 &[[[[[[[2 1 0 (Q.add 4 (1 : N.--0)) N.++3]] pow fac]]]]] start [[[
 
 # equivalent to unary-exp but with ternary index using infinite list iteration
 exp [[L.nth-iterate &[[[[op]]]] start 0 [[[[1]]]] 0]] ⧗ Real → Real
-	start [0 (+1.0r) (+1.0r) (+1.0r) (+1)]
+	start (+1.0r) : (+1.0r) : (+1.0r) : (+1)
 	op [[[2 1 0 (4 + (1 / 0)) N.++3]] pow fac]
 		pow 6 ⋅ 4
 		fac (number→real 1) ⋅ 3
@@ -137,9 +137,9 @@ lim-exp [[pow-n ++(1 / (number→real 0)) 0]] ⧗ Real → Real
 # error: O(((x-1)/2)^{2n+1})
 ln [[[L.nth-iterate &[[[op]]] start 1] (--1 / ++1 0) [[[1]]]]] ⧗ Real → Real
 	start [0 1 (+0.0q) (+0)]
-	op [0 pow (Q.add 2 go) N.++1]
-		pow Q.mul 3 (Q.mul 4 4)
-		go Q.mul ((+2) : (N.mul (+2) 1)) 3
+	op pow : (Q.add 1 go) : N.++0
+		pow Q.mul 2 (Q.mul 3 3)
+		go Q.mul ((+2) : (N.mul (+2) 0)) 2
 
 :test (Q.eq? (ln (+2.0r) (+2)) ((+168) : (+242))) (true)
 

@@ -1,0 +1,119 @@
+# inspired by David Barina's algorithm
+# adapted for LC by fusing certain operations and carefully choosing encodings and bases
+
+# no dependence on std/Number/... because of golfing plans
+
+:import std/Tuples .
+:import std/Combinator .
+
+b¹ k ⧗ Bit
+
+b⁰ ki ⧗ Bit
+
+# shifts true bit into binary number
+↑²¹‣ [[[[1 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+# shifts false bit into binary number
+↑²⁰‣ [[[[0 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+# shifts given bit into binary number
+…↑²… [[[[[4 1 0 (3 2 1 0)]]]]] ⧗ Bit → Binary → Binary
+
+# shifts 0 trit into ternary number
+↑³⁰‣ [[[[[0 (4 3 2 1 0)]]]]] ⧗ Ternary → Ternary
+
+# increments binary number
+++‣ z : a¹ : a⁰ : ki ⧗ Binary → Binary
+	z (+0b) : (+1b)
+	a¹ &[[↑²¹1 : ↑²⁰0]]
+	a⁰ &[[↑²⁰1 : ↑²¹1]]
+
+# decrements binary number
+--‣ z : a¹ : a⁰ : ki ⧗ Binary → Binary
+	z (+0b) : (+0b)
+	a¹ &[[↑²¹1 : ↑²⁰1]]
+	a⁰ &[[↑²⁰1 : ↑²¹0]]
+
+# ctz operation
+# we use unary because we need it for efficient pow
+# also, trailing zeroes are typically not that large
+#₀‣ [(+0u)] : [(+0u)] : [[[1 (2 1 0)]]] ⧗ Binary → Unary
+
+:test (#₀(+100b)) ((+2u))
+:test (#₀(+101b)) ((+0u))
+
+# takes 3 to the power of a unary number efficiently
+₃^‣ ↑³⁰‣ : (+1t) ⧗ Unary → Ternary
+# ₃^‣ [0 + ↑²⁰0] : (+1b) ⧗ Unary → Binary
+
+# converts the normal binary representation into abstract
+→^‣ z : a¹ : a⁰ ⧗ Binary → AbstractBinary
+	z (+0b)
+	a¹ [[[[1 3]]]]
+	a⁰ [[[[0 3]]]]
+
+# converts the abstracted binary representation back to normal
+→_‣ y [z : a¹ : a⁰] ⧗ AbstractBinary → Binary
+	z (+0b)
+	a¹ [↑²¹([2 0] 0)]
+	a⁰ [↑²⁰([2 0] 0)]
+
+# a + b
+# TODO: can we do this without abstracting?
+…+… [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+	abs [c (0 z a¹ a⁰)]
+		c¹ [1 ↑²⁰(3 0 b¹) ↑²¹(3 0 b⁰)]
+		a¹ [[[1 (c¹ 1) c¹' c¹]]]
+			c¹' [1 ↑² (3 0 b¹)]
+		a⁰ [[[1 (c⁰ 1) c¹ c⁰]]]
+			c⁰ [1 ↑² (3 0 b⁰)]
+		z [++(→_0) : →_0]
+		c [[1 0 b⁰]]
+
+# a ⋅ b
+…⋅… [[z : a⁻ : a⁺ : a⁰] ↑²⁰0] ⧗ Binary → UnbalancedTernary → Binary
+	step ↑²⁰0 + 0
+	z (+0b)
+	a⁻ [step + 1]
+	a⁺ [step + 2]
+	a⁰ [step]
+
+:test ((+5b) ⋅ (₃^(+20u))) ((+17433922005b))
+
+# a / 2
+/²‣ z : a¹ : a⁰ : ki ⧗ Binary → Binary
+	z (+0b) : (+0b)
+	a¹ &[[↑²¹1 : 1]]
+	a⁰ &[[↑²⁰1 : 1]]
+
+:test (/²(+8b)) ((+4b))
+
+# a / (2^b)
+…/₂^… [[0 /²‣ 1]] ⧗ Binary → Unary → Binary
+
+:test ((+8b) /₂^ (+2u)) ((+2b))
+
+# a / (2^(ctz b))
+# slightly faster version of `0 /₂^ #₀0`
+# we store a "cache" of the previous bits in the right element,
+#  activating it only in =1 bits
+%_‣ [[[[3 z a¹ a⁰ k]]]] ⧗ Binary → Binary
+	z 2 : 2
+	a¹ &[[(3 0) : (3 0)]]
+	a⁰ &[[1 : (2 0)]]
+
+:test (%_(+100b)) ((+25b))
+
+step [[[%_(--((1 ⋅ ₃^0) /₂^ 0))] #₀0] ++0]
+
+# ==== #
+# DEMO #
+# ==== #
+
+:import std/Number/Binary B
+:import std/Number/Ternary T
+
+# counts Collatz steps to 1 (Barina's steps)
+collatz y [[[B.eq? 0 (+1b) 1 (2 T.++1 (step 0))]]] (+0t) ⧗ Binary → Ternary
+
+:test (collatz (+01189998819991197253b)) ((+42t))

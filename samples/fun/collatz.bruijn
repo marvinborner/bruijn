@@ -1,5 +1,6 @@
 # bruijn collatz.bruijn
 # fun collatz implementation using binary abstract machine
+# (see fast_collatz for slighty faster version)
 
 :import std/Combinator .
 :import std/Number/Binary .

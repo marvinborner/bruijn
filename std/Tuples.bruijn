@@ -1,5 +1,7 @@
 # MIT License, Copyright (c) 2025 Marvin Borner
 
+:import std/Combinator .
+
 tuple [[[0 2 1]]] ⧗ a → b → (Tuple a b)
 
 …:… tuple
@@ -31,3 +33,9 @@ octuple [[[[[[[[[0 8 7 6 5 4 3 2 1]]]]]]]]] ⧗ a → b → c → d → e → f 
 nonuple [[[[[[[[[[0 9 8 7 6 5 4 3 2 1]]]]]]]]]] ⧗ a → b → c → d → e → f → g → h → i → (Nonuple a b c d e f g h i)
 
 …:…:…:…:…:…:…:…:… nonuple
+
+# constructs selector for kth element of n-tuple
+select [[[1 [0 1]] i ((1 k) (0 k))]] ⧗ Unary → Unary → (NTuple → a)
+
+:test (select (+5u) (+0u)) ([[[[[[0]]]]]])
+:test (select (+5u) (+3u)) ([[[[[[3]]]]]])
