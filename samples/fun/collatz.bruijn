@@ -1,16 +1,96 @@
 # bruijn collatz.bruijn
 # fun collatz implementation using binary abstract machine
-# (see fast_collatz for slighty faster version)
+# inspired by David Barina's algorithm
+# adapted for LC by fusing certain operations and carefully choosing encodings and bases
+
+# no dependence on std/Number/... because of golfing plans
 
 :import std/Combinator .
-:import std/Number/Binary .
 
-# TODO: add String → Binary function for reading from stdin
+# :import std/Number/Binary .
+
 start (+01189998819991197253b)
 
-collatz [z [[rec]] (=²?0 ≠²!(/²0) 0)] ⧗ Binary → Boolean
-	≠²!‣ z [[=²?0 (1 /²0) 0]]
-	rec (0 =? (+1b)) case-end case-rec
+# TODO: could we also strip leading zeroes here?
+≠²!‣ [[[[3 z a¹ a⁰ k]]]] ⧗ Binary → Binary
+	z [0 3 3]
+	a¹ &[[[0 (4 1) (4 1)]]]
+	a⁰ &[[[0 2 (3 1)]]]
+
+=²?‣ [0 [[1]] [[[0]]] [[[1]]]] ⧗ Binary → Bit
+
+≠²?‣ [0 [[0]] [[[1]]] [[[0]]]] ⧗ Binary → Bit
+
+↑¹‣ [[[[1 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+↑⁰‣ [[[[0 (3 2 1 0)]]]] ⧗ Binary → Binary
+
+…↑… [[[[[4 1 0 (3 2 1 0)]]]]] ⧗ Bit → Binary → Binary
+
+++‣ [0 z a¹ a⁰ ki] ⧗ Binary → Binary
+	z [0 (+0b) (+1b)]
+	a¹ &[[[0 ↑¹2 ↑⁰1]]]
+	a⁰ &[[[0 ↑⁰2 ↑¹2]]]
+
+/²‣ [0 z a¹ a⁰ [[0]]] ⧗ Binary → Binary
+	z [0 (+0b) (+0b)]
+	a¹ &[[[0 ↑¹2 2]]]
+	a⁰ &[[[0 ↑⁰2 2]]]
+
+# converts the normal binary representation into abstract
+→^‣ [0 z a¹ a⁰] ⧗ Binary → AbstractBinary
+	z (+0b)
+	a¹ [[[[1 3]]]]
+	a⁰ [[[[0 3]]]]
+
+# converts the abstracted binary representation back to normal
+→_‣ y [[0 z a¹ a⁰]] ⧗ AbstractBinary → Binary
+	z (+0b)
+	a¹ [↑¹(2 0)]
+	a⁰ [↑⁰(2 0)]
+
+# a + b
+# TODO: can we do this without abstracting?
+…+… [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+	abs [c (0 z a¹ a⁰)]
+		c¹ [1 ↑⁰(3 0 [[1]]) ↑¹(3 0 [[0]])]
+		a¹ [[[1 (c¹ 1) c¹' c¹]]]
+			c¹' [1 ↑ (3 0 [[1]])]
+		a⁰ [[[1 (c⁰ 1) c¹ c⁰]]]
+			c⁰ [1 ↑ (3 0 [[0]])]
+		z [[0 ++(→_1) →_1]]
+		c [[1 0 [[0]]]]
+
+=¹?‣ [0 z a¹ a⁰ [[1]]] ⧗ Binary → Binary
+	z [0 [[0]] [[1]]]
+	a¹ &[[[0 1 [[0]]]]]
+	a⁰ &[[[0 [[0]] [[0]]]]]
+
+# interestingly, ≠²!(↑¹0 + 0) as a side effect strips leading zeroes, TODO: overhead?
+# :test (=¹?(+1b)) ([[1]])
+# :test (=¹?[[[1 (0 2)]]]) ([[1]])
+# :test (=¹?[[[1 (0 (0 2))]]]) ([[1]])
+# :test (=¹?[[[1 (0 (0 (0 2)))]]]) ([[1]])
+
+:test (=¹?(+0b)) ([[0]])
+:test (=¹?(+2b)) ([[0]])
+:test (=¹?(+3b)) ([[0]])
+:test (=¹?(+4b)) ([[0]])
+:test (=¹?(+5b)) ([[0]])
+:test (=¹?(+6b)) ([[0]])
+:test (=¹?(+7b)) ([[0]])
+:test (=¹?(+8b)) ([[0]])
+:test (=¹?(+9b)) ([[0]])
+:test (=¹?(+10b)) ([[0]])
+
+collatz make-odd → (z [[rec]]) ⧗ Binary → Boolean
+	make-odd [=²?0 ≠²!(/²0) 0]
+	rec =¹?0 case-end case-rec
+		case-rec 1 ≠²!(↑¹0 + 0)
+		case-end [[1]]
+
+odd-collatz z [[rec]] ⧗ Binary → Boolean
+	rec =¹?0 case-end case-rec
 		case-rec 1 ≠²!(↑¹0 + 0)
 		case-end [[1]]
 
