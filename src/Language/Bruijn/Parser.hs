@@ -7,6 +7,7 @@ module Language.Bruijn.Parser
 import           Control.Monad                  ( void )
 import           Control.Monad.State            ( State
                                                 , evalState
+                                                , modify
                                                 , put
                                                 )
 import           Data.Bruijn                    ( Identifier(..)
@@ -16,13 +17,22 @@ import           Data.Bruijn                    ( Identifier(..)
                                                 , TermAnn(..)
                                                 , TermF(..)
                                                 )
+import           Data.Context                   ( Context(..)
+                                                , MetaLevel(..)
+                                                )
 import           Data.Fix                       ( Fix(..) )
+import           Data.Foreign                   ( ForeignLanguage(..) )
+import           Data.Phase                     ( Phase(BruijnParse) )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Void
-import           Language.Generic.Annotation    ( ann )
+import           Language.Generic.Annotation    ( ann
+                                                , fakeSrcSpan
+                                                )
 import           Language.Generic.Error         ( Error(..)
                                                 , MonadError
+                                                , PhaseT
+                                                , liftPhase
                                                 , throwError
                                                 )
 import           Text.Megaparsec         hiding ( State
@@ -31,12 +41,15 @@ import           Text.Megaparsec         hiding ( State
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer    as L
 
-type Parser = ParsecT Void Text (State SourcePos)
+type Parser = ParsecT Void Text (State (Context BruijnParse))
+type PhaseError = MonadError (Error BruijnParse)
+type Term = TermAnn BruijnParse
 
 -- | sync position in State
 syncPos :: Parser a -> Parser a
 syncPos p = do
-  put =<< getSourcePos
+  pos <- getSourcePos
+  modify $ \ctx -> ctx { srcPos = pos }
   p
 
 -- | single line comment
@@ -90,37 +103,37 @@ mixfix = Mixfix <$> some mixfixIdentifier
 identifier :: Parser Identifier
 identifier = local <|> namespaced <|> mixfix
 
-abstraction :: Parser TermAnn
+abstraction :: Parser Term
 abstraction =
   ann $ AbstractionF <$> (symbol "[" *> lexeme lambda <* symbol "]")
 
-application :: Parser TermAnn
+application :: Parser Term
 application =
   ann $ ApplicationF <$> (symbol "(" *> some (lexeme singleton) <* symbol ")")
 
-index :: Parser TermAnn
+index :: Parser Term
 index = ann $ IndexF . read . return <$> digitChar
 
-force :: Parser TermAnn
+force :: Parser Term
 force = ann $ ForceF <$ char '!'
 
-substitution :: Parser TermAnn
+substitution :: Parser Term
 substitution = ann $ SubstitutionF <$> lexeme identifier
 
-singleton :: Parser TermAnn
+singleton :: Parser Term
 singleton =
   lexeme $ abstraction <|> application <|> index <|> force <|> substitution
 
-lambda :: Parser TermAnn
+lambda :: Parser Term
 lambda = ann $ ApplicationF <$> some (lexeme singleton)
 
-definition :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+definition :: Parser (Term -> Term -> TermF Term)
 definition = DefinitionF <$> lexeme identifier <*> lexeme lambda
 
-freestanding :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+freestanding :: Parser (Term -> Term -> TermF Term)
 freestanding = DoF <$> (symbol "do " *> lexeme lambda)
 
-command :: Parser TermAnn
+command :: Parser Term
 command = ann $ char ':' *> (try test <|> imp)
  where
   test =
@@ -132,10 +145,10 @@ command = ann $ char ':' *> (try test <|> imp)
       <$> (symbol "import" *> lexeme path)
       <*> (lexeme namespace <|> symbol ".")
 
-preprocessor :: Parser (TermAnn -> TermAnn -> TermF TermAnn)
+preprocessor :: Parser (Term -> Term -> TermF Term)
 preprocessor = PreprocessorF <$> lexeme command
 
-program :: Parser TermAnn
+program :: Parser Term
 program = ann $ do
   indent <- scn *> L.indentLevel
   instr  <- freestanding <|> try definition <|> preprocessor
@@ -143,11 +156,18 @@ program = ann $ do
   next   <- try (L.indentGuard scn EQ indent *> program) <|> ann (EmptyF <$ scn)
   return $ instr sub next
 
-parse :: (MonadError m) => Text -> Text -> m TermAnn
+parse :: PhaseError m => Text -> Text -> m Term
 parse file input = prettify $ evalState
   (runParserT (program <* eof) (T.unpack file) input)
-  (initialPos $ T.unpack file)
+  initialContext
  where
+  initialContext =
+    (Context { lang      = Bruijn
+             , srcPos    = initialPos $ T.unpack file
+             , srcSpan   = fakeSrcSpan
+             , metaLevel = MetaLevel 0
+             }
+    )
   prettify (Right t) = return t
   prettify (Left err) =
-    throwError $ ParseError $ T.pack $ errorBundlePretty err
+    throwError $ Error initialContext $ T.pack $ errorBundlePretty err

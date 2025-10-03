@@ -1,57 +1,56 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveFunctor, GeneralizedNewtypeDeriving, FlexibleInstances, KindSignatures, TypeApplications, ScopedTypeVariables, UndecidableInstances #-}
 
 module Language.Generic.Error
-  ( throwError
-  , runError
-  , runErrorT
-  , showError
+  ( showError
   , Error(..)
-  , ErrorM
-  , ErrorT
-  , MonadError
+  , module Control.Monad.Except
+  , liftPhase
+  , PhaseT(..)
+  , runPhaseTOrFail
   ) where
 
-import qualified Control.Monad.Except          as Except
-import           Control.Monad.State            ( StateT )
+import           Control.Monad.Except
+import           Control.Monad.State            ( MonadIO
+                                                , StateT
+                                                )
+import           Data.Context                   ( Context(..) )
+import           Data.Phase                     ( HasSPhase
+                                                , Phase(..)
+                                                , sphase
+                                                )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
-import           Language.Generic.Annotation    ( SrcSpan
-                                                , showAnnotation
-                                                )
 
-errorPrefix :: Text
-errorPrefix = "\ESC[101m\ESC[30mERROR\ESC[0m "
+prettyError :: Text -> Text -> Text
+prettyError phase msg =
+  "Error while \ESC[101m\ESC[30m" <> phase <> "\ESC[0m: " <> msg
 
-data Error = ParseError Text | FatalError Text | TransformError SrcSpan Text | PreprocessError SrcSpan Text | ReduceError SrcSpan Text
+data Error ph = Error (Context ph) Text
 
 -- TODO: this will later need IO to read/highlight the annotated file
-showError :: (Monad m) => Error -> m Text
-showError (ParseError msg) = return $ errorPrefix <> "while parsing: " <> msg
-showError (FatalError msg) = return $ errorPrefix <> "FATAL: " <> msg
-showError (TransformError ann msg) = do
-  ann' <- showAnnotation ann
-  return $ errorPrefix <> "while transforming: " <> ann' <> ": " <> msg
-showError (PreprocessError ann msg) = do
-  ann' <- showAnnotation ann
-  return $ errorPrefix <> "while preprocessing: " <> ann' <> ": " <> msg
-showError (ReduceError ann msg) = do
-  ann' <- showAnnotation ann
-  return $ errorPrefix <> "while reducing: " <> ann' <> ": " <> msg
+class ShowError ph where
+  showError :: Error ph -> Text
 
-type ErrorT m = Except.ExceptT Error m
-type ErrorM a = Except.Except Error a
+instance {-# OVERLAPPABLE #-} forall ph. HasSPhase ph => ShowError ph where
+  showError (Error ctx msg) = prettyError (T.pack $ show (sphase @ph)) msg
 
-runErrorT :: ErrorT m a -> m (Either Error a)
-runErrorT = Except.runExceptT
+-- instance ShowError BruijnToLambdaTransform where
+--   showError (Error ctx msg) = msg
 
-runError :: ErrorM a -> Either Error a
-runError = Except.runExcept
+newtype PhaseT m a = PhaseT { runPhaseT :: ExceptT Text m a }
+  deriving (Functor, Applicative, Monad, MonadError Text, MonadIO)
 
-class Monad m => MonadError m where
-  throwError :: Error -> m a
-  catchError :: m a -> (Error -> m a) -> m a
+-- runPhaseTOrFail :: (MonadIO m, PhaseError m) => PhaseContext -> PhaseT m Term -> m Term
+runPhaseTOrFail context p = do
+  res <- runExceptT $ runPhaseT p
+  case res of
+    Left  err -> throwError $ Error context err
+    Right ok  -> return ok
 
-instance Monad m => MonadError (Except.ExceptT Error m) where
-  throwError = Except.throwError
-  catchError = Except.catchError
+-- every phase has a different PhaseError, so we use showError!
+liftPhase phase = PhaseT $ ExceptT $ do
+  result <- runExceptT phase
+  return $ case result of
+    Left  err -> Left (showError err)
+    Right x   -> Right x

@@ -12,6 +12,7 @@ import           Data.Lambda                    ( TermAnn
                                                 )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
+import Data.Context (Context(..))
 import           Language.Generic.Annotation    ( AnnUnit(..)
                                                 , pattern AnnF
                                                 , showAnnotationURI
@@ -29,12 +30,12 @@ prettyPrintAlgebra = \case
   CotokenF            -> text ">"
 
 -- | purely textual pretty printing
-prettyPrint :: TermAnn -> Text
+prettyPrint :: TermAnn ph -> Text
 prettyPrint =
   T.pack . show . foldFix (prettyPrintAlgebra . annotated . getCompose)
 
 -- | pretty print with hovering (uses terminal escape sequences)
 -- TODO: also enable coloring here
-prettyPrintAnnotated :: TermAnn -> Text
+prettyPrintAnnotated :: TermAnn ph -> Text
 prettyPrintAnnotated = T.pack . show . foldFix go
-  where go (AnnF a t) = hover (showAnnotationURI a) (prettyPrintAlgebra t)
+  where go (AnnF a t) = hover (showAnnotationURI (srcSpan a)) (prettyPrintAlgebra t)

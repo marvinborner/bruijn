@@ -21,11 +21,13 @@ import           Data.Functor.Compose           ( getCompose )
 import           Data.Text                      ( Text )
 import           Language.Generic.Annotation    ( AnnF
                                                 , pattern AnnF
+                                                , pattern FixAnnF
                                                 , AnnUnit(..)
-                                                , SrcSpan
                                                 , mapAlgebra
                                                 )
+import Data.Context (Context(..))
 import           Text.Show.Deriving             ( deriveShow1 )
+import Data.Foreign
 
 type Name = Text
 
@@ -61,21 +63,20 @@ data TermF f = DefinitionF Identifier f f f -- | <name> <term> [<sub> <next>]
             | TestF f f                     -- | :test (<lambda>) (<lambda>)
             | ImportF Text Text             -- | :import <path> <namespace>
 
+            | Foreign ForeignLanguage Text  -- | ffi "..."
+            | ForeignIf ForeignLanguage f   -- | <term>@<lang> (filtered by preprocessor)
+
             deriving (Show, Eq, Functor, Foldable, Traversable)
 
 deriveShow1 ''TermF
 
 type Term = Fix TermF
 
-type TermAnnF = AnnF SrcSpan TermF
-type TermAnn = Fix TermAnnF
-
--- to foldFix only on term: `foldFix (go . annotation . getCompose)`
-
--- TODO: instance Functor?
+type TermAnnF ph = AnnF (Context ph) TermF
+type TermAnn ph = Fix (TermAnnF ph)
 
 -- | Map all identifiers to a function
-mapIdentifiers :: (Identifier -> Identifier) -> TermAnn -> TermAnn
+mapIdentifiers :: (Identifier -> Identifier) -> TermAnn c -> TermAnn c
 mapIdentifiers func = foldFix $ \case
   (AnnF a (DefinitionF ident term sub next)) ->
     Fix $ AnnF a $ DefinitionF (func ident) term sub next
@@ -83,17 +84,17 @@ mapIdentifiers func = foldFix $ \case
   t                              -> Fix t
 
 -- | Link term into next-chain
-linkIn :: TermAnn -> TermAnn -> TermAnn
+linkIn :: TermAnn c -> TermAnn c -> TermAnn c
 linkIn term subst = flip mapAlgebra term $ \case
-  DefinitionF name term sub (Fix (AnnF _ EmptyF)) ->
+  DefinitionF name term sub (FixAnnF _ EmptyF) ->
     DefinitionF name term sub subst
   DefinitionF name term sub next ->
     DefinitionF name term sub $ linkIn next subst
-  PreprocessorF command sub (Fix (AnnF _ EmptyF)) ->
+  PreprocessorF command sub (FixAnnF _ EmptyF) ->
     PreprocessorF command sub subst
   PreprocessorF command sub next ->
     PreprocessorF command sub $ linkIn next subst
-  DoF term sub (Fix (AnnF _ EmptyF)) ->
+  DoF term sub (FixAnnF _ EmptyF) ->
     DoF term sub subst
   DoF term sub next ->
     DoF term sub $ linkIn next subst

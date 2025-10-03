@@ -14,6 +14,7 @@ import           Data.Fix                       ( foldFix )
 import           Data.Functor.Compose           ( getCompose )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
+import Data.Context (Context(..))
 import           Language.Generic.Annotation    ( AnnUnit(..)
                                                 , pattern AnnF
                                                 , showAnnotationURI
@@ -77,14 +78,14 @@ prettyPrintAlgebra = \case
   ImportF path namespace -> text ":import " <> text path <+> text namespace
 
 -- | purely textual pretty printing
-prettyPrint :: TermAnn -> Text
+prettyPrint :: TermAnn c -> Text
 prettyPrint =
   T.pack . show . foldFix (prettyPrintAlgebra . annotated . getCompose)
 
 -- | pretty print with hovering (uses terminal escape sequences)
 -- TODO: also enable coloring here
-prettyPrintAnnotated :: TermAnn -> Text
+prettyPrintAnnotated :: TermAnn c -> Text
 prettyPrintAnnotated = T.pack . show . foldFix go
  where
   go (AnnF _ EmptyF) = empty -- for linebreaks in if-check above
-  go (AnnF a t     ) = hover (showAnnotationURI a) (prettyPrintAlgebra t)
+  go (AnnF (Context {srcSpan = a}) t     ) = hover (showAnnotationURI a) (prettyPrintAlgebra t)

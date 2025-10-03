@@ -20,27 +20,34 @@ import qualified Data.Lambda                   as Lambda
 import           Data.List                      ( elemIndex )
 import qualified Data.Text                     as T
 import           Language.Bruijn.PrettyPrinter  ( prettyPrint )
-import           Language.Generic.Annotation    ( fakeAnn
+import           Language.Generic.Annotation    ( fakeContext
                                                 , pattern FixAnnF
                                                 , mapWithAnnM
+                                                , foldAnn
                                                 )
 import           Language.Generic.Error         ( Error(..)
-                                                , ErrorT
                                                 , MonadError
-                                                , runErrorT
+                                                , ExceptT
+                                                , runExceptT
                                                 , throwError
                                                 )
 
 import           Debug.Trace
+import Data.Context (phaseChange)
+import Data.Phase (Phase(BruijnPreprocess, BruijnToLambdaTransform))
 
-data Context = Context
+data TransformingContext = TransformingContext
   { stk   :: [Identifier]
   , depth :: Int
   }
+type PhaseError = MonadError (Error BruijnToLambdaTransform)
+type Transform = ExceptT (Error BruijnToLambdaTransform) (State TransformingContext)
 
-type Transform = ErrorT (State Context)
+type SourceTerm = TermAnn BruijnPreprocess
+type Term = TermAnn BruijnToLambdaTransform
+type TargetTerm = Lambda.TermAnn BruijnToLambdaTransform
 
-data Tree = Tree Identifier Tree TermAnn | Branch Identifier Tree Tree | Leaf TermAnn | End
+data Tree = Tree Identifier Tree Term | Branch Identifier Tree Tree | Leaf Term | End
 
 instance Show Tree where
   show (Tree name next term) =
@@ -57,10 +64,10 @@ instance Show Tree where
   show End         = "END"
 
 -- | Turn definitions into a Tree (~ topological sort)
-treeify :: TermAnn -> Tree
+treeify :: Term -> Tree
 treeify = flip go End
  where
-  go :: TermAnn -> Tree -> Tree
+  go :: Term -> Tree -> Tree
   go = \case
     FixAnnF _ (DefinitionF name term sub next) -> do
       let sub'  = go sub
@@ -73,10 +80,10 @@ treeify = flip go End
     FixAnnF _ EmptyF -> id
     t                -> error $ T.unpack $ prettyPrint t -- should be impossible by now
 
-transformTerm :: TermAnn -> Transform Lambda.TermAnn
+transformTerm :: Term -> Transform TargetTerm
 transformTerm = mapWithAnnM $ \ann -> \case
   AbstractionF term -> do
-    ctx@Context { depth = d } <- get
+    ctx@TransformingContext { depth = d } <- get
     put $ ctx { depth = d + 1 }
     term' <- transformTerm term
     put $ ctx { depth = d }
@@ -88,13 +95,13 @@ transformTerm = mapWithAnnM $ \ann -> \case
   IndexF        i    -> return $ Lambda.IndexF $ i
 
   SubstitutionF name -> do
-    Context { stk = s, depth = d } <- get
+    TransformingContext { stk = s, depth = d } <- get
     let maybeIdx = elemIndex name s
     case maybeIdx of
       Just i -> return $ Lambda.IndexF $ i + d
       Nothing ->
         throwError
-          $  TransformError ann
+          $  Error ann
           $  "can not substitute: "
           <> T.pack (show name)
           <> ", depth: "
@@ -104,31 +111,34 @@ transformTerm = mapWithAnnM $ \ann -> \case
 
   ForceF -> return $ Lambda.TokenF
 
-  term -> throwError $ TransformError ann $ "unexpected " <> T.pack (show term)
+  -- TODO???
+  -- term -> throwError $ Error ann $ "unexpected " <> T.pack (show term)
 
 -- TODO: when a term is open, it must be substituted immediately (do this in preprocessor?)
-transformTree :: Tree -> Transform Lambda.TermAnn
+--       we could also do this with terms in NF (sharing doesn't help here anyway)
+transformTree :: Tree -> Transform TargetTerm
 transformTree (Tree name tree term) = do
-  ctx@Context { stk = s } <- get
+  ctx@TransformingContext { stk = s } <- get
   term'                   <- transformTerm term
   put ctx { stk = name : s }
   tree' <- transformTree tree
   put ctx { stk = s }
-  return $ fakeAnn $ Lambda.ApplicationF
-    [fakeAnn $ Lambda.AbstractionF tree', term']
+  return $ fakeContext $ Lambda.ApplicationF
+    [fakeContext $ Lambda.AbstractionF tree', term']
 transformTree (Branch name a b) = do
-  ctx@Context { stk = s } <- get
+  ctx@TransformingContext { stk = s } <- get
   b'                      <- transformTree b
   put ctx { stk = name : s }
   a' <- transformTree a
   put ctx { stk = s }
-  return $ fakeAnn $ Lambda.ApplicationF [fakeAnn $ Lambda.AbstractionF a', b']
+  return $ fakeContext $ Lambda.ApplicationF [fakeContext $ Lambda.AbstractionF a', b']
 transformTree (Leaf term) = transformTerm term
-transformTree End         = return $ fakeAnn $ Lambda.IndexF 0
+transformTree End         = return $ fakeContext $ Lambda.IndexF 0
 
-transform :: (MonadError m) => TermAnn -> m Lambda.TermAnn
+transform :: PhaseError m => SourceTerm -> m TargetTerm
 transform term = do
-  let tree = treeify term
-  let result = trace (show tree) $ evalState (runErrorT $ transformTree tree)
-                                             Context { stk = [], depth = 0 }
+  let term' = foldAnn phaseChange term
+  let tree = treeify term'
+  let result = trace (show tree) $ evalState (runExceptT $ transformTree tree)
+                                             TransformingContext { stk = [], depth = 0 }
   either throwError return result

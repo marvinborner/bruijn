@@ -13,6 +13,7 @@ module Language.Generic.Annotation
   , SrcSpan(..)
   , AnnUnit(..)
   , fakeSrcSpan
+  , fakeContext
   , fakeAnn
   , ann
   , fixAnnF
@@ -45,18 +46,12 @@ import           Text.Megaparsec                ( ParsecT
                                                 , mkPos
                                                 )
 import           Text.Show.Deriving             ( deriveShow1 )
-
-data SrcSpan = SrcSpan
-  { spanBegin :: SourcePos
-  , spanEnd   :: SourcePos
-  }
-  deriving (Show, Ord, Eq)
+import Data.Context (Context(..), SrcSpan(..))
 
 showSourcePosURI :: SourcePos -> Text
 showSourcePosURI (SourcePos { sourceName = file, sourceLine = line, sourceColumn = column })
   = T.pack file
-    <> ":"
-    <> (T.pack . show . unPos) line
+    <> ":" <> (T.pack . show . unPos) line
     <> ":"
     <> (T.pack . show . unPos) column
 
@@ -101,19 +96,21 @@ annUnitToAnn :: AnnUnit ann (f (Ann ann f)) -> Ann ann f
 annUnitToAnn (AnnUnit ann a) = Fix (Compose (AnnUnit ann a))
 
 ann1
-  :: (TraversableStream s, Ord e, MonadState SourcePos m)
+  :: (TraversableStream s, Ord e, MonadState (Context ph) m)
   => ParsecT e s m a
-  -> ParsecT e s m (AnnUnit SrcSpan a)
+  -> ParsecT e s m (AnnUnit (Context ph) a)
 ann1 p = do
   begin <- getSourcePos
   res   <- p
-  end   <- get -- getSourcePos is expensive, therefore we store in State
-  pure $ AnnUnit (SrcSpan begin end) res
+  -- getSourcePos is expensive, therefore we store in State
+  context@Context { srcSpan = SrcSpan { spanEnd = end } } <- get 
+  let context' = context { srcSpan = SrcSpan begin end }
+  pure $ AnnUnit context' res
 
 ann
-  :: (TraversableStream s, Ord e, MonadState SourcePos m)
-  => ParsecT e s m (f (Ann SrcSpan f))
-  -> ParsecT e s m (Ann SrcSpan f)
+  :: (TraversableStream s, Ord e, MonadState (Context ph) m)
+  => ParsecT e s m (f (Ann (Context ph) f))
+  -> ParsecT e s m (Ann (Context ph) f)
 ann = (annUnitToAnn <$>) . ann1
 
 fakeSrcSpan :: SrcSpan
@@ -124,10 +121,13 @@ fakeSrcSpan = fakeSrcSpan
 
 fakeAnn = Fix . AnnF fakeSrcSpan
 
+-- TODO: move?
+fakeContext = Fix . AnnF Context { srcSpan = fakeSrcSpan }
+
 -- utility functions --
 
 foldAnn f = foldFix $ \case
-  AnnF a t -> Fix $ AnnF a $ f t
+  AnnF a t -> Fix $ AnnF (f a) t
 
 mapAnn f (Fix inn) = Fix $ f inn
 

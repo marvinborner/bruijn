@@ -8,10 +8,9 @@ module Data.Lambda
   , TermAnn
   ) where
 
+import           Data.Context                   ( Context )
 import           Data.Fix                       ( Fix(..) )
-import           Language.Generic.Annotation    ( AnnF
-                                                , SrcSpan
-                                                )
+import           Language.Generic.Annotation    ( AnnF )
 import           Text.Show.Deriving             ( deriveShow1 )
 
 data TermF f = AbstractionF f  -- | Abstraction of a term
@@ -25,5 +24,5 @@ deriveShow1 ''TermF
 
 type Term = Fix TermF
 
-type TermAnnF = AnnF SrcSpan TermF
-type TermAnn = Fix TermAnnF
+type TermAnnF ph = AnnF (Context ph) TermF
+type TermAnn ph = Fix (TermAnnF ph)

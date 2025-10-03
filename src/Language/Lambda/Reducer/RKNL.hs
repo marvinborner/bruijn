@@ -1,5 +1,10 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
 -- based on the RKNL abstract machine
+
+-- Plans:
+-- - token-based IO (Haskell FFI)
+-- - stepper/debugger (+ TUI UI)
+
 module Language.Lambda.Reducer.RKNL
   ( reduce
   ) where
@@ -18,16 +23,23 @@ import           Data.Map.Strict                ( Map )
 import qualified Data.Map.Strict               as Map
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
+import Data.Context (Context(..), phaseChange)
 import           Language.Generic.Annotation    ( AnnF
-                                                , SrcSpan
                                                 , fixAnnF
                                                 , pattern FixAnnF
                                                 , mapWithAnnM
+                                                , foldAnn
                                                 )
 import           Language.Generic.Error         ( Error(..)
                                                 , MonadError
                                                 , throwError
                                                 )
+import Data.Phase (Phase(BruijnToLambdaTransform, LambdaReduce))
+
+type SourceTerm = TermAnn BruijnToLambdaTransform -- TODO: be more generic
+type Term = TermAnn LambdaReduce
+type PhaseContext = Context LambdaReduce
+type PhaseError = MonadError (Error LambdaReduce)
 
 type Store = Map Int Box
 type Stack = [RedexAnn]
@@ -41,19 +53,19 @@ data Rvar = Num Int | Hole deriving Show
 data Conf = Econf NameGen RedexAnn Store Stack | Cconf NameGen Stack RedexAnn | End
 
 data RedexF f = Rabs Int f | Rapp f f | Rvar Rvar | Rclosure f Store | Rcache Box f
-type RedexAnnF = AnnF SrcSpan RedexF
+type RedexAnnF = AnnF PhaseContext RedexF
 type RedexAnn = Fix RedexAnnF
 
--- invalidState :: MonadError m => SrcSpan => m a
-invalidState a = throwError $ ReduceError a "invalid machine state!"
+invalidState :: PhaseError m => PhaseContext -> m a
+invalidState a = throwError $ Error a "invalid machine state!"
 
 nextName :: NameGen -> (Int, NameGen)
 nextName (NameGen x) = (x, NameGen $ x + 1)
 
-toRedex :: MonadError m => TermAnn -> m RedexAnn
+toRedex :: PhaseError m => Term -> m RedexAnn
 toRedex = go (NameGen 1) []
  where
-  go :: MonadError m => NameGen -> [Int] -> TermAnn -> m RedexAnn
+  go :: PhaseError m => NameGen -> [Int] -> Term -> m RedexAnn
   go g ns = \case
     FixAnnF a (AbstractionF t) -> do
       let (v, g') = nextName g
@@ -65,13 +77,13 @@ toRedex = go (NameGen 1) []
     FixAnnF a (IndexF i) -> do
       let i' = if i < 0 || i >= length ns then i else ns !! i
       return $ FixAnnF a $ Rvar $ Num i'
-    FixAnnF a t ->
-      throwError $ ReduceError a $ "unexpected term " <> T.pack (show t)
+    -- FixAnnF a t -> -- TODO??
+    --   throwError $ Error a $ "unexpected term " <> T.pack (show t)
 
-fromRedex :: MonadError m => RedexAnn -> m TermAnn
+fromRedex :: PhaseError m => RedexAnn -> m Term
 fromRedex = go []
  where
-  go env = mapWithAnnM $ \ann -> \case
+  go env = mapWithAnnM $ \ctx -> \case
     Rabs n t -> do
       t' <- go (n : env) t
       return $ AbstractionF t'
@@ -80,9 +92,9 @@ fromRedex = go []
       r' <- go env r
       return $ ApplicationF [l', r']
     Rvar (Num n) -> return $ IndexF $ fromMaybe n (elemIndex n env)
-    _            -> throwError $ ReduceError ann $ "unexpected redex"
+    _            -> throwError $ Error ctx "unexpected redex"
 
-transition :: (MonadError m, MonadIO m) => Conf -> m Conf
+transition :: (PhaseError m, MonadIO m) => Conf -> m Conf
 
 --- ECONF ---
 
@@ -160,9 +172,9 @@ forEachState conf trans = trans conf >>= \case
 loadTerm :: RedexAnn -> Conf
 loadTerm t = Econf (NameGen 1000000) t Map.empty []
 
-reduce :: (MonadError m, MonadIO m) => TermAnn -> m TermAnn
+reduce :: (PhaseError m, MonadIO m) => SourceTerm -> m Term
 reduce e = do
-  redex <- toRedex e
+  redex <- toRedex (foldAnn phaseChange e)
   forEachState (loadTerm redex) transition >>= \case
     Cconf _ [] v -> fromRedex v
     _            -> error "invalid"

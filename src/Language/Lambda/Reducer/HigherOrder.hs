@@ -8,20 +8,26 @@ import           Data.Lambda                    ( TermAnn
                                                 , TermF(..)
                                                 )
 import           Data.List                      ( (!?) )
-import           Language.Generic.Annotation    ( SrcSpan
-                                                , fixAnnF
+import Data.Context (Context(..), phaseChange)
+import           Language.Generic.Annotation    ( fixAnnF
                                                 , pattern FixAnnF
                                                 , AnnF
+                                                , foldAnn
                                                 )
+import Data.Phase (Phase(BruijnToLambdaTransform, LambdaReduce))
+
+type SourceTerm = TermAnn BruijnToLambdaTransform -- TODO: be more generic
+type Term = TermAnn LambdaReduce
+type PhaseContext = Context LambdaReduce
 
 type Symbol = Int
 
 data NTermF t = NAbstractionF Symbol t | NApplicationF [t] | NVariableF Symbol | NTokenF | NCotokenF
-type NTermAnnF = AnnF SrcSpan NTermF
+type NTermAnnF = AnnF PhaseContext NTermF
 type NTermAnn = Fix NTermAnnF
 
 data HTermF t = HAbstractionF (t -> t) | HApplicationF t t | HVariableF Symbol | HTokenF | HCotokenF
-type HTermAnnF = AnnF SrcSpan HTermF
+type HTermAnnF = AnnF PhaseContext HTermF
 type HTermAnn = Fix HTermAnnF
 
 app :: HTermAnn -> HTermAnn -> HTermAnn
@@ -30,10 +36,10 @@ app f@(FixAnnF a _                ) = fixAnnF a . HApplicationF f
 
 -- I don't think we can make this "TermAnnF (m HTermAnn) -> m HTermAnn" for trace
 -- because of monad in higher order
-higher :: TermAnn -> HTermAnn
+higher :: Term -> HTermAnn
 higher = go []
  where
-  go :: [HTermAnn] -> TermAnn -> HTermAnn
+  go :: [HTermAnn] -> Term -> HTermAnn
   go env (FixAnnF a (IndexF i)) = case env !? i of
     Just i  -> i
     Nothing -> fixAnnF a $ HVariableF i
@@ -55,10 +61,10 @@ lower = go 0
   go _ (FixAnnF a HTokenF) = fixAnnF a NTokenF
   go _ (FixAnnF a HCotokenF) = fixAnnF a NCotokenF
 
-fromNamed :: NTermAnn -> TermAnn
+fromNamed :: NTermAnn -> Term
 fromNamed = go []
  where
-  go :: [Symbol] -> NTermAnn -> TermAnn
+  go :: [Symbol] -> NTermAnn -> Term
   go env (FixAnnF a (NVariableF x)) = fixAnnF a $ IndexF $ case env !? x of
     Just x  -> x
     Nothing -> x
@@ -69,5 +75,5 @@ fromNamed = go []
   go _ (FixAnnF a NTokenF) = fixAnnF a TokenF
   go _ (FixAnnF a NCotokenF) = fixAnnF a CotokenF
 
-reduce :: TermAnn -> TermAnn
-reduce = fromNamed . lower . higher
+reduce :: SourceTerm -> Term
+reduce = fromNamed . lower . higher . foldAnn phaseChange

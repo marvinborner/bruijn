@@ -1,4 +1,9 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
+
+-- TODO: desugar terms
+-- TODO: substitute open terms directly (see Transformer.Lambda)
+-- TODO: filter foreign calls depending on system/flag
+
 {-# LANGUAGE TypeApplications #-}
 
 module Language.Bruijn.Preprocessor
@@ -24,16 +29,25 @@ import           Data.List                      ( genericReplicate )
 import           Data.Text                      ( Text )
 import qualified Data.Text                     as T
 import           Data.Text.IO.Utf8              ( readFile )
-import           Language.Generic.Annotation    ( pattern AnnF, SrcSpan )
+import Data.Context (Context(..), phaseChange)
+import           Language.Generic.Annotation    ( pattern AnnF, pattern FixAnnF )
 import           Language.Generic.Error         ( Error(..)
                                                 , MonadError
                                                 , throwError
+                                                , PhaseT(..)
+                                                , runPhaseTOrFail
                                                 )
 import           Prelude                 hiding ( readFile )
+import Data.Phase (Phase(BruijnParse, BruijnPreprocess))
+
+type SourceTerm = TermAnn BruijnParse
+type Term = TermAnn BruijnPreprocess
+type PhaseContext = Context BruijnPreprocess
+type PhaseError = MonadError (Error BruijnPreprocess)
 
 -- | Desugar syntactic sugar to equivalent term
-desugar :: SrcSpan -> SyntacticSugar -> TermAnn
-desugar ann (UnaryNumber n) = f
+desugar :: PhaseContext -> SyntacticSugar -> Term
+desugar context (UnaryNumber n) = f
   (AbstractionF
     (f
       (AbstractionF
@@ -44,37 +58,38 @@ desugar ann (UnaryNumber n) = f
       )
     )
   )
-  where f = Fix . AnnF ann
+  where f = Fix . AnnF context
 desugar _ _ = error "not implemented yet"
 
 -- | Desugar import to linked definitions
 importPath
-  :: (MonadIO m, MonadError m)
-  => SrcSpan
-  -> (Text -> Text -> m TermAnn)
+  :: (MonadIO m, PhaseError m)
+  => PhaseContext
+  -> (Text -> Text -> PhaseT m Term)
   -> Text
   -> Name
-  -> m TermAnn
-importPath ann process path namespace = do
+  -> m Term
+importPath context process path namespace = do
   -- TODO: also search in std
   let file = path <> ".bruijn"
   maybeContents <- liftIO $ try @IOException $ readFile $ T.unpack $ file
   case maybeContents of
-    Left err -> throwError $ PreprocessError ann $ T.pack $ show err
-    Right contents ->
-      mapIdentifiers (Namespaced namespace) <$> process file contents
+    Left err -> throwError $ Error context $ T.pack $ show err
+    Right contents -> do
+      processed <- runPhaseTOrFail context $ process file contents
+      return $ mapIdentifiers (Namespaced namespace) processed
 
 preprocess
-  :: (MonadIO m, MonadError m)
-  => (Text -> Text -> m TermAnn)
-  -> TermAnn
-  -> m TermAnn
+  :: (MonadIO m, PhaseError m)
+  => (Text -> Text -> PhaseT m Term)
+  -> SourceTerm
+  -> m Term
 preprocess process = foldFix $ \case
-  AnnF a (SugarF sugar) -> pure $ desugar a sugar
+  AnnF a (SugarF sugar) -> pure $ desugar (phaseChange a) sugar
   AnnF _ (PreprocessorF command sub next) -> command >>= \case
-      Fix (AnnF a (ImportF path namespace)) -> do
+      FixAnnF a (ImportF path namespace) -> do
         imported <- importPath a process path namespace
         next' <- next
         return $ linkIn imported next'
       c -> return c
-  t -> Fix <$> sequenceA t
+  AnnF a t -> Fix . AnnF (phaseChange a) <$> sequence t
