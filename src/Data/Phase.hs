@@ -1,13 +1,16 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
-{-# LANGUAGE KindSignatures, GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
 
 module Data.Phase where
 
-data Phase = LambdaParse
-           | LambdaReduce
-           | BruijnParse
-           | BruijnPreprocess
-           | BruijnToLambdaTransform
+data Phase
+  = LambdaParse
+  | LambdaReduce
+  | BruijnParse
+  | BruijnPreprocess
+  | BruijnToLambdaTransform
 
 -- reflect phase types to values
 data SPhase (ph :: Phase) where
@@ -18,10 +21,10 @@ data SPhase (ph :: Phase) where
   SBruijnToLambdaTransform :: SPhase BruijnToLambdaTransform
 
 instance Show (SPhase ph) where
-  show SLambdaParse             = "parsing lambda"
-  show SLambdaReduce            = "reducing lambda"
-  show SBruijnParse             = "parsing bruijn"
-  show SBruijnPreprocess        = "preprocessing bruijn"
+  show SLambdaParse = "parsing lambda"
+  show SLambdaReduce = "reducing lambda"
+  show SBruijnParse = "parsing bruijn"
+  show SBruijnPreprocess = "preprocessing bruijn"
   show SBruijnToLambdaTransform = "transforming bruijn to lambda"
 
 instance HasSPhase LambdaParse where

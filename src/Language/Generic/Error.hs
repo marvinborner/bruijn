@@ -1,26 +1,32 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
-{-# LANGUAGE DeriveFunctor, GeneralizedNewtypeDeriving, FlexibleInstances, KindSignatures, TypeApplications, ScopedTypeVariables, UndecidableInstances #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE UndecidableInstances #-}
 
-module Language.Generic.Error
-  ( showError
-  , Error(..)
-  , module Control.Monad.Except
-  , liftPhase
-  , PhaseT(..)
-  , runPhaseTOrFail
-  ) where
+module Language.Generic.Error (
+  showError,
+  Error (..),
+  module Control.Monad.Except,
+  liftPhase,
+  PhaseT (..),
+  runPhaseTOrFail,
+) where
 
-import           Control.Monad.Except
-import           Control.Monad.State            ( MonadIO
-                                                , StateT
-                                                )
-import           Data.Context                   ( Context(..) )
-import           Data.Phase                     ( HasSPhase
-                                                , Phase(..)
-                                                , sphase
-                                                )
-import           Data.Text                      ( Text )
-import qualified Data.Text                     as T
+import Control.Monad.Except
+import Control.Monad.State (
+  MonadIO,
+ )
+import Data.Context (Context (..))
+import Data.Phase (
+  HasSPhase,
+  sphase,
+ )
+import Data.Text (Text)
+import qualified Data.Text as T
 
 prettyError :: Text -> Text -> Text
 prettyError phase msg =
@@ -32,25 +38,26 @@ data Error ph = Error (Context ph) Text
 class ShowError ph where
   showError :: Error ph -> Text
 
-instance {-# OVERLAPPABLE #-} forall ph. HasSPhase ph => ShowError ph where
+instance {-# OVERLAPPABLE #-} forall ph. (HasSPhase ph) => ShowError ph where
   showError (Error ctx msg) = prettyError (T.pack $ show (sphase @ph)) msg
 
 -- instance ShowError BruijnToLambdaTransform where
 --   showError (Error ctx msg) = msg
 
-newtype PhaseT m a = PhaseT { runPhaseT :: ExceptT Text m a }
+newtype PhaseT m a = PhaseT {runPhaseT :: ExceptT Text m a}
   deriving (Functor, Applicative, Monad, MonadError Text, MonadIO)
 
--- runPhaseTOrFail :: (MonadIO m, PhaseError m) => PhaseContext -> PhaseT m Term -> m Term
+runPhaseTOrFail :: (MonadError (Error ph) m) => Context ph -> PhaseT m b -> m b
 runPhaseTOrFail context p = do
   res <- runExceptT $ runPhaseT p
   case res of
-    Left  err -> throwError $ Error context err
-    Right ok  -> return ok
+    Left err -> throwError $ Error context err
+    Right ok -> return ok
 
 -- every phase has a different PhaseError, so we use showError!
+liftPhase :: (Monad m, HasSPhase ph) => ExceptT (Error ph) m a -> PhaseT m a
 liftPhase phase = PhaseT $ ExceptT $ do
   result <- runExceptT phase
   return $ case result of
-    Left  err -> Left (showError err)
-    Right x   -> Right x
+    Left err -> Left (showError err)
+    Right x -> Right x

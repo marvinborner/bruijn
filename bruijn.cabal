@@ -26,16 +26,18 @@ library
       Language.Generic.Annotation
       Language.Generic.Error
       Language.Generic.PrettyPrinter
-      Data.Bruijn
       Language.Bruijn.Parser
-      Language.Bruijn.Tracer
       Language.Bruijn.Preprocessor
       Language.Bruijn.PrettyPrinter
       Language.Bruijn.Transformer.Lambda
       Language.Lambda.PrettyPrinter
       Language.Lambda.Reducer.HigherOrder
       Language.Lambda.Reducer.RKNL
+      Data.Bruijn
       Data.Lambda
+      Data.Foreign
+      Data.Phase
+      Data.Context
   other-modules:
       Paths_bruijn
   hs-source-dirs:
@@ -47,7 +49,9 @@ library
       DeriveFunctor
       DeriveTraversable
       FlexibleContexts
-  ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints
+      DataKinds
+      ConstraintKinds
+  ghc-options: -O3 -optc-O3 -funfolding-use-threshold=16 -Wall -Wextra -Werror -Wincomplete-uni-patterns -Wincomplete-record-updates -Widentities -Wredundant-constraints -Wno-unused-matches -Wno-error=missing-signatures -Wno-error=missing-pattern-synonym-signatures
   build-depends:
       base >=4.7 && <5
     , text

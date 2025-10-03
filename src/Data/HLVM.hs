@@ -6,9 +6,10 @@ type MachineCode = [Int]
 type Var = Int
 type Label = Int
 
-data Node f = Constructor { pp :: f, left :: f, right :: f }
-            | Duplicator { pp :: f, left :: f, right :: f, label :: Label }
-            | Eraser { pp :: f }
-            | Actor { pp :: f }
-            | Token { pp :: f }
-            | Binder Var
+data Node f
+  = Constructor {pp :: f, left :: f, right :: f}
+  | Duplicator {pp :: f, left :: f, right :: f, label :: Label}
+  | Eraser {pp :: f}
+  | Actor {pp :: f}
+  | Token {pp :: f}
+  | Binder Var

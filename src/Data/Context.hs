@@ -1,30 +1,28 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
 -- for handling shared context across phases & languages elegantly
-
-{-# LANGUAGE TypeFamilies, DeriveGeneric #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 
-module Data.Context
-  ( Context(..)
-  , SrcSpan(..)
-  , MetaLevel(..)
-  , phaseChange
-  ) where
+module Data.Context (
+  Context (..),
+  SrcSpan (..),
+  MetaLevel (..),
+  phaseChange,
+) where
 
+import Data.Foreign (ForeignLanguage)
+import Data.Phase
 import GHC.Generics
-import           Data.Foreign                   ( ForeignLanguage )
-import           Data.Phase
-import           Text.Megaparsec                ( SourcePos(..) )
+import Text.Megaparsec (SourcePos (..))
 
 data SrcSpan = SrcSpan
-  { spanBegin :: SourcePos
-  , spanEnd   :: SourcePos
+  { _spanBegin :: SourcePos
+  , _spanEnd :: SourcePos
   }
   deriving (Show, Ord, Eq)
 
@@ -45,12 +43,12 @@ type family HasSrcPos (ph :: Phase) w where
   HasSrcPos _ a = ()
 
 data Context (ph :: Phase) = Context
-  { lang :: HasForeignLanguage ph ForeignLanguage
-  , metaLevel :: HasMetaLevel ph MetaLevel
-  , srcSpan :: HasSrcSpan ph SrcSpan
-  , srcPos :: HasSrcPos ph SourcePos
+  { _lang :: HasForeignLanguage ph ForeignLanguage
+  , _metaLevel :: HasMetaLevel ph MetaLevel
+  , _srcSpan :: HasSrcSpan ph SrcSpan
+  , _srcPos :: HasSrcPos ph SourcePos
   }
-  deriving Generic
+  deriving (Generic)
 
 instance PhaseChange BruijnParse BruijnPreprocess
 instance PhaseChange BruijnPreprocess BruijnToLambdaTransform
@@ -74,18 +72,10 @@ instance {-# OVERLAPPING #-} ConvertibleField src () where
 
 -- ///
 
-class AutoConvert from to where
-  autoConvert :: from -> to
-
-  default autoConvert
-    :: (Generic from, Generic to, GAutoConvert (Rep from) (Rep to))
-    => from -> to
-  autoConvert = to . gautoConvert . from
-
 class GAutoConvert from to where
   gautoConvert :: from x -> to x
 
-instance GAutoConvert f g => GAutoConvert (M1 i c f) (M1 i c g) where
+instance (GAutoConvert f g) => GAutoConvert (M1 i c f) (M1 i c g) where
   gautoConvert (M1 x) = M1 (gautoConvert x)
 
 instance (GAutoConvert f f', GAutoConvert g g') => GAutoConvert (f :*: g) (f' :*: g') where
@@ -98,12 +88,8 @@ instance (ConvertibleField src target) => GAutoConvert (K1 i src) (K1 i target) 
 
 class PhaseChange (from :: Phase) (to :: Phase) where
   phaseChange :: Context from -> Context to
-
-  default phaseChange
-    :: ( Generic (Context from)
-       , Generic (Context to)
-       , GAutoConvert (Rep (Context from)) (Rep (Context to))
-       )
-    => Context from
-    -> Context to
+  default phaseChange ::
+    (GAutoConvert (Rep (Context from)) (Rep (Context to))) =>
+    Context from ->
+    Context to
   phaseChange = to . gautoConvert . from
