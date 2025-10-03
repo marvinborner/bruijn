@@ -15,7 +15,7 @@ module Language.Generic.Annotation (
   extractContext,
   fakeAnn,
   annotate,
-  fixAnnF,
+  Ann,
   showSourcePosURI,
   showAnnotationURI,
   showSourcePos,
@@ -126,8 +126,6 @@ fakeSrcSpan = SrcSpan{_spanBegin = fakeSourcePos, _spanEnd = fakeSourcePos}
 fakeAnn = Fix . AnnF fakeSrcSpan
 
 -- utility functions --
-
-fixAnnF ann term = Fix $ AnnF ann term
 
 extractContext (Ann a _) = a
 

@@ -41,6 +41,7 @@ prettyIdentifier = \case
   Namespaced "." identifier -> prettyIdentifier identifier
   Namespaced name identifier -> text name <> dot <> prettyIdentifier identifier
   Mixfix identifiers -> foldl1 (<>) (fmap prettyMixfixIdentifier identifiers)
+  Prefix name -> text name <> text "‣"
 
 prettyPrintAlgebra :: TermF Doc -> Doc
 prettyPrintAlgebra = \case
@@ -61,6 +62,7 @@ prettyPrintAlgebra = \case
     let next' = if show next == "" then next else line <> next
     text "do " <> term <> sub' <> next'
   AbstractionF term -> lbracket <> term <> rbracket
+  -- AbstractionF (ApplicationF terms) -> lbracket <> foldl1 ((<>) . (<> space)) terms <> rbracket
   ApplicationF [term] -> term
   ApplicationF terms -> lparen <> foldl1 ((<>) . (<> space)) terms <> rparen
   IndexF n -> int n
@@ -81,7 +83,6 @@ prettyPrintAlgebra = \case
       <> rparen
   ImportF path namespace -> text ":import " <> text path <+> text namespace
   Foreign lang source -> text "ffi " <> text (T.pack $ show lang) <+> text source
-  ForeignIf lang body -> body <> text "@" <> text (T.pack $ show lang)
 
 -- | purely textual pretty printing
 prettyPrint :: TermAnn c -> Text

@@ -4,16 +4,19 @@ module Language.Bruijn.Parser (
   parse,
 ) where
 
-import Control.Monad (void)
+import Control.Monad (ap, void)
 import Control.Monad.State (
   State,
   evalState,
   modify,
  )
 import Data.Bruijn (
+  -- FloatingEncoding (..),
   Identifier (..),
+  IntegerEncoding (..),
   MixfixIdentifier (..),
   Name,
+  SyntacticSugar (..),
   TermAnn,
   TermF (..),
  )
@@ -22,6 +25,7 @@ import Data.Context (
   MetaLevel (..),
  )
 import Data.Foreign (ForeignLanguage (..))
+import Data.Functor (($>))
 import Data.Phase (Phase (BruijnParse))
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -52,6 +56,52 @@ syncPos p = do
   pos <- getSourcePos
   modify $ \ctx -> ctx{_srcPos = pos}
   p
+
+greekLetter :: Parser Char
+greekLetter = satisfy isGreek
+ where
+  isGreek c = ('Α' <= c && c <= 'Ω') || ('α' <= c && c <= 'ω')
+
+emoticon :: Parser Char
+emoticon = satisfy isEmoticon
+ where
+  isEmoticon c = '\128512' <= c && c <= '\128591'
+
+mathematicalOperator :: Parser Char
+mathematicalOperator =
+  satisfy isMathematicalUnicodeBlock
+    <|> satisfy isMiscMathematicalAUnicodeBlock
+    <|> oneOf ("¬₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵇᶜᵈᵉᶠᵍʰʲᵏˡᵐᵒᵖʳˢᵗᵘᵛʷˣʸᶻ⁺⁻⁼⁽⁾" :: String)
+ where
+  isMathematicalUnicodeBlock c = '∀' <= c && c <= '⋿'
+  isMiscMathematicalAUnicodeBlock c = '⟀' <= c && c <= '⟯'
+
+mathematicalArrow :: Parser Char
+mathematicalArrow = satisfy isMathematicalOperator
+ where
+  isMathematicalOperator c = '←' <= c && c <= '⇿'
+
+generalPunctuation :: Parser Char
+generalPunctuation = satisfy isGeneralPunctuation
+ where
+  isGeneralPunctuation c = '‐' <= c && c <= '⁞' && c /= '…' && c /= '‣'
+
+shapes :: Parser Char
+shapes = satisfy isShapes where isShapes c = '─' <= c && c <= '◿'
+
+specialChar :: Parser Char
+specialChar =
+  oneOf ("!?*@:;+-_#$%^&<>/\\|{}~=" :: String)
+    <|> mathematicalOperator
+    <|> mathematicalArrow
+    <|> generalPunctuation
+    <|> shapes
+
+startChar :: Parser Char
+startChar = lowerChar <|> greekLetter <|> emoticon
+
+restChar :: Parser Char
+restChar = alphaNumChar <|> specialChar <|> char '\''
 
 -- | single line comment
 lineComment :: Parser ()
@@ -90,10 +140,10 @@ namespace :: Parser Name
 namespace = T.pack <$> ((:) <$> upperChar <*> many letterChar)
 
 special :: Parser Name
-special = T.pack <$> some alphaNumChar -- TODO!
+special = T.pack <$> some specialChar
 
 local :: Parser Identifier
-local = Local . T.pack <$> some alphaNumChar
+local = Local . T.pack <$> ((:) <$> startChar <*> many restChar)
 
 namespaced :: Parser Identifier
 namespaced = Namespaced <$> namespace <*> identifier
@@ -103,8 +153,11 @@ mixfix = Mixfix <$> some mixfixIdentifier
  where
   mixfixIdentifier = (Wildcard <$ char '…') <|> (Special <$> special)
 
+prefix :: Parser Identifier
+prefix = Prefix <$> special <* char '‣' <?> "prefix"
+
 identifier :: Parser Identifier
-identifier = local <|> namespaced <|> mixfix
+identifier = local <|> namespaced <|> try prefix <|> mixfix <?> "identifier"
 
 abstraction :: Parser Term
 abstraction =
@@ -124,15 +177,43 @@ force = annotate $ ForceF <$ char '!'
 substitution :: Parser Term
 substitution = annotate $ SubstitutionF <$> lexeme identifier
 
+-- stringSugar =
+
+number :: Parser Integer
+number = ap sign nat
+ where
+  nat = read <$> some digitChar
+  sign = (char '-' $> negate) <|> (char '+' $> id)
+
+integerSugar :: Parser SyntacticSugar
+integerSugar =
+  symbol "("
+    *> ( flip IntegerNumber
+           <$> number
+           <*> ( (char 'u' $> Unary)
+                   <|> (char 'b' $> Binary)
+                   <|> (char 't' $> BalancedTernary)
+                   <|> (char 'd' $> DeBruijn)
+               )
+       )
+    <* symbol ")"
+
+sugar :: Parser Term
+sugar = annotate $ SugarF <$> integerSugar -- stringSugar <|> integerSugar <|> floatingSugar
+
 singleton :: Parser Term
 singleton =
-  lexeme $ abstraction <|> application <|> index <|> force <|> substitution
+  lexeme $
+    try sugar <|> abstraction <|> application <|> index <|> force <|> substitution
 
 lambda :: Parser Term
 lambda = annotate $ ApplicationF <$> some (lexeme singleton)
 
+-- termType :: Parser Term
+-- termType =
+
 definition :: Parser (Term -> Term -> TermF Term)
-definition = DefinitionF <$> lexeme identifier <*> lexeme lambda
+definition = DefinitionF <$> lexeme identifier <*> lexeme lambda --  <*> optional (symbol "⧗" *> signature)
 
 freestanding :: Parser (Term -> Term -> TermF Term)
 freestanding = DoF <$> (symbol "do " *> lexeme lambda)
@@ -155,7 +236,7 @@ preprocessor = PreprocessorF <$> lexeme command
 program :: Parser Term
 program = annotate $ do
   indent <- scn *> L.indentLevel
-  instr <- freestanding <|> try definition <|> preprocessor
+  instr <- freestanding <|> try preprocessor <|> definition
   sub <- try (L.indentGuard scn GT indent *> program) <|> annotate (EmptyF <$ scn)
   next <-
     try (L.indentGuard scn EQ indent *> program) <|> annotate (EmptyF <$ scn)

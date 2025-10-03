@@ -27,7 +27,6 @@ import Data.Maybe (fromMaybe)
 import Data.Phase (Phase (BruijnToLambdaTransform, LambdaReduce))
 import Language.Generic.Annotation (
   AnnF,
-  fixAnnF,
   foldAnn,
   mapWithAnnM,
   pattern Ann,
@@ -72,10 +71,10 @@ toRedex = go (NameGen 1) []
     Ann a (AbstractionF t) -> do
       let (v, g') = nextName g
       t' <- go g' (v : ns) t
-      return $ fixAnnF a $ Rabs v t'
+      return $ Ann a $ Rabs v t'
     Ann a (ApplicationF ts) -> do
       ts' <- mapM (go g ns) ts
-      return $ foldl1 (\l r -> fixAnnF a $ Rapp l r) ts'
+      return $ foldl1 (\l r -> Ann a $ Rapp l r) ts'
     Ann a (IndexF i) -> do
       let i' = if i < 0 || i >= length ns then i else ns !! i
       return $ Ann a $ Rvar $ Num i'
@@ -108,24 +107,24 @@ transition (Econf g (Ann a hd) e s) = case hd of
         g
         u
         e
-        (fixAnnF a (Rapp (fixAnnF a $ Rvar Hole) (fixAnnF a $ Rclosure v e)) : s)
+        (Ann a (Rapp (Ann a $ Rvar Hole) (Ann a $ Rclosure v e)) : s)
   Rabs x t -> do
     box <- liftIO $ newMVar Empty
     return $
       Cconf
         g
         s
-        ( fixAnnF a $
-            Rcache (Box box) (fixAnnF a $ Rclosure (fixAnnF a $ Rabs x t) e)
+        ( Ann a $
+            Rcache (Box box) (Ann a $ Rclosure (Ann a $ Rabs x t) e)
         )
   Rvar (Num x) -> do
-    def <- liftIO $ newMVar $ Done $ fixAnnF a $ Rvar $ Num x
+    def <- liftIO $ newMVar $ Done $ Ann a $ Rvar $ Num x
     let b@(Box m) = Map.findWithDefault (Box def) x e
     rd <- liftIO $ readMVar m
     case rd of
       Todo (Ann a' (Rclosure v e')) ->
         return $
-          Econf g v e' (fixAnnF a' (Rcache b (fixAnnF a' $ Rvar Hole)) : s)
+          Econf g v e' (Ann a' (Rcache b (Ann a' $ Rvar Hole)) : s)
       Done t -> return $ Cconf g s t
       Empty -> invalidState a
       _ -> error "invalid"
@@ -158,24 +157,24 @@ transition
         Done v -> return $ Cconf g s v
         Empty -> do
           let (x1, g') = nextName g
-          box <- liftIO $ newMVar $ Done $ fixAnnF b $ Rvar $ Num x1
+          box <- liftIO $ newMVar $ Done $ Ann b $ Rvar $ Num x1
           return $
             Econf
               g'
               t
               (Map.insert x (Box box) e)
-              ( fixAnnF b (Rabs x1 $ fixAnnF b $ Rvar Hole)
-                  : fixAnnF a (Rcache (Box m) $ fixAnnF a $ Rvar Hole)
+              ( Ann b (Rabs x1 $ Ann b $ Rvar Hole)
+                  : Ann a (Rcache (Box m) $ Ann a $ Rvar Hole)
                   : s
               )
         Todo _ -> invalidState a
 transition (Cconf g (Ann a hd : s) t@(Ann b t')) = case (hd, t') of
   (Rapp (Ann _ (Rvar Hole)) (Ann _ (Rclosure v e)), _) ->
-    return $ Econf g v e $ fixAnnF a (Rapp t $ fixAnnF a $ Rvar Hole) : s
+    return $ Econf g v e $ Ann a (Rapp t $ Ann a $ Rvar Hole) : s
   (Rapp v (Ann _ (Rvar Hole)), _) ->
-    return $ Cconf g s $ fixAnnF a $ Rapp v t
+    return $ Cconf g s $ Ann a $ Rapp v t
   (Rabs x1 (Ann _ (Rvar Hole)), _) ->
-    return $ Cconf g s $ fixAnnF a $ Rabs x1 t
+    return $ Cconf g s $ Ann a $ Rabs x1 t
   _ -> error "invalid"
 transition (Cconf g [] _) = return End
 transition _ = error "invalid"

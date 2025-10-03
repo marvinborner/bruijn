@@ -7,6 +7,8 @@ module Data.Bruijn (
   Identifier (..),
   MixfixIdentifier (..),
   SyntacticSugar (..),
+  IntegerEncoding (..),
+  FloatingEncoding (..),
   Name,
   TermAnn,
   TermAnnF,
@@ -31,21 +33,36 @@ import Text.Show.Deriving (deriveShow1)
 
 type Name = Text
 
+data IntegerEncoding
+  = Unary
+  | Binary
+  | BalancedTernary
+  | DeBruijn
+  | BuiltinUnsigned
+  | BuiltinSigned
+  deriving (Show, Eq)
+data FloatingEncoding = Rational | Real | Complex | BuiltinDouble
+  deriving (Show, Eq)
+
 data SyntacticSugar
   = String Text
-  | UnaryNumber Integer
-  | BinaryNumber Integer
-  | BalancedTernaryNumber Integer
-  | Rational Integer Integer
-  | Real Integer Integer
-  | Complex Integer Integer
+  | IntegerNumber IntegerEncoding Integer
+  | FloatingNumber FloatingEncoding Integer
   deriving (Show, Eq)
 
 data MixfixIdentifier = Wildcard | Special Name
   deriving (Show, Eq)
 
-data Identifier = Local Name | Namespaced Name Identifier | Mixfix [MixfixIdentifier]
+data Identifier
+  = Local Name
+  | Namespaced Name Identifier
+  | Mixfix [MixfixIdentifier]
+  | Prefix Name
   deriving (Show, Eq)
+
+-- data TermTypeF f = Singleton (TermF f) | Product (TermF f) (TermF f)
+
+-- data SignatureF f = TypeName Text | FunctionType [SignatureF] | ConstructorType
 
 data TermF f
   = -- | <name> <term> [<sub> <next>]
@@ -75,8 +92,6 @@ data TermF f
     ImportF Text Text
   | -- | ffi "..."
     Foreign ForeignLanguage Text
-  | -- | <term>@<lang> (filtered by preprocessor)
-    ForeignIf ForeignLanguage f
   deriving
     ( Show
     , Eq

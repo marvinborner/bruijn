@@ -18,6 +18,7 @@ import Control.Monad.IO.Class (
  )
 import Data.Bruijn (
   Identifier (..),
+  IntegerEncoding (..),
   Name,
   SyntacticSugar (..),
   TermAnn,
@@ -33,8 +34,8 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.IO.Utf8 (readFile)
 import Language.Generic.Annotation (
-  pattern AnnF,
   pattern Ann,
+  pattern AnnF,
  )
 import Language.Generic.Error (
   Error (..),
@@ -52,7 +53,7 @@ type PhaseError = MonadError (Error BruijnPreprocess)
 
 -- | Desugar syntactic sugar to equivalent term
 desugar :: PhaseContext -> SyntacticSugar -> Term
-desugar context (UnaryNumber n) =
+desugar context (IntegerNumber Unary n) =
   f
     ( AbstractionF
         ( f

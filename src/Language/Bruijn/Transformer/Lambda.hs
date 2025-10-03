@@ -29,7 +29,6 @@ import Language.Bruijn.PrettyPrinter (prettyPrint)
 import Language.Generic.Annotation (
   extractContext,
   fakeSrcSpan,
-  fixAnnF,
   foldAnn,
   mapWithAnnM,
   pattern Ann,
@@ -138,9 +137,9 @@ transformTree (Tree name tree term) = do
   put ctx{stk = s}
   let context = extractContext term
   return $
-    fixAnnF context $
+    Ann context $
       Lambda.ApplicationF
-        [fixAnnF context $ Lambda.AbstractionF tree', term']
+        [Ann context $ Lambda.AbstractionF tree', term']
 transformTree (Branch name a b) = do
   ctx@TransformingContext{stk = s} <- get
   b' <- transformTree b
