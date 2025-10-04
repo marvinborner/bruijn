@@ -17,11 +17,9 @@ module Data.Bruijn (
 ) where
 
 import Data.Context (Context (..))
-import Data.Fix (
-  Fix (..),
-  foldFix,
- )
+import Data.Fix (Fix (..))
 import Data.Foreign
+import Data.Functor.Foldable (cata)
 import Data.Text (Text)
 import Language.Generic.Annotation (
   AnnF,
@@ -109,7 +107,7 @@ type TermAnn ph = Fix (TermAnnF ph)
 
 -- | Map all identifiers to a function
 mapIdentifiers :: (Identifier -> Identifier) -> TermAnn c -> TermAnn c
-mapIdentifiers func = foldFix $ \case
+mapIdentifiers func = cata $ \case
   (AnnF a (DefinitionF ident term sub next)) ->
     Fix $ AnnF a $ DefinitionF (func ident) term sub next
   (AnnF a (SubstitutionF ident)) -> Fix $ AnnF a $ SubstitutionF (func ident)

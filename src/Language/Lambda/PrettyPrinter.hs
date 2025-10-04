@@ -6,8 +6,8 @@ module Language.Lambda.PrettyPrinter (
 ) where
 
 import Data.Context (Context (..))
-import Data.Fix (foldFix)
 import Data.Functor.Compose (getCompose)
+import Data.Functor.Foldable (cata)
 import Data.Lambda (
   TermAnn,
   TermF (..),
@@ -34,12 +34,12 @@ prettyPrintAlgebra = \case
 -- | purely textual pretty printing
 prettyPrint :: TermAnn ph -> Text
 prettyPrint =
-  T.pack . show . foldFix (prettyPrintAlgebra . annotated . getCompose)
+  T.pack . show . cata (prettyPrintAlgebra . annotated . getCompose)
 
 {- | pretty print with hovering (uses terminal escape sequences)
 TODO: also enable coloring here
 -}
 prettyPrintAnnotated :: TermAnn ph -> Text
-prettyPrintAnnotated = T.pack . show . foldFix go
+prettyPrintAnnotated = T.pack . show . cata go
  where
   go (AnnF (Context{_srcSpan = a}) t) = hover (showAnnotationURI a) (prettyPrintAlgebra t)

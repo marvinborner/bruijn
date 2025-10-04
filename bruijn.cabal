@@ -58,6 +58,7 @@ library
     , megaparsec
     , mtl
     , data-fix
+    , recursion-schemes
     , deriving-compat
     , wl-pprint
     , containers

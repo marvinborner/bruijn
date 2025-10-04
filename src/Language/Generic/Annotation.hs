@@ -34,8 +34,9 @@ import Control.Monad.State (
   get,
  )
 import Data.Context (Context (..), SrcSpan (..))
-import Data.Fix (Fix (..), foldFix)
+import Data.Fix (Fix (..))
 import Data.Functor.Compose (Compose (..))
+import Data.Functor.Foldable (cata)
 import Data.Kind (Type)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -129,7 +130,7 @@ fakeAnn = Fix . AnnF fakeSrcSpan
 
 extractContext (Ann a _) = a
 
-foldAnn f = foldFix $ \case
+foldAnn f = cata $ \case
   AnnF a t -> Fix $ AnnF (f a) t
 
 mapAnn f (Fix inn) = Fix $ f inn

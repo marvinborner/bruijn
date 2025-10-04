@@ -27,7 +27,8 @@ import Data.Bruijn (
   mapIdentifiers,
  )
 import Data.Context (Context (..), phaseChange)
-import Data.Fix (Fix (..), foldFix)
+import Data.Fix (Fix (..))
+import Data.Functor.Foldable (cata)
 import Data.List (genericReplicate)
 import Data.Phase (Phase (BruijnParse, BruijnPreprocess))
 import Data.Text (Text)
@@ -93,7 +94,7 @@ preprocess ::
   (Text -> Text -> PhaseT m Term) ->
   SourceTerm ->
   m Term
-preprocess process = foldFix $ \case
+preprocess process = cata $ \case
   AnnF a (SugarF sugar) -> pure $ desugar (phaseChange a) sugar
   AnnF _ (PreprocessorF command sub next) ->
     command >>= \case

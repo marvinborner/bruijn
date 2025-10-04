@@ -12,8 +12,8 @@ import Data.Bruijn (
   TermF (..),
  )
 import Data.Context (Context (..))
-import Data.Fix (foldFix)
 import Data.Functor.Compose (getCompose)
+import Data.Functor.Foldable (cata)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Language.Generic.Annotation (
@@ -87,13 +87,13 @@ prettyPrintAlgebra = \case
 -- | purely textual pretty printing
 prettyPrint :: TermAnn c -> Text
 prettyPrint =
-  T.pack . show . foldFix (prettyPrintAlgebra . annotated . getCompose)
+  T.pack . show . cata (prettyPrintAlgebra . annotated . getCompose)
 
 {- | pretty print with hovering (uses terminal escape sequences)
 TODO: also enable coloring here
 -}
 prettyPrintAnnotated :: TermAnn c -> Text
-prettyPrintAnnotated = T.pack . show . foldFix go
+prettyPrintAnnotated = T.pack . show . cata go
  where
   go (AnnF _ EmptyF) = empty -- for linebreaks in if-check above
   go (AnnF (Context{_srcSpan = a}) t) = hover (showAnnotationURI a) (prettyPrintAlgebra t)
