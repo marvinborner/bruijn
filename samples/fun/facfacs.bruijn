@@ -1,0 +1,226 @@
+:import std/Combinator .
+:import std/Tuples .
+:import std/Number .
+:import std/Logic .
+
+fac y [[if (zero? 0) case-zero case-else]]
+	case-zero (+1)
+	case-else 0 ⋅ (1 --0)
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac y [[=?0 (+1) (0 ⋅ (1 --0))]]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac y [[[(1 =? 0) 0 (1 ⋅ (2 ++1 0))]]] (+1)
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac y [[[=?0 1 (2 (1 ⋅ 0) --0)]]] (+1)
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Result R
+
+# R.ok ⇒ callable
+fac* y [[[=?0 (R.err [2]) (R.ok [3 (2 ⋅ 1) --1])]]] (+1)
+
+bounce y [[1 (0 i)] : [0 i]]
+
+fac fac* → bounce
+
+:test ((fac (+5)) =? (+120)) (true)
+
+# CPS'd
+fak y [[[=?1 (0 (+1)) (2 --1 [1 (2 ⋅ 0)])]]]
+
+fac \fak i
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac why [[=?0 (+1) (0 ⋅ (1 i --0))]]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac ω [[=?0 (+1) (0 ⋅ (1 1 --0))]]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac y [(0 lo) : (0 hi)] (+1d) (+1)
+	lo [[[[(1 =? 0) 1 (0 ⋅ (2 1 --0))]]]]
+	hi [[[[(1 =? 0) 0 (1 ⋅ (3 ++1 0))]]]]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Number/Conversion .
+
+foc ∂((\mod (+4)) → ternary→unary → (select (+3u)) → f0)
+	f4 [[[[[(0 =? (+0)) (+1) (0 ⋅ (1 --0))]]]]]
+	f3 [[[[[(0 =? (+1)) (+1) (0 ⋅ (4 --0))]]]]]
+	f2 [[[[[(0 =? (+2)) (+2) (0 ⋅ (3 --0))]]]]]
+	f1 [[[[[(0 =? (+3)) (+6) (0 ⋅ (2 --0))]]]]]
+	f0 y [(0 f1) : (0 f2) : (0 f3) : (0 f4)]
+
+:test ((foc (+5)) =? (+120)) (true)
+
+:import std/List .
+
+y* y [[&(1 0) <$> 0]]
+
+# this is so stupid
+fac ^(y* (head : tail))
+	head [[=?0 (+1) (0 ⋅ (^(~1) 0))]]
+	tail y [[[[0 =? 2 (^1 --2) (1 !! ++2 0)]] : (1 ++0)]] (+1)
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Math .
+
+fac [∏ (+1) → 0 | i]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/List .
+
+fac [foldr mul (+1) ({ (+1) → 0 })]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac index (scanl mul (+1) →(+1))
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac (\take →(+1)) → product
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Imperative .
+
+…;… …→…
+
+fac i=1 ; (while (i≠0) n*=i;i-=1) ; return-n
+	i=1 [0 : (+1)]
+	i≠0 gets &[[1 ≠? (+0)]]
+	n*=i;i-=1 get >>= &[[put (--1 : (1 ⋅ 0))]]
+	return-n &[&[[0]]]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+s [[[2 0 (1 0)]]]
+
+k [[1]]
+
+i s k k
+
+# TODO: golf!
+# [[[[[4 (3 (1 (2 0))) 0]]]]] s k
+aux s (s (k s) (s (k (s (k s))) (s (k (s (k (s (k s))))) (s (k (s (k (s (k k))))) (s (k (s (s (k s) k))) k))))) (k (k i))
+
+fac [0 (aux (s (s (k s) k))) (k i) i]
+
+:test (fac (+5u)) ((+120u))
+
+eval y [[case-idx : case-app : case-abs]] &Ω
+	case-idx [1 [1 &[[0]] 0 [[1]]]]
+	case-app 1 [2 [2 [2 0 (1 0)]]]
+	case-abs 1 [1 [[2 [0 1 2]]]]
+
+fac eval `(y [[=?0 (+1) (0 ⋅ (1 --0))]])
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Math .
+:import std/List .
+
+legendre [[∑(take-while (\gt? (+0)) ((div 1) <$> (iterate (mul 0) 0)))]]
+
+fac [∏(pow <*> (legendre 0) <$> (take 0 primes))]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:input std/Math/Real
+
+# look, no multiplication! (don't look at ln/exp)
+fac (y [[N.=?0 (+0.0r) ((ln (number→real 0)) + (1 N.--0))]]) → exp
+
+# :test ((fac (+5)) ≈? (+120.0r)) (true)
+
+fac derive : [(+1.0r) / ((+1.0r) - 0)] : (+0.0r)
+
+# (+nu) derive = derive ∘ derive ∘ derive ∘∘∘ :)
+# :test ((fac (+5u)) ≈? (+120.0r)) (true)
+
+:import std/Number/Unary .
+
+# by Tromp
+fac left : [[0]] : i
+	left [[[2 ++1 (1 0)]]]
+
+:test (fac (+5u)) ((+120u))
+
+# by Tromp (flipped)
+fac \[right : [1] : i]
+	right [[0 (1 ++0)]]
+
+:import std/Meta M
+:import std/Number/Binary B
+
+eval-blc str→blc → M.blc→meta → eval
+	str→blc map (c ∘ B.lsb)
+
+# golfed church
+foc eval-blc "000001010111000000110011100000010111101100111010001100010"
+
+:test (fac (+5u)) ((+120u))
+
+:import std/Number/Unary .
+
+# per magic, (+Au) (+Bd) = (+A*Bd)
+fac [[0 (1 ++0)]] : [(+1d)] : i
+
+:test (fac (+5u)) ((+120d))
+
+# of course, (+120d) = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[120]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+
+# also, fac for addition :D
+tri \[[[0 (1 [[2 1]])]] : [1] : (+1d)]
+
+:test (tri (+5u)) ((+15d))
+
+:import std/Number .
+:import std/List .
+
+fac index (ana &[[[0 : (++2 : 0)] (1 ⋅ 0)]] ((+1) : (+1)))
+
+:test ((fac (+4)) =? (+120)) (true)
+
+fac [cata ((k ∘∘ mul) : (+1)) ({ (+1) → 0 })]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/Number .
+
+fac para ((+1) : &[[0 ⋅ ++1]])
+
+:test ((fac (+5)) =? (+120)) (true)
+
+:import std/List .
+
+…>>=… y [[[1 [[[(3 2) ++ (5 1 3)]]] empty]]]
+
+splits para (lst : nil)
+	lst [&[[[(empty : (3 : 2)) : (&[[(5 : 1) : 0]] <$> 1)]]]]
+	nil {}(empty : empty)
+
+perms foldr [[0 >>= splits >>= &[[{}(1 ++ {}3 ++ 0)]]]] {}empty
+
+fac [({ (+1) → 0 }).perms.length]
+
+:test ((fac (+5)) =? (+120)) (true)
+
+fac hylo alg coalg
+	coalg [=?0 [[0]] (0 : --0)]
+	alg (k ∘∘ mul) : (+1)
+
+:test ((fac (+5)) =? (+120)) (true)
