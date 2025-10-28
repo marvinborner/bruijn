@@ -34,8 +34,47 @@ nonuple [[[[[[[[[[0 9 8 7 6 5 4 3 2 1]]]]]]]]]] ⧗ a → b → c → d → e �
 
 …:…:…:…:…:…:…:…:… nonuple
 
+# allocates a tuple of size n with a default element
+alloc [[1 (t 0)]] ⧗ Unary → (a → (NTuple a))
+
+:test (alloc (+3u) [[1]]) ([[1]] : [[1]] : [[1]])
+
+# adds an element to the front of a tuple
+push [[[1 (0 2)]]] ⧗ a → (NTuple a) → (NTuple a)
+
+:test (push (+0d) ((+1d) : (+2d))) ((+0d) : (+1d) : (+2d))
+
+# removes the head of a tuple
+pop [[1 [1]]] ⧗ (NTuple a) → (NTuple a)
+
+:test (pop ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+3u) : (+4u))
+
+# removes the nth element of a tuple
+pop-n [[[1 (2 b k 0)]]] ⧗ Unary → (NTuple a) → (NTuple a)
+
+:test (pop-n (+0u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+3u) : (+4u))
+:test (pop-n (+1u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+2u) : (+3u) : (+4u))
+:test (pop-n (+2u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+1u) : (+3u) : (+4u))
+:test (pop-n (+3u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+1u) : (+2u) : (+4u))
+:test (pop-n (+4u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+1u) : (+2u) : (+3u))
+
+# moves the head to the nth position
+move [[[1 [3 b [0 1] 1]]]] ⧗ Unary → (NTuple a) → (NTuple a)
+
+:test (move (+0u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))
+:test (move (+1u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+0u) : (+2u) : (+3u) : (+4u))
+:test (move (+2u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+0u) : (+3u) : (+4u))
+:test (move (+3u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+3u) : (+0u) : (+4u))
+:test (move (+4u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+3u) : (+4u) : (+0u))
+
+# shifts the head to the end, requires size of tuple
+shift move ⧗ Unary → (NTuple a) → (NTuple a)
+
+:test (shift (+4u) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+1u) : (+2u) : (+3u) : (+4u) : (+0u))
+:test ((+5u) (shift (+4u)) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))) ((+0u) : (+1u) : (+2u) : (+3u) : (+4u))
+
 # constructs selector for kth element of n-tuple
-select [[[1 [0 1]] i ((1 k) (0 k))]] ⧗ Unary → Unary → (NTuple → a)
+select [[0 (t i) ((1 k) (0 k))]] ⧗ Unary → Unary → ((NTuple a) → a)
 
 :test (select (+5u) (+0u)) ([[[[[[0]]]]]])
 :test (select (+5u) (+3u)) ([[[[[[3]]]]]])
