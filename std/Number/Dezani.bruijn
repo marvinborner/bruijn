@@ -1,0 +1,12 @@
+# from "Some Unusual Numeral Systems" (Wadsworth, 1980)
+# originally by Böhm and Dezani
+
+:import std/Combinator .
+
+zero y
+
+inc [[0 1 y]]
+
+dec [0 k]
+
+zero? [0 (k (k k)) i]
