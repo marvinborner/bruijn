@@ -34,6 +34,16 @@ splits para (lst : nil)
 
 perms foldr [[0 >>= splits >>= &[[{}(1 ++ {}3 ++ 0)]]]] {}empty
 
+nats ana [0 : ++0] (+0) ⧗ (List Number)
+
+:test (nats [[1]]) ((+0))
+
+fac hylo alg coalg
+	coalg [=?0 [[0]] (0 : --0)]
+	alg [[[2 ⋅ 1]]] : (+1)
+
+:test ((fac (+5)) =? (+120)) ([[1]])
+
 # ======= #
 # numbers #
 # ======= #
@@ -41,10 +51,6 @@ perms foldr [[0 >>= splits >>= &[[{}(1 ++ {}3 ++ 0)]]]] {}empty
 :import std/Number/Ternary .
 
 fac para ((+1) : &[[0 ⋅ ++1]]) ⧗ Number → Number
-
-fac hylo alg coalg
-	coalg [=?0 [[0]] (0 : --0)]
-	alg [[[2 ⋅ 1]]] : (+1)
 
 # where
 #  coalg 0 = Nil

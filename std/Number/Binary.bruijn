@@ -87,8 +87,8 @@ abstract! z : a¹ : a⁰ ⧗ Binary → AbstractBinary
 # converts the abstracted binary representation back to normal
 normal! y [z : a¹ : a⁰] ⧗ AbstractBinary → Binary
 	z (+0b)
-	a¹ [↑¹([2 0] 0)]
-	a⁰ [↑⁰([2 0] 0)]
+	a¹ [↑¹(1 0)]
+	a⁰ [↑⁰(1 0)]
 
 →_‣ normal!
 

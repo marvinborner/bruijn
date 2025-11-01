@@ -1,0 +1,84 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# mini forth-like stack DSL
+
+:import std/Tuples .
+:import std/Combinator .
+:import std/Number/Unary N
+
+# ============ #
+# INSTRUCTIONS #
+# ============ #
+
+# ( a -- a a )
+dup [1 0 0]
+
+:test ([(`1 : `2 : `3) dup]) (`1 : `1 : `2 : `3)
+
+# ( a -- )
+drop [1]
+
+:test ([(`1 : `2 : `3) drop]) (`2 : `3)
+
+# ( a b -- b a )
+swap [[2 0 1]]
+
+:test ([(`1 : `2 : `3) swap]) (`2 : `1 : `3)
+
+# ( a b -- a b a )
+over [[2 1 0 1]]
+
+:test ([(`1 : `2 : `3) over]) (`1 : `2 : `1 : `3)
+
+# ( a b c -- b c a )
+rot [[[3 1 0 2]]]
+
+:test ([(`1 : `2 : `3) rot]) (`2 : `3 : `1)
+
+add 0 ∘∘ N.add
+
+sub 0 ∘∘ N.sub
+
+mul 0 ∘∘ N.mul
+
+div 0 ∘∘ N.div
+
+# ======== #
+# LANGUAGE #
+# ======== #
+
+:import std/Meta M
+
+# inserts starting index and abstraction
+# (programs must start with a value)
+insert-start (y [M.idx : case-app : M.abs]) → M.abs
+	case-app [[(M.app? 1) rec end]]
+		rec M.app (2 1) 0
+		end M.app (M.app `0 1) 0
+
+:test (insert-start `(`0 `1 `2)) (`[0 `0 `1 `2])
+
+# maps indices to Church numbers (syntactic sugar)
+map-indices M.map (y [M.idx : case-app : M.abs])
+	case-app [[M.app (2 1) (0 case-idx M.app M.abs)]]
+		case-idx [M.app `0 (M.abs (M.abs (0 (M.app `1) `0)))]
+
+:test (map-indices `[0 1 2 3]) (`[0 (0 (+1u)) (0 (+2u)) (0 (+3u))])
+
+# inserts nested abstractions to bind free variables in instructions
+insert-abstractions M.map (y [M.idx : case-app : M.abs])
+	case-app [[M.app (M.abs (2 1)) 0]]
+
+:test (insert-abstractions `[0 (0 `0) (0 `1) (0 `2)]) (`[[[[0] (0 `0)] (0 `1)] (0 `2)])
+:test (M.!(insert-abstractions `[0 (0 `0) (0 `1) (0 `2)])) (`2 : `1 : `0)
+
+encode insert-start → map-indices → insert-abstractions
+
+run encode → M.eval
+
+# ======== #
+# EXAMPLES #
+# ======== #
+
+:test (run `(1 2 3 dup dup drop)) ((+3u) : (+3u) : (+2u) : (+1u))
+:test (run `(2 dup add)) ((+4u) :)
+:test (run `(2 dup add 9 sub dup mul)) ((+25u) :)

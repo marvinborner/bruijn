@@ -52,7 +52,7 @@ pow-mod [[[0 [[1 [1 [[1 (2 1 0)]] 0]]] &ki [2 3 (1 [[[2 [2 0 1]]]] i t) (1 k i i
 :test (pow-mod (+3u) (+3u) (+3u)) ((+0u))
 
 # returns true if the number is even (remainder mod 2 == 0)
-even? [0 not! true] ⧗ Unary → Boolean
+even? not! : true ⧗ Unary → Boolean
 
 =²?‣ even?
 
