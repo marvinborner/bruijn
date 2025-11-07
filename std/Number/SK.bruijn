@@ -1,0 +1,35 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# by https://john-tromp.medium.com/sk-numerals-9ad1b5634b28
+# and proposed by Stephen Wolfram in "Combinators: A Centennial View"
+
+:import std/Combinator .
+:import std/Tuples .
+
+# -4 [[[[3]]]]
+# -3 [[[[2]]]]
+# -2 [[[2]]]
+# -1 [[[1]]]
+#  0 [[1]]
+# +1 [[0]]
+# +2 [[1 0]]
+# +3 [[0 (1 0)]]
+# +4 [[(1 0) (0 (1 0))]]
+
+# +n has fib(n) of 1s
+
+zero k ⧗ SK
+
+inc s ⧗ SK → SK
+
+++‣ inc
+
+dec [[[2 (k 0) 1]]] ⧗ SK → SK
+
+--‣ dec
+
+:test (dec (inc zero)) (zero)
+
+# only for positive numbers (also see Bruijn.bruijn!)
+zero? ki : i : s : k ⧗ SK → Boolean
+
+=?‣ zero?

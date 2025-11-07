@@ -72,6 +72,9 @@ ternary→binary [y [[[rec]]] [0] 0 (+0b)] ⧗ Ternary → Binary
 :test (B.eq? ³²(+42t) (+42b)) ([[1]])
 
 # converts ternary numbers to bruijn
-ternary→bruijn ternary→unary → unary→bruijn ⧗ Ternay → Bruijn
+ternary→bruijn ternary→unary → unary→bruijn ⧗ Ternary → Bruijn
 
 :test (ternary→bruijn (+5t)) ((+5d))
+
+# converts sk numerals to unary (by Bertram Felgenhauer)
+sk→unary [[1 0 (0 0) ki] ([[[2 : U.++1]]] : (+0u))] ⧗ SK → Unary
