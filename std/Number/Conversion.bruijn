@@ -2,6 +2,7 @@
 # convert bases to other bases
 
 :import std/Combinator .
+:import std/Tuples .
 :import std/Number/Unary U
 :import std/Number/Binary B
 :import std/Number/Ternary T
