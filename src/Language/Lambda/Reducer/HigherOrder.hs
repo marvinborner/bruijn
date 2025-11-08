@@ -57,8 +57,10 @@ higher = go []
   go env (Ann a (AbstractionF t)) =
     Ann a $ HAbstractionF $ \x -> go (x : env) t
   go env (Ann _ (ApplicationF ts)) = foldl1 app (go env <$> ts)
+  go env (Ann _ (TestF _ _)) = error "TODO: reduce test"
   go env (Ann a TokenF) = Ann a HTokenF
   go env (Ann a CotokenF) = Ann a HCotokenF
+  go env (Ann a (ForeignF l s)) = error ""
 
 lower :: HTermAnn -> NTermAnn
 lower = go 0

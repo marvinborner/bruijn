@@ -73,7 +73,7 @@ data AnnUnit ann expr = AnnUnit
   { annotation :: ann
   , annotated :: expr
   }
-  deriving (Show, Functor, Foldable, Traversable)
+  deriving (Eq, Show, Functor, Foldable, Traversable)
 
 deriveShow1 ''AnnUnit
 
@@ -131,7 +131,7 @@ fakeAnn = Fix . AnnF fakeSrcSpan
 extractContext (Ann a _) = a
 
 foldAnn f = cata $ \case
-  AnnF a t -> Fix $ AnnF (f a) t
+  AnnF a t -> Ann (f a) t
 
 mapAnn f (Fix inn) = Fix $ f inn
 

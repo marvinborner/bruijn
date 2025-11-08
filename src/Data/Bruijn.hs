@@ -89,7 +89,7 @@ data TermF f
   | -- | :import <path> <namespace>
     ImportF Text Text
   | -- | ffi "..."
-    Foreign ForeignLanguage Text
+    ForeignF ForeignLanguage Text
   deriving
     ( Show
     , Eq

@@ -61,6 +61,7 @@ pipeline file input = do
   liftIO $ putStrLn $ Lambda.prettyPrintAnnotated lambda
   liftIO $ putStrLn "\nREDUCED:"
   reduced <- liftPhase $ Lambda.reduce lambda
+  -- let reduced = Lambda.reduce lambda
   liftIO $ putStrLn $ Lambda.prettyPrintAnnotated reduced
   return reduced
 

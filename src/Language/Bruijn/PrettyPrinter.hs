@@ -82,7 +82,7 @@ prettyPrintAlgebra = \case
       <> right
       <> rparen
   ImportF path namespace -> text ":import " <> text path <+> text namespace
-  Foreign lang source -> text "ffi " <> text (T.pack $ show lang) <+> text source
+  ForeignF lang source -> text "ffi@" <> text (T.pack $ show lang) <+> text source
 
 -- | purely textual pretty printing
 prettyPrint :: TermAnn c -> Text

@@ -1,5 +1,6 @@
 -- MIT License, Copyright (c) 2025 Marvin Borner
--- based on the RKNL abstract machine
+-- based on the RKNL abstract machine, extended with side effects
+-- strict by monadic style, lazy by semantics
 
 -- Plans:
 -- - token-based IO (Haskell FFI)
@@ -16,15 +17,18 @@ import Control.Monad.IO.Class (
  )
 import Data.Context (Context (..), phaseChange)
 import Data.Fix (Fix (..))
+import Data.Foreign (ForeignLanguage (..))
 import Data.Lambda (
   TermAnn,
   TermF (..),
+  alphaEquivalent,
  )
 import Data.List (elemIndex)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe)
 import Data.Phase (Phase (BruijnToLambdaTransform, LambdaReduce))
+import Data.Text (Text)
 import Language.Generic.Annotation (
   AnnF,
   foldAnn,
@@ -36,6 +40,7 @@ import Language.Generic.Error (
   MonadError,
   throwError,
  )
+import Language.Lambda.PrettyPrinter (prettyPrint)
 
 type SourceTerm = TermAnn BruijnToLambdaTransform -- TODO: be more generic
 type Term = TermAnn LambdaReduce
@@ -51,9 +56,20 @@ data BoxValue = Todo RedexAnn | Done RedexAnn | Empty
 newtype Box = Box (MVar BoxValue)
 data Rvar = Num Int | Hole deriving (Show)
 
+{- | Econf: machine evaluates a closure (RedexAnn) to a weak normal form
+     Cconf: continues with already computed value
+-}
 data Conf = Econf NameGen RedexAnn Store Stack | Cconf NameGen Stack RedexAnn | End
 
-data RedexF f = Rabs Int f | Rapp f f | Rvar Rvar | Rclosure f Store | Rcache Box f
+data RedexF f
+  = Rabs Int f
+  | Rapp f f
+  | Rvar Rvar
+  | Rclosure f Store
+  | Rcache Box f
+  | Rtest f f
+  | Rforeign ForeignLanguage Text
+  | Rtoken
 type RedexAnnF = AnnF PhaseContext RedexF
 type RedexAnn = Fix RedexAnnF
 
@@ -78,10 +94,10 @@ toRedex = go (NameGen 1) []
     Ann a (IndexF i) -> do
       let i' = if i < 0 || i >= length ns then i else ns !! i
       return $ Ann a $ Rvar $ Num i'
-    _ -> error "invalid"
-
--- Ann a t -> -- TODO??
---   throwError $ Error a $ "unexpected term " <> T.pack (show t)
+    Ann a (TestF l r) -> Ann a <$> (Rtest <$> go g ns l <*> go g ns r)
+    Ann a (ForeignF l s) -> return $ Ann a $ Rforeign l s
+    Ann a TokenF -> return $ Ann a $ Rtoken
+    t@(Ann a _) -> throwError $ Error a $ "unexpected term " <> prettyPrint t
 
 fromRedex :: (PhaseError m) => RedexAnn -> m Term
 fromRedex = go []
@@ -95,11 +111,13 @@ fromRedex = go []
       r' <- go env r
       return $ ApplicationF [l', r']
     Rvar (Num n) -> return $ IndexF $ fromMaybe n (elemIndex n env)
+    Rtest l r -> error "test"
+    Rforeign l s -> return $ ForeignF l s
+    Rtoken -> return TokenF
     _ -> throwError $ Error ctx "unexpected redex"
 
 transition :: (PhaseError m, MonadIO m) => Conf -> m Conf
 --- ECONF ---
-
 transition (Econf g (Ann a hd) e s) = case hd of
   Rapp u v -> do
     return $
@@ -126,11 +144,19 @@ transition (Econf g (Ann a hd) e s) = case hd of
         return $
           Econf g v e' (Ann a' (Rcache b (Ann a' $ Rvar Hole)) : s)
       Done t -> return $ Cconf g s t
-      Empty -> invalidState a
-      _ -> error "invalid"
-  _ -> error "invalid"
---- ECONF ---
-
+      _ -> invalidState a
+  Rtest l r -> do
+    -- TODO: is s=[] correct here?
+    l' <- reduceConf (Econf g l e []) >>= fromRedex
+    r' <- reduceConf (Econf g r e []) >>= fromRedex
+    let success = Ann a $ Rabs 1 (Ann a $ Rabs 0 (Ann a $ Rvar (Num 1)))
+    let failure = Ann a $ Rabs 1 (Ann a $ Rabs 0 (Ann a $ Rvar (Num 0)))
+    return $ Econf g (if l' `alphaEquivalent` r' then success else failure) e s
+  Rforeign l b -> return $ Cconf g s $ Ann a hd -- TODO: should be econf because xi redex?
+  -- Rforeign l b -> return $ Econf g (Ann a hd) e s -- just loops, obviously
+  Rtoken -> return $ Cconf g s $ Ann a hd
+  _ -> invalidState a
+--- CCONF ---
 transition (Cconf g (Ann a (Rcache (Box m) (Ann a' (Rvar Hole))) : s) t) = do
   liftIO $ modifyMVar_ m (\_ -> return $ Done t)
   return $ Cconf g s t
@@ -142,9 +168,7 @@ transition
     ) = do
     box <- liftIO $ newMVar $ Todo ve
     return $ Econf g t (Map.insert x (Box box) e) s
-
--- must be exactly here
-transition
+transition -- must be exactly here
   ( Cconf
       g
       s
@@ -175,9 +199,9 @@ transition (Cconf g (Ann a hd : s) t@(Ann b t')) = case (hd, t') of
     return $ Cconf g s $ Ann a $ Rapp v t
   (Rabs x1 (Ann _ (Rvar Hole)), _) ->
     return $ Cconf g s $ Ann a $ Rabs x1 t
-  _ -> error "invalid"
+  _ -> invalidState a
 transition (Cconf g [] _) = return End
-transition _ = error "invalid"
+transition _ = error "completely invalid machine state!"
 
 forEachState :: (MonadIO m) => Conf -> (Conf -> m Conf) -> m Conf
 forEachState conf trans =
@@ -189,9 +213,13 @@ forEachState conf trans =
 loadTerm :: RedexAnn -> Conf
 loadTerm t = Econf (NameGen 1000000) t Map.empty []
 
+reduceConf :: (PhaseError m, MonadIO m) => Conf -> m RedexAnn
+reduceConf conf =
+  forEachState conf transition >>= \case
+    Cconf _ [] v -> return v
+    _ -> error "machine diverged"
+
 reduce :: (PhaseError m, MonadIO m) => SourceTerm -> m Term
 reduce e = do
   redex <- toRedex (foldAnn phaseChange e)
-  forEachState (loadTerm redex) transition >>= \case
-    Cconf _ [] v -> fromRedex v
-    _ -> error "invalid"
+  reduceConf (loadTerm redex) >>= fromRedex

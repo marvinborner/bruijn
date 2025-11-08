@@ -54,7 +54,11 @@ type SourceTerm = TermAnn BruijnPreprocess
 type Term = TermAnn BruijnToLambdaTransform
 type TargetTerm = Lambda.TermAnn BruijnToLambdaTransform
 
-data Tree = Tree Identifier Tree Term | Branch Identifier Tree Tree | Leaf Term | End
+data Tree
+  = Tree Identifier Tree Term
+  | Branch Identifier Tree Tree
+  | Leaf Term
+  | End
 
 instance Show Tree where
   show (Tree name next term) =
@@ -83,6 +87,7 @@ treeify = flip go End
     Ann _ (DoF term sub next) -> do
       let sub' = go sub
       let next' = go next
+      -- TODO: should not be erased if it contains a token! some other notation?
       \k -> Branch (Local "") (next' k) (sub' (Leaf term))
     Ann _ EmptyF -> id
     t -> error $ T.unpack $ prettyPrint t -- should be impossible by now
@@ -98,6 +103,7 @@ transformTerm = mapWithAnnM $ \ann -> \case
   ApplicationF terms ->
     Lambda.ApplicationF <$> sequenceA (transformTerm <$> terms)
   IndexF i -> return $ Lambda.IndexF i
+  TestF left right -> Lambda.TestF <$> transformTerm left <*> transformTerm right
   SubstitutionF name -> do
     TransformingContext{stk = s, depth = d} <- get
     let maybeIdx = elemIndex name s
@@ -112,6 +118,7 @@ transformTerm = mapWithAnnM $ \ann -> \case
               <> T.pack (show d)
               <> ", in scope: "
               <> T.pack (show s)
+  ForeignF lang source -> return $ Lambda.ForeignF lang source
   ForceF -> return Lambda.TokenF
   _ -> error "TODO: error message" -- term -> throwError $ Error ann $ "unexpected " <> prettyPrint term
 
@@ -127,6 +134,7 @@ fakeContext =
         }
 
 -- TODO: when a term is open, it must be substituted immediately (do this in preprocessor?)
+--       also, for tests and meta>0 terms!
 --       we could also do this with terms in NF (sharing doesn't help here anyway)
 transformTree :: Tree -> Transform TargetTerm
 transformTree (Tree name tree term) = do

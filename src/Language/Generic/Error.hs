@@ -23,6 +23,7 @@ import Control.Monad.State (
 import Data.Context (Context (..))
 import Data.Phase (
   HasSPhase,
+  Phase (..),
   sphase,
  )
 import Data.Text (Text)
@@ -38,11 +39,13 @@ data Error ph = Error (Context ph) Text
 class ShowError ph where
   showError :: Error ph -> Text
 
+-- fallback error
 instance {-# OVERLAPPABLE #-} forall ph. (HasSPhase ph) => ShowError ph where
   showError (Error ctx msg) = prettyError (T.pack $ show (sphase @ph)) msg
 
--- instance ShowError BruijnToLambdaTransform where
---   showError (Error ctx msg) = msg
+-- TODO: why doesn't this work? (OVERLAPPING fails)
+instance {-# INCOHERENT #-} ShowError LambdaReduce where
+  showError (Error ctx msg) = msg
 
 newtype PhaseT m a = PhaseT {runPhaseT :: ExceptT Text m a}
   deriving (Functor, Applicative, Monad, MonadError Text, MonadIO)

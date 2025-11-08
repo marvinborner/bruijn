@@ -4,5 +4,5 @@ module Data.Foreign (
   ForeignLanguage (..),
 ) where
 
-data ForeignLanguage = Bruijn | Haskell | UXN | AMD64
+data ForeignLanguage = Internal | Bruijn | Haskell | UXN | AMD64
   deriving (Show, Eq)
