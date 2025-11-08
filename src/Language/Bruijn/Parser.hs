@@ -119,7 +119,7 @@ scn = syncPos $ L.space space1 lineComment blockComment
 sc :: Parser ()
 sc =
   syncPos $
-    L.space (void $ some (oneOf (" \t" :: String))) lineComment blockComment
+    L.space (void $ some (oneOf (" " :: String))) lineComment blockComment
 
 -- | lexeme consumer without newline
 lexeme :: Parser a -> Parser a
@@ -129,10 +129,10 @@ lexeme = L.lexeme sc
 symbol :: Text -> Parser Text
 symbol = L.symbol sc
 
-{- | symbol consumer with newline
+-- | symbol consumer with newline
 symbolN :: Text -> Parser Text
 symbolN = L.symbol scn
--}
+
 path :: Parser Text
 path = T.pack <$> some alphaNumChar
 
@@ -161,12 +161,12 @@ identifier = local <|> namespaced <|> try prefix <|> mixfix <?> "identifier"
 
 abstraction :: Parser Term
 abstraction =
-  annotate $ AbstractionF <$> (symbol "[" *> lexeme lambda <* symbol "]")
+  annotate $ AbstractionF <$> (symbolN "[" *> lexeme lambda <* scn <* symbol "]")
 
 application :: Parser Term
 application =
   annotate $
-    ApplicationF <$> (symbol "(" *> some (lexeme singleton) <* symbol ")")
+    ApplicationF <$> (symbolN "(" *> some (lexeme singleton) <* scn <* symbol ")")
 
 index :: Parser Term
 index = annotate $ IndexF . read . return <$> digitChar
