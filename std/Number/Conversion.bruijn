@@ -79,3 +79,6 @@ ternary→bruijn ternary→unary → unary→bruijn ⧗ Ternary → Bruijn
 
 # converts sk numerals to unary (by Bertram Felgenhauer)
 sk→unary [[1 0 (0 0) ki] ([[[2 : U.++1]]] : (+0u))] ⧗ SK → Unary
+
+# converts tuple numerals to unary (by Tromp)
+tuple→unary &t ⧗ TupleN → Unary

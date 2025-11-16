@@ -1,0 +1,53 @@
+# MIT License, Copyright (c) 2025 Marvin Borner
+# by Tromp @ https://github.com/tromp/AIT/blob/master/numerals/tuple_numerals.lam
+
+:import std/Tuples .
+:import std/Combinator .
+:import std/Logic/Binary .
+
+zero i
+
+inc [[1 (0 :)]]
+
+++‣ inc
+
+:test (++zero) (t)
+
+dec [[1 0 [0]]]
+
+--‣ dec
+
+:test (--(++zero)) (zero)
+:test (--(++(++zero))) (t)
+
+lt? [(k false) : (0 (k true))]
+
+…<?… lt?
+
+:test (zero <? ++zero) (true)
+:test (++zero <? ++zero) (false)
+:test (++zero <? zero) (false)
+
+eq? [((k true) : false : true) : (0 (k false))]
+
+…=?… eq?
+
+:test (zero =? ++zero) (false)
+:test (++zero =? ++zero) (true)
+:test (++zero =? zero) (false)
+
+add b
+
+…+… add
+
+:test (zero + zero) (zero)
+:test (zero + ++zero) (++zero)
+:test (++zero + ++zero) (++(++zero))
+
+sub [[(0 i) ∘ 1]]
+
+…-… sub
+
+:test (zero - zero) (zero)
+:test (++zero - zero) (++zero)
+:test (++zero - ++zero) (zero)
