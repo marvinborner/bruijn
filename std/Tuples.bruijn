@@ -46,6 +46,11 @@ push [[[1 (0 2)]]] ⧗ a → (NTuple a) → (NTuple a)
 
 :test (push (+0d) ((+1d) : (+2d))) ((+0d) : (+1d) : (+2d))
 
+# adds an element to the end of a tuple
+push-end [[[1 0 2]]] ⧗ a → (NTuple a) → (NTuple a)
+
+:test (push-end (+0d) ((+1d) : (+2d))) ((+1d) : (+2d) : (+0d))
+
 # removes the head of a tuple
 pop [[1 [1]]] ⧗ (NTuple a) → (NTuple a)
 
