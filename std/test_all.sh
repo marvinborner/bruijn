@@ -18,7 +18,7 @@ done
 echo >>All.bruijn
 echo "main [[0]]" >>All.bruijn
 
-if cat /dev/null | bruijn -v All.bruijn -r "$1" | tee /dev/fd/2 | grep -q "ERROR"; then
+if cat /dev/null | bruijn All.bruijn -r "$1" | tee /dev/fd/2 | grep -q "ERROR"; then
 	exit 1
 fi
 
