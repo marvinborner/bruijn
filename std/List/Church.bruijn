@@ -415,11 +415,17 @@ in? …∘… any? ⧗ (a → a → Boolean) → a → (List a) → Boolean
 :test (in? …=?… (+0) ((+1) : ((+2) : {}(+3)))) (false)
 
 # returns true if all elements of one list are equal to corresponding elements of other list
-eq? ⋀?‣ ∘∘∘ zip-with ⧗ (a → a → Boolean) → (List a) → Boolean
+eq? z [[[[rec]]]] ⧗ (a → a → Boolean) → (List a) → (List a) → Boolean
+	rec ∅?1 ∅?0 (∅?0 false case-both-nonempty)
+		case-both-nonempty (2 ^1 ^0) ⋀? (3 2 ~1 ~0)
 
 :test (eq? …=?… ((+1) : {}(+2)) ((+1) : {}(+2))) (true)
 :test (eq? …=?… ((+1) : {}(+2)) ((+2) : {}(+2))) (false)
 :test (eq? …=?… empty empty) (true)
+:test (eq? …=?… ((+1) : {}(+2)) {}(+1)) (false)
+:test (eq? …=?… {}(+1) ((+1) : {}(+2))) (false)
+:test (eq? …=?… empty {}(+1)) (false)
+:test (eq? …=?… {}(+1) empty) (false)
 
 # returns eq, lt, gt depending on comparison of two lists and comparison function
 compare-case' z [[[[[[[rec]]]]]]] ⧗ Compare → a → b → c → (List a) → (List a) → d
