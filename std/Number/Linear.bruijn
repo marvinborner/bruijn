@@ -1,0 +1,54 @@
+# from Mackie's "Linear Numeral Systems"
+
+:import std/Combinator .
+:import std/Tuples .
+
+true [[0 i i 1]]
+
+false [[1 i i 0]]
+
+zero i : [0]
+
+one (i :) : [[0 1]]
+
+two (i : i) : [[0 [0 2]]]
+
+inc &[[(neg 1) : (pos 0)]]
+	neg [[1 0 i]]
+	pos [[[0 (2 1)]]]
+
+:test (inc zero) (one)
+:test (inc one) (two)
+
+dec &[[(neg 1) : (pos 0)]]
+	neg [[1 [0 1]]]
+	pos [[1 0 i]]
+
+:test (dec two) (one)
+:test (dec one) (zero)
+:test (dec (dec (dec (inc (inc (inc zero)))))) (zero)
+
+add [[1 [[2 [[(neg 3 1) : (pos 2 0)]]]]]]
+	neg [[[2 (1 0)]]]
+	pos [[[2 (1 0)]]]
+
+:test (add one one) (two)
+:test (add zero one) (one)
+:test (add one zero) (one)
+:test (add zero zero) (zero)
+
+# TODO: sub seems broken?!
+# sub [[1 [[2 [[(neg 0 3) : (pos 2 1)]]]]]]
+# 	neg [[[2 (1 0)]]]
+# 	pos [[[2 (1 0)]]]
+
+# :test (sub two two) (zero)
+# :test (sub two one) (one)
+# :test (sub two zero) (two)
+
+zero? &[[pos 0 [[3 0 1]]]]
+	pos [true : (0 i i)] : [false : (0 i i)]
+
+:test (zero? two) (false)
+:test (zero? one) (false)
+:test (zero? zero) (true)

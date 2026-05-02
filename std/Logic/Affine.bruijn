@@ -1,0 +1,53 @@
+# MIT License, Copyright (c) 2026 Marvin Borner
+# binary logic but every abstraction is referred to *at most once* (affinity)
+# heavily inspired by Logic/Linear; there might also be affine Church operators!
+
+# true
+true [[[0 2 1]]] ⧗ AffineBoolean
+
+# false
+false [[[0 1 2]]] ⧗ AffineBoolean
+
+# inverts boolean value
+not! [[[2 0 1]]] ⧗ AffineBoolean → AffineBoolean
+
+¬‣ not!
+
+:test (¬true) (false)
+:test (¬false) (true)
+
+# true if both args are true
+and? [[1 0 false [[1]]]] ⧗ AffineBoolean → AffineBoolean → AffineBoolean
+
+…⋀?… and?
+
+:test (true ⋀? true) (true)
+:test (true ⋀? false) (false)
+:test (false ⋀? true) (false)
+:test (false ⋀? false) (false)
+
+# true if not both args are true
+nand? [[not! (and? 1 0)]] ⧗ AffineBoolean → AffineBoolean → AffineBoolean
+
+:test (nand? true true) (false)
+:test (nand? true false) (true)
+:test (nand? false true) (true)
+:test (nand? false false) (true)
+
+# true if one of the args is true
+or? [[1 true 0 [[1]]]] ⧗ AffineBoolean → AffineBoolean → AffineBoolean
+
+…⋁?… or?
+
+:test (true ⋁? true) (true)
+:test (true ⋁? false) (true)
+:test (false ⋁? true) (true)
+:test (false ⋁? false) (false)
+
+# true if both args are false
+nor? [[not! (or? 1 0)]] ⧗ AffineBoolean → AffineBoolean → AffineBoolean
+
+:test (nor? true true) (false)
+:test (nor? true false) (false)
+:test (nor? false true) (false)
+:test (nor? false false) (true)
