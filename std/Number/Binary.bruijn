@@ -298,30 +298,24 @@ add [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 
 # subs two binary numbers (can introduce leading 0s)
 # second argument gets abstracted (performance)
-# TODO: fix sub*; implementation is completely wrong
-sub* [[abs 1 →^0]] ⧗ Binary → Binary → Binary
+sub [[abs 1 →^0]] ⧗ Binary → Binary → Binary
 	abs [c (0 z a¹ a⁰)]
-		c¹ [1 ↑¹(3 0 b⁰) ↑¹(3 0 b⁰)]
-		a¹ [[[1 (c¹ 1) c¹' c¹]]]
-			c¹ [1 ↑⁰(3 0 b¹) ↑¹(3 0 b⁰)]
-			c¹' [1 ↑¹(3 0 b⁰) ↑¹(3 0 b⁰)]
-		a⁰ [[[1 (c⁰ 1) c⁰' c⁰]]]
-			c⁰ [1 ↑¹(3 0 b⁰) ↑⁰(3 0 b⁰)]
-			c⁰' [1 (3 0 b⁰) ↑¹(3 0 b¹)]
+		s== [up 1 (3 0 1)]
+		s¹⁰ [1 ↑⁰(3 0 b⁰) ↑¹(3 0 b⁰)]
+		s⁰¹ [1 ↑⁰(3 0 b¹) ↑¹(3 0 b¹)]
+		a¹ [[[1 (s¹⁰ 1) s== s¹⁰]]]
+		a⁰ [[[1 (s== 1) s⁰¹ s==]]]
 		z [--(→_0) : →_0]
 		c [[1 0 b⁰]]
-
-# subs two binary numbers
-# uses addition but with two's complement
-# TODO: isn't very performant ⇒ replace with sub*
-# TODO: gives fun results if b>a in a-b
-sub [[(0 =? 1) (+0b) -((pad 1 0) + -(pad 0 1))]] ⧗ Binary → Binary → Binary
 
 …-… sub
 
 :test ((+42b) - (+12b) =? (+30b)) (true)
 :test ((+3b) - (+0b) =? (+3b)) (true)
 :test ((+3b) - (+2b) =? (+1b)) (true)
+:test ((+1b) - (+0b) =? (+1b)) (true)
+:test ((+1b) - (+1b) =? (+0b)) (true)
+:test ((+4b) - (+3b) =? (+1b)) (true)
 
 # muls two binary numbers (can introduce leading 0s)
 mul [[1 z a¹ a⁰]] ⧗ Number → Number → Number
@@ -350,3 +344,49 @@ log₂ log₂* ∘ strip ⧗ Binary → Binary
 :test ((log₂ (+4b)) =? (+3b)) (true)
 :test ((log₂ (+32b)) =? (+6b)) (true)
 :test ((log₂ (+48b)) =? (+6b)) (true)
+
+# prepends min(ctz(a), ctz(b)) zero-bits to a number
+common-shift [[[2 z a¹ a⁰ →^1 0]]] ⧗ Binary → Binary → Binary → Binary
+	z [[0]]
+	a¹ [[[0]]]
+	a⁰ [[[1 0 [1] [↑⁰(3 0 1)]]]]
+
+:test ((common-shift (+1b) (+1b) (+3b)) =? (+3b)) (true)
+:test ((common-shift (+2b) (+4b) (+3b)) =? (+6b)) (true)
+:test ((common-shift (+4b) (+6b) (+3b)) =? (+6b)) (true)
+:test ((common-shift (+4b) (+4b) (+3b)) =? (+12b)) (true)
+:test ((common-shift (+8b) (+12b) (+3b)) =? (+12b)) (true)
+
+# greatest common divisor using Stein's algorithm
+gcd [[=?1 0 (=?0 1 (common-shift 1 0 (odd 1 0)))]] ⧗ Binary → Binary → Binary
+	odd [[^((a + b) (a : b) step step)]]
+		a strip-trailing 1
+		b strip-trailing 0
+		step &[[(1 =? 0) case-eq ((1 >? 0) case-gr case-le)]]
+			case-eq 1 : 0
+			case-gr ((strip-trailing (1 - 0)) : 0)
+			case-le (1 : (strip-trailing (0 - 1)))
+
+:test ((gcd (+0b) (+0b)) =? (+0b)) (true)
+:test ((gcd (+0b) (+5b)) =? (+5b)) (true)
+:test ((gcd (+7b) (+0b)) =? (+7b)) (true)
+:test ((gcd (+1b) (+1b)) =? (+1b)) (true)
+:test ((gcd (+2b) (+2b)) =? (+2b)) (true)
+:test ((gcd (+2b) (+4b)) =? (+2b)) (true)
+:test ((gcd (+3b) (+9b)) =? (+3b)) (true)
+:test ((gcd (+10b) (+5b)) =? (+5b)) (true)
+:test ((gcd (+3b) (+8b)) =? (+1b)) (true)
+:test ((gcd (+12b) (+8b)) =? (+4b)) (true)
+:test ((gcd (+6b) (+4b)) =? (+2b)) (true)
+:test ((gcd (+14b) (+21b)) =? (+7b)) (true)
+:test ((gcd (+17b) (+13b)) =? (+1b)) (true)
+:test ((gcd (+48b) (+36b)) =? (+12b)) (true)
+:test ((gcd (+100b) (+75b)) =? (+25b)) (true)
+:test ((gcd (+36b) (+24b)) =? (+12b)) (true)
+:test ((gcd (+1b) (+100b)) =? (+1b)) (true)
+:test ((gcd (+128b) (+96b)) =? (+32b)) (true)
+:test ((gcd (+55b) (+34b)) =? (+1b)) (true)
+:test ((gcd (+64b) (+48b)) =? (+16b)) (true)
+:test ((gcd (+105b) (+30b)) =? (+15b)) (true)
+:test ((gcd (+42b) (+56b)) =? (+14b)) (true)
+:test ((gcd (+99b) (+66b)) =? (+33b)) (true)
