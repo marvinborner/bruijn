@@ -155,15 +155,28 @@ compare-case [[[(T.compare-case 2 1 0) ⋔ binary→ternary]]] ⧗ a → b → c
 
 <?>‣ &compare-case
 
+# decides comparison result when bits differ
+cmp-bit [&[[1 (false : 2) (false : 0)]]]
+
 # returns true if number is greater than other number
-# TODO: remove ternary conversion
-gt? T.gt? ⋔ binary→ternary ⧗ Binary → Binary → Boolean
+gt? [[~(abs 1 →^0)]] ⧗ Binary → Binary → Boolean
+	abs z : a¹ : a⁰
+		z [(=?(→_0)) : false]
+		a¹ [(cmp-bit true (0 (+0b))) : [1 0] : [cmp-bit true (1 0)]]
+		a⁰ [(0 (+0b)) : [cmp-bit false (1 0)] : [1 0]]
 
 …>?… gt?
 
 :test ((+1b) >? (+2b)) (false)
 :test ((+2b) >? (+2b)) (false)
 :test ((+3b) >? (+2b)) (true)
+:test ((+0b) >? (+0b)) (false)
+:test ((+1b) >? (+0b)) (true)
+:test ((+0b) >? (+1b)) (false)
+:test ((+9b) >? (+3b)) (true)
+:test ((+3b) >? (+9b)) (false)
+:test ((+16b) >? (+15b)) (true)
+:test ((+15b) >? (+16b)) (false)
 
 # ============================================================================ #
 # most relevant functions are defined - we can now derive from Generic/Number! #
@@ -358,6 +371,7 @@ common-shift [[[2 z a¹ a⁰ →^1 0]]] ⧗ Binary → Binary → Binary → Bin
 :test ((common-shift (+8b) (+12b) (+3b)) =? (+12b)) (true)
 
 # greatest common divisor using Stein's algorithm
+# TODO: efficient expmod
 gcd [[=?1 0 (=?0 1 (common-shift 1 0 (odd 1 0)))]] ⧗ Binary → Binary → Binary
 	odd [[^((a + b) (a : b) step step)]]
 		a strip-trailing 1
@@ -390,3 +404,5 @@ gcd [[=?1 0 (=?0 1 (common-shift 1 0 (odd 1 0)))]] ⧗ Binary → Binary → Bin
 :test ((gcd (+105b) (+30b)) =? (+15b)) (true)
 :test ((gcd (+42b) (+56b)) =? (+14b)) (true)
 :test ((gcd (+99b) (+66b)) =? (+33b)) (true)
+
+main [[0]]
