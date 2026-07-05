@@ -1,0 +1,28 @@
+# MIT License, Copyright (c) 2026 Marvin Borner
+# n-ary Church encodings (unary Church conversion is identity)
+# has uses in shared reducers, as encoding distributes digits
+
+:input std/Number/Unary .
+
+# construct churchary of two numbers in base b
+cons-base [[[[[3 1 (2 (4 1) 0)]]]]] ⧗ Unary → Unary → Unary
+
+# --- binary encoding ---
+
+cons₂ cons-base (+2u) ⧗ Unary → Unary
+
+:test (cons₂ (+0u) (+1u)) ((+2u))
+
+d⁰₂ cons₂ (+0u)
+
+d¹₂ cons₂ (+1u)
+
+:test (d¹₂ (d⁰₂ (d¹₂ [[0]]))) ((+5u))
+:test ((d¹₂ (d⁰₂ (d¹₂ [[0]]))) + (d⁰₂ (d⁰₂ (d¹₂ [[0]])))) ((+9u))
+
+# --- decimal encoding ---
+
+cons₁₀ cons-base (+10u) ⧗ Unary → Unary
+
+:test (cons₁₀ (+2u) (+1u)) ((+12u))
+:test (cons₁₀ (+2u) (+0u)) ((+2u))
