@@ -30,9 +30,9 @@ When we talk about reduction in bruijn, we typically mean "reduction
 until normal form" -- we reduce until the term can't be reduced any
 further (there does not exist any `(λx.E A)`).
 
-    (λx.x λx.x)     ⤳ λx.x
-    (λx.x λx.λy.x)  ⤳ λx.λy.x
-    (λx.λy.x (λx.x) ⤳ λy.λx.x
+    (λx.x λx.x)      ⤳ λx.x
+    (λx.x λx.λy.x)   ⤳ λx.λy.x
+    (λx.λy.x (λx.x)) ⤳ λy.λx.x
 
 ## De Bruijn indices
 
